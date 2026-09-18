@@ -1,0 +1,24 @@
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# database
+local.db
+local.db-journal
+local.db-shm
+local.db-wal
+
+# build output
+.svelte-kit/
+build/
+dist/
+
+# misc
+.DS_Store
+Thumbs.db
+*.log
+.vercel/

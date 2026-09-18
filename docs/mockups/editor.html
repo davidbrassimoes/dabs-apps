@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card editor — Sótão Cards mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+  html { background: #2A2A28; }
+  body { margin: 0; padding: 28px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; }
+  .caption { max-width: 640px; margin: 0 auto 14px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #8C8C86; display: flex; gap: 14px; align-items: baseline; }
+  .caption b { color: #E6E4DC; font-weight: 600; letter-spacing: 0.18em; }
+  .caption a { color: #8C8C86; text-decoration: none; margin-left: auto; }
+  .caption a:hover { color: #E6E4DC; }
+  .board { width: 640px; height: 880px; margin: 0 auto;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45); overflow: hidden; }
+  @media (max-width: 700px) {
+    body { padding: 12px; }
+    .caption, .board { width: 100%; max-width: 100%; }
+    .board { height: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="caption"><b>Card editor</b><span>640 × 880</span><span>drawer · multi-kind checkboxes</span><a href="index.html">All screens</a></div>
+<div class="board">
+<div style="width: 640px; height: 880px; box-sizing: border-box; background: #101722; color: #ECE4D6; display: flex; flex-direction: column; border-left: 1px solid #2C3A4E;">
+  <div style="height: 58px; flex-shrink: 0; box-sizing: border-box; padding: 0 26px; border-bottom: 1px solid #2C3A4E; display: flex; align-items: center; gap: 12px;">
+    <span style="font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 17px; font-weight: 600;">Edit card</span>
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; color: #5F6D80;">a7f21c</span>
+    <div style="flex-grow: 1;"></div>
+    <a href="cards.html" aria-label="Close editor" style="border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; padding: 9px 10px; line-height: 0; display: block; text-decoration: none;"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M1 1l9 9M10 1l-9 9" stroke="currentColor" stroke-width="1.3"></path></svg></a>
+  </div>
+
+  <div style="flex-grow: 1; box-sizing: border-box; padding: 24px 26px; display: flex; flex-direction: column; gap: 22px; overflow: hidden;">
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <label for="card-text" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Card text</label>
+      <textarea id="card-text" rows="3" style="box-sizing: border-box; width: 100%; background: #18212F; border: 1px solid #2C3A4E; border-radius: 2px; color: #ECE4D6; font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 18px; font-weight: 500; line-height: 1.35; padding: 14px; resize: none;">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.</textarea>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Kinds — pick as many as fit</span>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+          <label for="kind-idea" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: #1F2A3A; border: 1px solid #7A6230; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-idea" checked style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #ECE4D6;">idea</span>
+          </label>
+          <label for="kind-source" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-source"  style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8B98A9;">source</span>
+          </label>
+          <label for="kind-treatment" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-treatment"  style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8B98A9;">treatment</span>
+          </label>
+          <label for="kind-technique" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: #1F2A3A; border: 1px solid #7A6230; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-technique" checked style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #ECE4D6;">technique</span>
+          </label>
+          <label for="kind-constraint" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-constraint"  style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8B98A9;">constraint</span>
+          </label>
+          <label for="kind-arrangement" style="display: flex; align-items: center; gap: 8px; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 9px 10px; cursor: pointer;">
+            <input type="checkbox" id="kind-arrangement"  style="margin: 0; accent-color: #D9A44A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8B98A9;">arrangement</span>
+          </label>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 1.45; color: #5F6D80;"><strong style="color: #ECE4D6; font-weight: 500;">Idea</strong> makes the card drawable on its own. The other five make it drawable into that slot of a spread. Both is fine — this card is drawn on its own, and into the technique slot.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <label for="gear-add" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Gear</label>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+        <span style="display: flex; align-items: center; gap: 7px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ECE4D6; background: #1F2A3A; border: 1px solid #2C3A4E; border-radius: 2px; padding: 6px 8px;">RD-08<button type="button" aria-label="Remove RD-08" style="background: none; border: none; color: #5F6D80; padding: 0; line-height: 0;"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.4"></path></svg></button></span>
+        <span style="display: flex; align-items: center; gap: 7px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ECE4D6; background: #1F2A3A; border: 1px solid #2C3A4E; border-radius: 2px; padding: 6px 8px;">Pitch Fork+<button type="button" aria-label="Remove Pitch Fork+" style="background: none; border: none; color: #5F6D80; padding: 0; line-height: 0;"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.4"></path></svg></button></span>
+        <span style="display: flex; align-items: center; gap: 7px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ECE4D6; background: #1F2A3A; border: 1px solid #2C3A4E; border-radius: 2px; padding: 6px 8px;">AC30<button type="button" aria-label="Remove AC30" style="background: none; border: none; color: #5F6D80; padding: 0; line-height: 0;"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.4"></path></svg></button></span>
+        <span style="display: flex; align-items: center; gap: 7px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #ECE4D6; background: #1F2A3A; border: 1px solid #2C3A4E; border-radius: 2px; padding: 6px 8px;">CM25<button type="button" aria-label="Remove CM25" style="background: none; border: none; color: #5F6D80; padding: 0; line-height: 0;"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.4"></path></svg></button></span>
+        <input id="gear-add" type="text" placeholder="add gear…" style="flex-grow: 1; min-width: 120px; box-sizing: border-box; background: #18212F; border: 1px dashed #2C3A4E; border-radius: 2px; color: #ECE4D6; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; padding: 7px 10px;">
+      </div>
+      <p style="margin: 0; font-size: 12px; color: #5F6D80;">Only gear in your inventory. Unknown names are rejected on import too.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <label for="tags-add" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Tags</label>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 6px 8px;">#reamping</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 6px 8px;">#room</span>
+        <input id="tags-add" type="text" placeholder="add tag…" style="flex-grow: 1; min-width: 120px; box-sizing: border-box; background: #18212F; border: 1px dashed #2C3A4E; border-radius: 2px; color: #ECE4D6; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; padding: 7px 10px;">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Favourite</span>
+      <label for="fav-toggle" style="display: flex; align-items: center; gap: 11px; box-sizing: border-box; background: #1E1A12; border: 1px solid #4E4028; border-radius: 2px; padding: 12px 13px; cursor: pointer;">
+        <input type="checkbox" id="fav-toggle" checked style="margin: 0; accent-color: #D9A44A; width: 14px; height: 14px;">
+        <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 0.6l1.7 3.5 3.8.55-2.75 2.68.65 3.78L6 9.32 2.6 11.11l.65-3.78L.5 4.65l3.8-.55z" fill="#7A6230" stroke="#D9A44A" stroke-width="0.9"></path></svg>
+        <span style="font-size: 13px; color: #ECE4D6;">A marker only — it does not change how often the card comes up</span>
+      </label>
+    </div>
+
+    <div style="display: flex; gap: 22px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Written by</span>
+        <div style="display: flex; gap: 8px;">
+          <label for="by-david" style="display: flex; align-items: center; gap: 8px; flex-grow: 1; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 10px; cursor: pointer;">
+            <input type="radio" name="author" id="by-david"  style="margin: 0; accent-color: #74A79A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #98A4B4;">David</span>
+          </label>
+          <label for="by-claude" style="display: flex; align-items: center; gap: 8px; flex-grow: 1; box-sizing: border-box; background: #1B2436; border: 1px solid #35406B; border-radius: 2px; padding: 10px; cursor: pointer;">
+            <input type="radio" name="author" id="by-claude" checked style="margin: 0; accent-color: #8E9BD4; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8E9BD4;">Claude</span>
+          </label>
+        </div>
+      </div>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #6C7A8C;">Status</span>
+        <div style="display: flex; gap: 8px;">
+          <label for="st-active" style="display: flex; align-items: center; gap: 8px; flex-grow: 1; box-sizing: border-box; background: #16241F; border: 1px solid #2F4A45; border-radius: 2px; padding: 10px; cursor: pointer;">
+            <input type="radio" name="status" id="st-active" checked style="margin: 0; accent-color: #74A79A; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #74A79A;">Active</span>
+          </label>
+          <label for="st-archived" style="display: flex; align-items: center; gap: 8px; flex-grow: 1; box-sizing: border-box; background: transparent; border: 1px solid #2C3A4E; border-radius: 2px; padding: 10px; cursor: pointer;">
+            <input type="radio" name="status" id="st-archived"  style="margin: 0; accent-color: #98A4B4; width: 13px; height: 13px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #98A4B4;">Archived</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="height: 76px; flex-shrink: 0; box-sizing: border-box; padding: 0 26px; background: #131C28; border-top: 1px solid #2C3A4E; display: flex; align-items: center; gap: 12px;">
+    <button type="button" style="background: none; border: 1px solid #55302C; border-radius: 2px; color: #E0685B; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 11px 14px;">Delete</button>
+    <div style="flex-grow: 1;"></div>
+    <a href="cards.html" style="border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 11px 16px; text-decoration: none;">Cancel</a>
+    <button type="button" style="background: #ECE4D6; border: none; border-radius: 2px; color: #101722; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 17px; text-decoration: none; display: inline-block;">Save card</button>
+  </div>
+</div>
+</div>
+</body>
+</html>

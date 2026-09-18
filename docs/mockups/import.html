@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bulk import — Sótão Cards mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+  html { background: #2A2A28; }
+  body { margin: 0; padding: 28px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; }
+  .caption { max-width: 1280px; margin: 0 auto 14px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #8C8C86; display: flex; gap: 14px; align-items: baseline; }
+  .caption b { color: #E6E4DC; font-weight: 600; letter-spacing: 0.18em; }
+  .caption a { color: #8C8C86; text-decoration: none; margin-left: auto; }
+  .caption a:hover { color: #E6E4DC; }
+  .board { width: 1280px; height: 860px; margin: 0 auto;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45); overflow: hidden; }
+  @media (max-width: 1340px) {
+    body { padding: 12px; }
+    .caption, .board { width: 100%; max-width: 100%; }
+    .board { height: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="caption"><b>Bulk import</b><span>1280 × 860</span><span>validate · preview · commit</span><a href="index.html">All screens</a></div>
+<div class="board">
+<div style="width: 1280px; height: 860px; box-sizing: border-box; background: #101722; color: #ECE4D6; display: flex; flex-direction: column;">
+  <div style="height: 58px; flex-shrink: 0; box-sizing: border-box; padding: 0 36px; border-bottom: 1px solid #2C3A4E; display: flex; align-items: center; gap: 26px;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #ECE4D6;">Sótão Cards</span>
+    <div style="display: flex; gap: 20px; align-items: center;">
+      <a href="draw-spread.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Draw</a>
+      <a href="cards.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Cards</a>
+      <a href="gear.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Gear</a>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #ECE4D6; border-bottom: 2px solid #D9A44A; padding-bottom: 3px;">Import</span>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; align-items: center; gap: 8px; border: 1px solid #2C3A4E; border-radius: 3px; padding: 7px 12px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: #74A79A; display: block;"></span>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: #98A4B4;">sotao-cards-2026-09-17.yaml · 6.4 kB</span>
+    </div>
+    
+  </div>
+  <div style="flex-grow: 1; box-sizing: border-box; display: grid; grid-template-columns: 560px minmax(0, 1fr); overflow: hidden;">
+
+    <div style="box-sizing: border-box; border-right: 1px solid #2C3A4E; display: flex; flex-direction: column; overflow: hidden;">
+      <div style="height: 44px; flex-shrink: 0; box-sizing: border-box; padding: 0 24px; background: #131C28; border-bottom: 1px solid #22303F; display: flex; align-items: center; gap: 10px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #6C7A8C;">Source</span>
+        <div style="flex-grow: 1;"></div>
+        <button type="button" style="background: none; border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 7px 11px;">Choose file</button>
+        <button type="button" style="background: none; border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 7px 11px;">Paste</button>
+      </div>
+      <div style="flex-grow: 1; box-sizing: border-box; padding: 16px 0; overflow: hidden;">
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">1</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #5F6D80; white-space: pre;"># sótão cards — import v1</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">2</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">version: 1</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">3</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">defaults:</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">4</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  author: claude</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">5</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;"> </span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">6</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">cards:</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">7</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  - text: &gt;-</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">8</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">      Play the RD-08 through the Pitch Fork+ at plus one</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">9</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">      octave, reamp it into the AC30, and mic the amp</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">10</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">      from the staircase opening.</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">11</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    kinds: [idea]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">12</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    gear: [rd-08, pitch-fork-plus, ac30, cm25]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">13</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    tags: [reamping, room]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">14</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;"> </span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">15</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  - text: Casio SK-1, sampled from something already</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">16</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">      in the room.</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">17</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    kinds: [idea, source]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">18</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    gear: [sk-1]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">19</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    tags: [sampling, lo-fi]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">20</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    favorite: true</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">21</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;"> </span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">22</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  - text: Hall of Fame 2 before the amp, not after.</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">23</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    kinds: [treatment]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">24</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    gear: [hall-of-fame-2, ac30]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">25</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;"> </span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">26</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  - text: Mono. All of it.</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">27</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    kinds: [constraint]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">28</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    favorite: true</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">29</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;"> </span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">30</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">  - text: Mic the cabinet off-axis by 45 degrees.</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: transparent; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">31</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #B9C2CE; white-space: pre;">    kinds: [technique, constraint]</span>
+        </div>
+        <div style="display: flex; gap: 14px; background: #20171A; padding: 0 24px;">
+          <span style="width: 22px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; line-height: 1.85; color: #5F6D80; text-align: right; font-variant-numeric: tabular-nums;">32</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11.5px; line-height: 1.85; color: #E0685B; white-space: pre;">    gear: [sm58, pathfinder-15r]</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;">
+      <div style="height: 44px; flex-shrink: 0; box-sizing: border-box; padding: 0 24px; background: #131C28; border-bottom: 1px solid #22303F; display: flex; align-items: center;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #6C7A8C;">Preview — nothing is saved yet</span>
+      </div>
+      <div style="flex-shrink: 0; box-sizing: border-box; padding: 20px 24px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+          <div style="box-sizing: border-box; border: 1px solid #2F4A45; border-radius: 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 5px;">
+            <span style="font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 27px; font-weight: 700; line-height: 1; color: #74A79A; font-variant-numeric: tabular-nums;">9</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8B98A9;">New</span>
+          </div>
+          <div style="box-sizing: border-box; border: 1px solid #4E4028; border-radius: 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 5px;">
+            <span style="font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 27px; font-weight: 700; line-height: 1; color: #D9A44A; font-variant-numeric: tabular-nums;">2</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8B98A9;">Updated</span>
+          </div>
+          <div style="box-sizing: border-box; border: 1px solid #2C3A4E; border-radius: 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 5px;">
+            <span style="font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 27px; font-weight: 700; line-height: 1; color: #98A4B4; font-variant-numeric: tabular-nums;">2</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8B98A9;">Unchanged</span>
+          </div>
+          <div style="box-sizing: border-box; border: 1px solid #55302C; border-radius: 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 5px;">
+            <span style="font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 27px; font-weight: 700; line-height: 1; color: #E0685B; font-variant-numeric: tabular-nums;">1</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8B98A9;">Error</span>
+          </div>
+      </div>
+      <div style="flex-grow: 1; box-sizing: border-box; padding: 4px 24px 0; overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into…</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #ECE4D6;">idea</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Casio SK-1, sampled from something already in the room.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #74A79A;">source</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #D9A44A; border: 1px solid #4E4028; border-radius: 2px; padding: 4px 0; text-align: center;">Updated</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Hall of Fame 2 before the amp, not after.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #D9A44A;">treatment</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8B98A9; border: 1px solid #2C3A4E; border-radius: 2px; padding: 4px 0; text-align: center;">Unchanged</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mono. All of it.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #E0685B;">constraint</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #E0685B; border: 1px solid #55302C; border-radius: 2px; padding: 4px 0; text-align: center;">Error</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #5F6D80; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Mic the cabinet off-axis by 45 degrees.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #8E9BD4;">technique</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Melodica, into a microphone — never a DI.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #74A79A;">source</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Synth Wah on a source that is not a guitar.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #D9A44A;">treatment</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Three minutes, then you stop and listen back once.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #E0685B;">constraint</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #D9A44A; border: 1px solid #4E4028; border-radius: 2px; padding: 4px 0; text-align: center;">Updated</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">A JV-880 patch you would never choose on purpose.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #74A79A;">source</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; height: 42px; border-bottom: 1px solid #1B2533;">
+            <span style="width: 74px; flex-shrink: 0; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #74A79A; border: 1px solid #2F4A45; border-radius: 2px; padding: 4px 0; text-align: center;">New</span>
+            <span style="flex-grow: 1; font-size: 13px; color: #ECE4D6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">The loudest thing in the mix is the quietest instrument you own.</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #B99BC9;">arrangement</span>
+          </div>
+      </div>
+      <div style="flex-shrink: 0; box-sizing: border-box; margin: 16px 24px 20px; background: #1E1614; border: 1px solid #55302C; border-radius: 2px; padding: 15px 16px; display: flex; gap: 13px;">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true"><path d="M7.5 5v4" stroke="#E0685B" stroke-width="1.4"></path><circle cx="7.5" cy="11.2" r="0.85" fill="#E0685B"></circle><circle cx="7.5" cy="7.5" r="6.6" stroke="#E0685B" stroke-width="1.2"></circle></svg>
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #E0685B;">Line 32 · card 5</span>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #ECE4D6;">Gear <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: #E0685B;">sm58</span> is not in your inventory. Did you mean <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: #74A79A;">sm57</span>? Fix the file, or add the gear first — this card will be skipped.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div style="height: 76px; flex-shrink: 0; box-sizing: border-box; padding: 0 36px; background: #131C28; border-top: 1px solid #2C3A4E; display: flex; align-items: center; gap: 14px;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: #6C7A8C;">Matching on card text · re-importing the same file changes nothing</span>
+    <div style="flex-grow: 1;"></div>
+    <a href="cards.html" style="border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 16px; text-decoration: none;">Cancel</a>
+    <button type="button" style="background: #ECE4D6; border: none; border-radius: 2px; color: #101722; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 17px; text-decoration: none; display: inline-block;">Import 11 cards</button>
+  </div>
+</div>
+</div>
+</body>
+</html>
