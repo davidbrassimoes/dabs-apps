@@ -1,1 +1,172 @@
 @import 'tailwindcss';
+
+/*
+  Theme tokens (§12). Every colour is a custom property; the themes redefine the
+  tokens, never the components. Dark is the default — `:root` carries it — and
+  the light values are applied either by an explicit [data-theme="light"] or,
+  when the choice is "system", by prefers-color-scheme.
+
+  The values beyond §12's table (--line-soft, the favourite button, the chip
+  borders) are read off the mockups, which are the layout reference.
+*/
+
+@theme {
+	--font-display:
+		'Familjen Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, 'Cascadia Mono', monospace;
+}
+
+:root {
+	color-scheme: dark;
+
+	--ground: #101722;
+	--panel: #18212f;
+	--rail: #131c28;
+	--line: #2c3a4e;
+	--line-soft: #22303f;
+	--text: #ece4d6;
+	--text-dim: #98a4b4;
+	--text-faint: #6c7a8c;
+
+	--kind-idea: #ece4d6;
+	--kind-source: #74a79a;
+	--kind-treatment: #d9a44a;
+	--kind-technique: #8e9bd4;
+	--kind-constraint: #e0685b;
+	--kind-arrangement: #b99bc9;
+
+	/* The favourite marker, and the gear chip border, from the mockups. */
+	--fav-bg: #1e1a12;
+	--fav-line: #4e4028;
+	--fav-star: #7a6230;
+	--chip-line: #263346;
+}
+
+@media (prefers-color-scheme: light) {
+	:root:not([data-theme='dark']):not([data-theme='light']) {
+		color-scheme: light;
+
+		--ground: #eee8da;
+		--panel: #faf7ef;
+		--rail: #e6dfcd;
+		--line: #d2c8b2;
+		--line-soft: #dcd3bf;
+		--text: #1b2430;
+		--text-dim: #56606e;
+		--text-faint: #6e7788;
+
+		--kind-idea: #1b2430;
+		--kind-source: #3e6f62;
+		--kind-treatment: #8a6210;
+		--kind-technique: #43508c;
+		--kind-constraint: #a83527;
+		--kind-arrangement: #7a4e86;
+
+		--fav-bg: #f5ebd4;
+		--fav-line: #d8bc78;
+		--fav-star: #c08a15;
+		--chip-line: #d2c8b2;
+	}
+}
+
+:root[data-theme='light'] {
+	color-scheme: light;
+
+	--ground: #eee8da;
+	--panel: #faf7ef;
+	--rail: #e6dfcd;
+	--line: #d2c8b2;
+	--line-soft: #dcd3bf;
+	--text: #1b2430;
+	--text-dim: #56606e;
+	--text-faint: #6e7788;
+
+	--kind-idea: #1b2430;
+	--kind-source: #3e6f62;
+	--kind-treatment: #8a6210;
+	--kind-technique: #43508c;
+	--kind-constraint: #a83527;
+	--kind-arrangement: #7a4e86;
+
+	--fav-bg: #f5ebd4;
+	--fav-line: #d8bc78;
+	--fav-star: #c08a15;
+	--chip-line: #d2c8b2;
+}
+
+html {
+	background: var(--ground);
+}
+
+body {
+	margin: 0;
+	background: var(--ground);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+}
+
+/*
+  Shared primitives. The monospace labelling is what gives the app its
+  equipment-panel character — it is not decoration (§12).
+*/
+
+.label {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+}
+
+.meta {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+.display {
+	font-family: var(--font-display);
+	font-weight: 600;
+	letter-spacing: -0.012em;
+}
+
+/* A bordered monospace control: the header chips, the small buttons. */
+.panel-button {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	background: none;
+	border: 1px solid var(--line);
+	border-radius: 2px;
+	padding: 9px 14px;
+	cursor: pointer;
+}
+
+.panel-button:hover {
+	color: var(--text);
+}
+
+:where(a) {
+	color: inherit;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+	outline: 2px solid var(--kind-treatment);
+	outline-offset: 2px;
+}
+
+::selection {
+	background: var(--kind-treatment);
+	color: var(--ground);
+}
