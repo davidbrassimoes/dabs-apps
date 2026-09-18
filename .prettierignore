@@ -7,3 +7,9 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# The spec and the mockups are the reference. They are read, not reformatted.
+/docs/
+
+# Generated migrations
+/drizzle/
