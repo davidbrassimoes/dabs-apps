@@ -17,7 +17,7 @@
 	{@render children()}
 {:else}
 	<div class="shell">
-		<AppHeader theme={data.theme} />
+		<AppHeader theme={data.theme} rack={data.rack} />
 		<main>
 			{@render children()}
 		</main>

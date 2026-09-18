@@ -5,8 +5,11 @@
 
 	import type { Snippet } from 'svelte';
 
-	type Props = { theme: Theme; children?: Snippet };
-	let { theme, children }: Props = $props();
+	type Props = { theme: Theme; rack: { inRack: number; owned: number }; children?: Snippet };
+	let { theme, rack, children }: Props = $props();
+
+	// On /gear the chip is plain text — it would only link to itself.
+	let onGear = $derived(page.url.pathname === '/gear');
 
 	const links = [
 		{ href: resolve('/draw'), label: 'Draw' },
@@ -34,6 +37,15 @@
 	<div class="spacer"></div>
 
 	{@render children?.()}
+
+	{#if onGear}
+		<span class="rack-plain">In the rack · {rack.inRack} of {rack.owned}</span>
+	{:else}
+		<a href={resolve('/gear')} class="rack-chip">
+			<span class="dot"></span>
+			<span>In the rack · {rack.inRack} of {rack.owned}</span>
+		</a>
+	{/if}
 
 	<!--
 		The mockups draw no settings control, but §10 asks for logout to live in a
@@ -170,6 +182,47 @@
 
 	.spacer {
 		flex-grow: 1;
+	}
+
+	.rack-chip {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		border: 1px solid var(--line);
+		border-radius: 3px;
+		padding: 7px 12px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		text-decoration: none;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rack-chip:hover {
+		color: var(--text);
+	}
+
+	.dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--kind-source);
+		display: block;
+		flex-shrink: 0;
+	}
+
+	.rack-plain {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--kind-source);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.theme-form {

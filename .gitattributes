@@ -1,0 +1,8 @@
+# Normalise to LF in the repository. Prettier writes LF, Windows checkouts were
+# otherwise showing every file as modified on every run.
+* text=auto eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.woff2 binary
