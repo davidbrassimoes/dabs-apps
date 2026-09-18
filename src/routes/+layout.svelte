@@ -1,9 +1,42 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import AppHeader from '$lib/components/AppHeader.svelte';
+	import { page } from '$app/state';
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	// /login stands on its own: no nav, no theme switch, nothing to navigate to.
+	let chromeless = $derived(page.url.pathname === '/login');
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+<svelte:head>
+	<title>Sótão Cards</title>
+</svelte:head>
+
+{#if chromeless}
+	{@render children()}
+{:else}
+	<div class="shell">
+		<AppHeader theme={data.theme} />
+		<main>
+			{@render children()}
+		</main>
+	</div>
+{/if}
+
+<style>
+	.shell {
+		min-height: 100vh;
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
+		background: var(--ground);
+	}
+
+	main {
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+</style>
