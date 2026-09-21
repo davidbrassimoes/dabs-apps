@@ -1,30 +1,15 @@
 import { relations, sql } from 'drizzle-orm';
+import { AUTHORS, CARD_STATUSES, DRAW_MODES, GEAR_CATEGORIES, KINDS } from '$lib/vocab';
 import { check, index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 // The data model in §4 of the spec. Epoch milliseconds for every timestamp;
 // SQLite has no boolean, so flags are integers with mode: 'boolean'.
 
-export const KINDS = [
-	'idea',
-	'source',
-	'treatment',
-	'technique',
-	'constraint',
-	'arrangement'
-] as const;
-export type Kind = (typeof KINDS)[number];
-
-export const GEAR_CATEGORIES = ['strings', 'keys', 'amps', 'pedals', 'mics', 'small'] as const;
-export type GearCategory = (typeof GEAR_CATEGORIES)[number];
-
-export const AUTHORS = ['david', 'claude'] as const;
-export type Author = (typeof AUTHORS)[number];
-
-export const CARD_STATUSES = ['active', 'archived'] as const;
-export type CardStatus = (typeof CARD_STATUSES)[number];
-
-export const DRAW_MODES = ['single', 'spread'] as const;
-export type DrawMode = (typeof DRAW_MODES)[number];
+// The closed sets live in $lib/vocab so the client can use them too — nothing
+// under server/ may reach the browser bundle (§3). Re-exported here so the
+// Drizzle tables and their consumers keep reading naturally.
+export { KINDS, GEAR_CATEGORIES, AUTHORS, CARD_STATUSES, DRAW_MODES } from '$lib/vocab';
+export type { Kind, GearCategory, Author, CardStatus, DrawMode } from '$lib/vocab';
 
 export const cards = sqliteTable(
 	'cards',
