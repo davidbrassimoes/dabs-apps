@@ -41,6 +41,16 @@
 	--fav-line: #4e4028;
 	--fav-star: #7a6230;
 	--chip-line: #263346;
+
+	/* Table rows, the dimmed row for unowned gear, and the editor's controls. */
+	--row-line: #1b2533;
+	--text-muted: #5f6d80;
+	--chip-bg: #1f2a3a;
+	--tag-line: #2f4a45;
+	--author-claude-bg: #1b2436;
+	--author-claude-line: #35406b;
+	--status-active-bg: #16241f;
+	--danger-line: #55302c;
 }
 
 @media (prefers-color-scheme: light) {
@@ -67,6 +77,15 @@
 		--fav-line: #d8bc78;
 		--fav-star: #c08a15;
 		--chip-line: #d2c8b2;
+
+		--row-line: #e2dac6;
+		--text-muted: #7c8494;
+		--chip-bg: #f0ead9;
+		--tag-line: #b9cdc6;
+		--author-claude-bg: #e8e9f4;
+		--author-claude-line: #b6bcdd;
+		--status-active-bg: #e3ece7;
+		--danger-line: #d9b3ac;
 	}
 }
 
@@ -93,6 +112,15 @@
 	--fav-line: #d8bc78;
 	--fav-star: #c08a15;
 	--chip-line: #d2c8b2;
+
+	--row-line: #e2dac6;
+	--text-muted: #7c8494;
+	--chip-bg: #f0ead9;
+	--tag-line: #b9cdc6;
+	--author-claude-bg: #e8e9f4;
+	--author-claude-line: #b6bcdd;
+	--status-active-bg: #e3ece7;
+	--danger-line: #d9b3ac;
 }
 
 html {

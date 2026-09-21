@@ -1,6 +1,6 @@
-import type { GearCategory } from '$lib/server/db/schema';
+import type { GearCategory } from '$lib/vocab';
 
-// Display metadata for the inventory. Types only from the schema module, so
+// Display metadata for the inventory. Types only, and from the shared vocabulary rather than the schema, so
 // nothing server-side reaches the browser bundle.
 
 /** The order the gear screen lays the categories out in, top to bottom. */

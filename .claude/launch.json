@@ -4,9 +4,9 @@
 		{
 			"name": "sotao-dev",
 			"runtimeExecutable": "C:/Program Files/nodejs/npm.cmd",
-			"runtimeArgs": ["run", "dev", "--", "--port", "5179", "--strictPort"],
-			"autoPort": false,
-			"port": 5179
+			"runtimeArgs": ["run", "dev"],
+			"autoPort": true,
+			"port": 5173
 		}
 	]
 }

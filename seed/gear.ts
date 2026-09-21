@@ -1,4 +1,4 @@
-import type { GearCategory } from '../src/lib/server/db/schema';
+import type { GearCategory } from '../src/lib/vocab';
 
 // The inventory from §7, character for character. These slugs are the vocabulary
 // card imports and the card-generation skill use, so they are not editable
