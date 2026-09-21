@@ -4,6 +4,9 @@ import adapter from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
+	// Honour a PORT handed to us, so several sessions can run a dev server
+	// side by side instead of fighting over one number.
+	server: { port: Number(process.env.PORT) || 5173 },
 	plugins: [
 		tailwindcss(),
 		sveltekit({
