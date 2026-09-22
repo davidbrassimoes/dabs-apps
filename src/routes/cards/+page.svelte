@@ -91,10 +91,7 @@
 			/>
 			<span class="meta">{data.items.length} {data.items.length === 1 ? 'match' : 'matches'}</span>
 			<div class="spacer"></div>
-			<!-- The export endpoint lands in M4; the button is drawn but inert until then. -->
-			<button type="button" class="panel-button" disabled title="Export arrives with import, in M4">
-				Export
-			</button>
+			<a class="panel-button" href={resolve('/api/export.yaml')} download>Export</a>
 			<a class="primary" href={resolve('/cards/new')}>New card</a>
 		</div>
 
