@@ -1,0 +1,167 @@
+version: 1
+defaults:
+  author: claude
+cards:
+  - text: >-
+      Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into
+      the AC30, and mic the amp from the staircase opening.
+    kinds: [idea]
+    gear: [rd-08, pitch-fork-plus, ac30, cm25]
+    tags: [reamping, room]
+
+  - text: >-
+      Sample yourself whistling into the SK-1, pitch it down two octaves, and
+      build the bass line out of that.
+    kinds: [idea, source]
+    gear: [sk-1]
+    tags: [sampling, lo-fi]
+    favorite: true
+
+  - text: >-
+      Record the bandolim with the CM25 up close and the H4essential at the
+      bottom of the stairs. Blend until the room is half the sound.
+    kinds: [idea, technique]
+    gear: [bandolim, cm25, h4essential]
+    tags: [room, stereo]
+
+  - text: >-
+      Loop a djembé pattern on the Circuit Rhythm, then play guitarra
+      portuguesa over it in one take. Keep the take where you lost the thread.
+    kinds: [idea]
+    gear: [circuit-rhythm, guitarra-portuguesa, djembes]
+    tags: [one-take]
+
+  - text: >-
+      Run the Volca Keys into the French Toast, then into the Pathfinder 15R
+      turned up past where it stays clean. One microphone, three metres back.
+    kinds: [idea, treatment]
+    gear: [volca-keys, french-toast, pathfinder-15r, xm8500]
+    tags: [saturation, room]
+
+  - text: >-
+      Play the ocarina and the melodica at the same time, one in each hand,
+      into the CM25. Do not fix the timing afterwards.
+    kinds: [idea, technique]
+    gear: [ocarina, melodica, cm25]
+    tags: [one-take, winds]
+
+  - text: Casio SK-1, sampled from something already in the room.
+    kinds: [source]
+    gear: [sk-1]
+    tags: [sampling, lo-fi]
+    favorite: true
+
+  - text: Gretsch 12-string, tuned down until it rattles.
+    kinds: [source]
+    gear: [gretsch-12]
+    tags: [strings]
+
+  - text: Melodica, into a microphone — never a DI.
+    kinds: [source, technique]
+    gear: [melodica, xm8500]
+    tags: [winds]
+
+  - text: A JV-880 patch you would never choose on purpose.
+    kinds: [source]
+    gear: [jv-880]
+    tags: [presets]
+
+  - text: Kalimba, close-miked, one metre off the slab.
+    kinds: [source]
+    gear: [kalimba, cm25]
+    tags: [small]
+
+  - text: The tube. Whatever it is doing today.
+    kinds: [source]
+    gear: [the-tube]
+    tags: [found]
+
+  - text: Guitarra portuguesa, played like a percussion instrument.
+    kinds: [source, technique]
+    gear: [guitarra-portuguesa]
+    tags: [strings]
+
+  - text: Pitch Fork+ at minus twelve, wet only.
+    kinds: [treatment]
+    gear: [pitch-fork-plus]
+    tags: [octave]
+    favorite: true
+
+  - text: French Toast into the Hardwire, gain staged wrong on purpose.
+    kinds: [treatment]
+    gear: [french-toast, hardwire-od]
+    tags: [fuzz]
+
+  - text: Hall of Fame 2 before the amp, not after.
+    kinds: [treatment]
+    gear: [hall-of-fame-2, ac30]
+    tags: [reverb]
+
+  - text: Flashback 2 with the mix pinned at 100%.
+    kinds: [treatment]
+    gear: [flashback-2]
+    tags: [delay]
+
+  - text: Synth Wah on a source that is not a guitar.
+    kinds: [treatment, constraint]
+    gear: [synth-wah]
+    tags: [filter]
+
+  - text: RP90, first preset, no editing allowed.
+    kinds: [treatment, constraint]
+    gear: [rp90]
+    tags: [lo-fi]
+
+  - text: ElecLady on the way in, Pathfinder Bass 10 on the way out.
+    kinds: [treatment]
+    gear: [eleclady, pathfinder-bass-10]
+    tags: [phaser]
+
+  - text: Mono. All of it.
+    kinds: [constraint]
+    tags: [mono]
+    favorite: true
+
+  - text: Nothing quantised.
+    kinds: [constraint]
+    tags: [feel]
+
+  - text: Four tracks maximum.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: Nothing added after the AR16c.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: Three minutes, then you stop and listen back once.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: One microphone. Move it instead of reaching for another.
+    kinds: [constraint, technique]
+    tags: [mics]
+
+  - text: Play it at half speed, then double the session tempo afterwards.
+    kinds: [technique]
+    tags: [lo-fi]
+
+  - text: Mic it from three metres away and commit to that take.
+    kinds: [technique]
+    tags: [room]
+
+  - text: Two instruments at once, one hand each.
+    kinds: [technique]
+    tags: [one-take]
+
+  - text: Use it as the intro only. Everything else gets built after.
+    kinds: [arrangement]
+    tags: [structure]
+
+  - text: The loudest thing in the mix is the quietest instrument you own.
+    kinds: [arrangement]
+    tags: [structure]
+
+  - text: Build the whole thing from one bar.
+    kinds: [arrangement]
+    tags: [structure]
