@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AUTHORS, CARD_STATUSES, KINDS } from '$lib/vocab';
+import { AUTHORS, CARD_STATUSES, DRAW_MODES, KINDS } from '$lib/vocab';
 
 // One schema module shared by the API and the YAML importer (§3), so a card
 // written in the editor and a card pasted into /import are held to the same
@@ -49,6 +49,26 @@ export const cardFieldsSchema = z.object({
 });
 
 export type CardFields = z.infer<typeof cardFieldsSchema>;
+
+/**
+ * A completed draw, as the client posts it (§6). The uuid and drawnAt are
+ * minted client-side at draw time so a replay carries the same identity.
+ */
+export const drawRecordSchema = z.object({
+	uuid: z.string().uuid('A draw needs a client-minted uuid.'),
+	drawnAt: z.number().int().positive(),
+	mode: z.enum(DRAW_MODES),
+	cards: z
+		.array(
+			z.object({
+				slot: z.number().int().min(0).max(2),
+				slotKind: kindSchema.nullable(),
+				cardId: z.string().regex(/^[0-9a-f]{12}$/, 'Card ids are twelve hex characters.')
+			})
+		)
+		.min(1)
+		.max(3)
+});
 
 /** Unique, order-preserving, for the lists that come off a form. */
 export function dedupe(values: string[]): string[] {
