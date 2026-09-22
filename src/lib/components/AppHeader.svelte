@@ -11,6 +11,11 @@
 	// On /gear the chip is plain text — it would only link to itself.
 	let onGear = $derived(page.url.pathname === '/gear');
 
+	// The mode toggle is a link pair rather than a control, so the phone can be
+	// installed pointing straight at one mode (§9).
+	let onDraw = $derived(page.url.pathname === '/draw');
+	let drawMode = $derived(page.url.searchParams.get('mode') === 'spread' ? 'spread' : 'single');
+
 	const links = [
 		{ href: resolve('/draw'), label: 'Draw' },
 		{ href: resolve('/cards'), label: 'Cards' },
@@ -37,6 +42,19 @@
 	<div class="spacer"></div>
 
 	{@render children?.()}
+
+	{#if onDraw}
+		<div class="modes">
+			{#each ['single', 'spread'] as option (option)}
+				<a
+					href={resolve(`/draw?mode=${option}`)}
+					class="mode"
+					class:on={drawMode === option}
+					aria-current={drawMode === option ? 'page' : undefined}>{option}</a
+				>
+			{/each}
+		</div>
+	{/if}
 
 	{#if onGear}
 		<span class="rack-plain">In the rack · {rack.inRack} of {rack.owned}</span>
@@ -182,6 +200,31 @@
 
 	.spacer {
 		flex-grow: 1;
+	}
+
+	.modes {
+		display: flex;
+		padding: 3px;
+		border: 1px solid var(--line);
+		border-radius: 3px;
+		gap: 3px;
+	}
+
+	.mode {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		text-decoration: none;
+		padding: 7px 16px;
+		border-radius: 2px;
+	}
+
+	.mode.on {
+		color: var(--ground);
+		background: var(--text);
+		font-weight: 600;
 	}
 
 	.rack-chip {
