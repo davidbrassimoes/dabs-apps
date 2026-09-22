@@ -17,7 +17,8 @@ let ready: Promise<void> | undefined;
 
 /**
  * Runs pending migrations once per process, turns foreign keys on, and seeds
- * the §7 gear inventory if the table is empty.
+ * the §7 gear inventory and Appendix B's starter cards if their tables are
+ * empty.
  *
  * SQLite defaults `foreign_keys` to off, which would quietly disable both the
  * cascades on card_kinds/card_gear/card_tags and the RESTRICT that stops gear
@@ -28,8 +29,10 @@ export function migrateDb(): Promise<void> {
 	ready ??= (async () => {
 		await migrate(db, { migrationsFolder: './drizzle' });
 		await client.execute('PRAGMA foreign_keys = ON');
-		const { seedGearIfEmpty } = await import('./seed');
+		const { seedGearIfEmpty, seedCardsIfEmpty } = await import('./seed');
 		await seedGearIfEmpty();
+		// Cards after gear: the starter set references gear slugs by id.
+		await seedCardsIfEmpty();
 	})();
 	return ready;
 }

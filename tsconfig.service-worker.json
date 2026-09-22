@@ -1,0 +1,16 @@
+{
+	// SvelteKit's generated tsconfig deliberately excludes the service worker
+	// (it needs the webworker lib, not DOM), so it gets its own project here
+	// rather than going unchecked. Wired into `npm run check`.
+	"compilerOptions": {
+		"lib": ["esnext", "webworker"],
+		"types": ["@sveltejs/kit"],
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"target": "esnext",
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/service-worker.ts"]
+}
