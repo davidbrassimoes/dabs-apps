@@ -34,3 +34,4 @@ seed/*.local.*
 
 # Cloudflare
 .wrangler/
+test-results.json
