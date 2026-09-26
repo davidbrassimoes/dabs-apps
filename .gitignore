@@ -21,7 +21,7 @@ dist/
 .DS_Store
 Thumbs.db
 *.log
-.vercel/
+
 # SQLite
 *.db
 
@@ -31,3 +31,6 @@ imports/
 # The real rig and starter cards. They name real products, which rule H1 keeps
 # out of the repository (ADR-017); seed/index.ts falls back to the examples.
 seed/*.local.*
+
+# Cloudflare
+.wrangler/
