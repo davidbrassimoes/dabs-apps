@@ -3,6 +3,12 @@ import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-vercel';
 import { sveltekit } from '@sveltejs/kit/vite';
 
+// The server modules open a database client at import time. No test touches a
+// database, so under Vitest none gets a real one — and CI, which has no .env,
+// needs no secrets to run the suite. Set on the process because that is where
+// $env/dynamic/private reads from; vitest's own test.env does not reach it.
+if (process.env.VITEST) process.env.DATABASE_URL = 'file::memory:';
+
 export default defineConfig({
 	// Honour a PORT handed to us, so several sessions can run a dev server
 	// side by side instead of fighting over one number.
@@ -31,10 +37,6 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
-					// The server modules open a client at import time. No test
-					// touches a database, so none gets a real one — and CI, which
-					// has no .env, needs no secrets to run the suite.
-					env: { DATABASE_URL: 'file::memory:' },
 					include: ['src/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 				}

@@ -381,6 +381,7 @@
 		border-radius: 2px;
 		color: var(--text);
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 18px;
 		font-weight: 500;
 		line-height: 1.35;

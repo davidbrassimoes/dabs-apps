@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { settings } from './db/schema';
-import { DEFAULT_THEME, isTheme, type Theme } from '$lib/theme';
+import { readTheme, type Theme } from '$lib/theme';
 
 // The settings table holds exactly three keys in phase 1 (§4): theme,
 // drawFilters and schemaVersion. Values are JSON.
@@ -39,7 +39,7 @@ async function writeSetting(key: string, value: unknown): Promise<void> {
 
 export async function getTheme(): Promise<Theme> {
 	const value = await readSetting('theme');
-	return isTheme(value) ? value : DEFAULT_THEME;
+	return readTheme(value);
 }
 
 export async function setTheme(theme: Theme): Promise<void> {

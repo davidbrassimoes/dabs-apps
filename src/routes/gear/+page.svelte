@@ -55,8 +55,8 @@
 				ticked, so a card never asks you to re-cable the room.
 			</p>
 			<p class="quieter">
-				The desk, the monitor pair, headphones and the laptop are always in the chain, so they are not
-				listed here and never gate a draw. Cards can still name them in their text.
+				The desk, the monitor pair, headphones and the laptop are always in the chain, so they are
+				not listed here and never gate a draw. Cards can still name them in their text.
 			</p>
 		</div>
 		<div class="spacer"></div>

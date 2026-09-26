@@ -9,7 +9,13 @@ import { cardId } from '$lib/cardId';
 // database", which is what "produces zero changes" means in practice: every
 // card the file describes is already there.
 
-const KNOWN_GEAR = new Set(['toy-sampler', 'stage-piano', 'pitch-shifter', 'valve-combo', 'condenser']);
+const KNOWN_GEAR = new Set([
+	'toy-sampler',
+	'stage-piano',
+	'pitch-shifter',
+	'valve-combo',
+	'condenser'
+]);
 
 function toExisting(cards: ExportCard[]): Map<string, ExistingCardSnapshot> {
 	const map = new Map<string, ExistingCardSnapshot>();

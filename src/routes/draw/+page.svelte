@@ -520,6 +520,7 @@
 	.idle .display {
 		margin: 0;
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 34px;
 		font-weight: 600;
 		color: var(--text-muted);
@@ -573,6 +574,7 @@
 		border-radius: 3px;
 		color: var(--ground);
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 17px;
 		font-weight: 700;
 		letter-spacing: 0.14em;

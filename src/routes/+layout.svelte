@@ -1,6 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	// The brand's three faces, bundled from @fontsource and served from here —
+	// nothing is fetched from a third party (ADR-008). All SIL OFL 1.1.
+	import '@fontsource/cormorant-garamond/500.css';
+	import '@fontsource/cormorant-garamond/600.css';
+	import '@fontsource/jost/400.css';
+	import '@fontsource/jost/500.css';
+	import '@fontsource/jost/600.css';
+	import '@fontsource/dm-mono/400.css';
+	import '@fontsource/dm-mono/500.css';
 	import './layout.css';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import { page } from '$app/state';

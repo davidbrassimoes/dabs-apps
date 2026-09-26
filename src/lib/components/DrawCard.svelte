@@ -191,6 +191,7 @@
 		display: flex;
 		align-items: center;
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 42px;
 		font-weight: 600;
 		line-height: 1.2;
@@ -278,6 +279,7 @@
 	.message {
 		margin: 0;
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 20px;
 		font-weight: 500;
 		line-height: 1.3;

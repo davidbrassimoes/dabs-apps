@@ -8,7 +8,13 @@ import { cardId } from '$lib/cardId';
 // Unchanged" testable without spinning up a database — the second run is
 // simulated by feeding the first run's rows back in as existingCards.
 
-const KNOWN_GEAR = new Set(['toy-sampler', 'instrument-dynamic', 'condenser', 'stage-piano', 'valve-combo']);
+const KNOWN_GEAR = new Set([
+	'toy-sampler',
+	'instrument-dynamic',
+	'condenser',
+	'stage-piano',
+	'valve-combo'
+]);
 
 function noExisting(): Map<string, ExistingCardSnapshot> {
 	return new Map();

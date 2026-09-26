@@ -6,7 +6,10 @@
 
 <div class="ground">
 	<form method="POST" class="panel">
-		<span class="wordmark">Sótão Cards</span>
+		<div class="name">
+			<span class="wordmark">Sótão</span>
+			<span class="subtitle">studio cards</span>
+		</div>
 		<p class="lede">One password. It stays signed in for a year.</p>
 
 		<label class="field">
@@ -57,13 +60,30 @@
 		gap: 20px;
 	}
 
+	/* Product name over its function line, as on a faceplate (brand/tokens.md, "Type"). */
+	.name {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
 	.wordmark {
-		font-family: var(--font-mono);
-		font-size: 12px;
+		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
+		font-size: 30px;
 		font-weight: 600;
-		letter-spacing: 0.22em;
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: var(--text);
+		line-height: 1;
+	}
+
+	.subtitle {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		letter-spacing: 0.29em;
+		text-transform: uppercase;
+		color: var(--text-faint);
 	}
 
 	.lede {
@@ -110,6 +130,7 @@
 		border-radius: 3px;
 		color: var(--ground);
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 15px;
 		font-weight: 700;
 		letter-spacing: 0.14em;

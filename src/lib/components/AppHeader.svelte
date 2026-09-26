@@ -31,7 +31,7 @@
 </script>
 
 <header>
-	<span class="wordmark">Sótão Cards</span>
+	<span class="wordmark">Sótão</span>
 
 	<nav>
 		{#each links as link (link.href)}
@@ -114,7 +114,7 @@
 			aria-label="Switch theme — currently {themeLabel(theme)}"
 			title="Theme: {themeLabel(theme)}"
 		>
-			{#if theme === 'dark'}
+			{#if theme === 'night'}
 				<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
 					<circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.2" />
 					<path
@@ -123,7 +123,7 @@
 						stroke-width="1.2"
 					/>
 				</svg>
-			{:else if theme === 'light'}
+			{:else if theme === 'morning'}
 				<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
 					<path
 						d="M12.2 8.6A5.6 5.6 0 0 1 5.4 1.8a5.6 5.6 0 1 0 6.8 6.8z"
@@ -162,11 +162,13 @@
 		gap: 26px;
 	}
 
+	/* The product-name role: Cormorant Garamond 600, uppercase, tracked .20em (brand/tokens.md). */
 	.wordmark {
-		font-family: var(--font-mono);
-		font-size: 12px;
+		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
+		font-size: 19px;
 		font-weight: 600;
-		letter-spacing: 0.22em;
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		color: var(--text);
 		white-space: nowrap;
@@ -195,7 +197,7 @@
 
 	.nav-link.active {
 		color: var(--text);
-		border-bottom-color: var(--kind-treatment);
+		border-bottom-color: var(--accent);
 	}
 
 	.spacer {

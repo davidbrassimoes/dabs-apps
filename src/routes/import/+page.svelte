@@ -436,6 +436,7 @@ cards:
 
 	.count {
 		font-family: var(--font-display);
+		font-variant-numeric: lining-nums;
 		font-size: 27px;
 		font-weight: 700;
 		line-height: 1;
