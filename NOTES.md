@@ -15,7 +15,8 @@ Decisions go in `docs/IMPLEMENTATION.md`, or in an ADR when they touch the compa
 ## 2026-09-26 — brought into the company repository (ADR-017)
 
 - **Moved** from `davidbrassimoes/sotao-cards` by `git subtree add`, history intact. The old
-  repository is archived.
+  repository is **not yet archived**: archive it (`gh repo archive davidbrassimoes/sotao-cards`)
+  once this branch is pushed.
 - **Renamed** to _Sótão — studio cards_. Titles, the manifest, the package, the export
   filename (`sotao-<date>.yaml`; the skill also reads the old `sotao-cards-` name), the
   service-worker cache and the IndexedDB outbox (`sotao`) all changed. Nothing was
