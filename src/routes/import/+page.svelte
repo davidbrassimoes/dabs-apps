@@ -25,22 +25,22 @@
 		fileError: string | null;
 	};
 
-	const EXAMPLE = `# sótão cards — import v1
+	const EXAMPLE = `# sótão — import v1
 version: 1
 defaults:
   author: claude
 cards:
   - text: >-
-      Play the RD-08 through the Pitch Fork+ at plus one octave,
-      reamp it into the AC30, and mic the amp from the staircase
+      Play the stage piano through the pitch shifter at plus one octave,
+      reamp it into the valve combo, and mic the amp from the staircase
       opening.
     kinds: [idea]
-    gear: [rd-08, pitch-fork-plus, ac30, cm25]
+    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
     tags: [reamping, room]
 
-  - text: Casio SK-1, sampled from something already in the room.
+  - text: The toy sampler, sampled from something already in the room.
     kinds: [idea, source]
-    gear: [sk-1]
+    gear: [toy-sampler]
     tags: [sampling, lo-fi]
     favorite: true
 
@@ -134,7 +134,7 @@ cards:
 	let firstError = $derived(report?.rows.find((r) => r.class === 'error')?.issue ?? null);
 </script>
 
-<svelte:head><title>Import — Sótão Cards</title></svelte:head>
+<svelte:head><title>Import — Sótão</title></svelte:head>
 
 <div class="screen">
 	<div class="split">

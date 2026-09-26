@@ -3,16 +3,16 @@ import { levenshtein, nearest } from './levenshtein';
 
 describe('levenshtein', () => {
 	it('is zero for identical strings', () => {
-		expect(levenshtein('sm57', 'sm57')).toBe(0);
+		expect(levenshtein('ab57', 'ab57')).toBe(0);
 	});
 
 	it('counts a single substitution', () => {
-		expect(levenshtein('sm57', 'sm58')).toBe(1);
+		expect(levenshtein('ab57', 'ab58')).toBe(1);
 	});
 
 	it('counts insertions and deletions', () => {
-		expect(levenshtein('sm57', 'sm577')).toBe(1);
-		expect(levenshtein('sm577', 'sm57')).toBe(1);
+		expect(levenshtein('ab57', 'ab577')).toBe(1);
+		expect(levenshtein('ab577', 'ab57')).toBe(1);
 	});
 
 	it('handles empty strings', () => {
@@ -22,10 +22,10 @@ describe('levenshtein', () => {
 });
 
 describe('nearest', () => {
-	const slugs = ['sm57', 'xm8500', 'cm25', 'h4essential'];
+	const slugs = ['ab57', 'dynamic-mic', 'condenser', 'handheld-recorder'];
 
 	it('suggests the closest slug within the distance', () => {
-		expect(nearest('sm58', slugs)).toBe('sm57');
+		expect(nearest('ab58', slugs)).toBe('ab57');
 	});
 
 	it('returns null when nothing is close enough', () => {
@@ -33,7 +33,7 @@ describe('nearest', () => {
 	});
 
 	it('respects a custom max distance', () => {
-		expect(nearest('sm', slugs, 1)).toBeNull();
-		expect(nearest('sm5', slugs, 1)).toBe('sm57');
+		expect(nearest('ab', slugs, 1)).toBeNull();
+		expect(nearest('ab5', slugs, 1)).toBe('ab57');
 	});
 });

@@ -1,10 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from './index';
 import { cards, gear } from './schema';
-import { SEED_GEAR } from '../../../../seed/gear';
-// Bundled as a string at build time (Vite's ?raw), so seeding works on a
-// deployed server too, not just when the source tree happens to be on disk.
-import starterCardsYaml from '../../../../seed/cards.yaml?raw';
+import { SEED_GEAR, SEED_SOURCE, STARTER_CARDS_YAML } from '../../../../seed/index';
 import { applyImport, parseImport } from '../import';
 
 /**
@@ -49,13 +46,13 @@ export async function seedCardsIfEmpty(): Promise<number> {
 	const gearRows = await db.select({ id: gear.id }).from(gear);
 	const knownGear = new Set(gearRows.map((r) => r.id));
 
-	const report = parseImport(starterCardsYaml, { knownGear, existingCards: new Map() });
+	const report = parseImport(STARTER_CARDS_YAML, { knownGear, existingCards: new Map() });
 	if (report.fileError) {
-		throw new Error(`seed/cards.yaml failed to parse: ${report.fileError}`);
+		throw new Error(`${SEED_SOURCE.cards} failed to parse: ${report.fileError}`);
 	}
 	if (report.counts.error > 0) {
 		const first = report.rows.find((r) => r.class === 'error');
-		throw new Error(`seed/cards.yaml has a bad card: ${first?.issue?.message}`);
+		throw new Error(`${SEED_SOURCE.cards} has a bad card: ${first?.issue?.message}`);
 	}
 
 	const summary = await applyImport(report.rows);

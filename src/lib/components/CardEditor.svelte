@@ -80,7 +80,7 @@
 	}
 </script>
 
-<svelte:head><title>{initial ? 'Edit card' : 'New card'} — Sótão Cards</title></svelte:head>
+<svelte:head><title>{initial ? 'Edit card' : 'New card'} — Sótão</title></svelte:head>
 
 <div class="drawer">
 	<div class="top">

@@ -45,7 +45,7 @@
 	});
 </script>
 
-<svelte:head><title>Gear — Sótão Cards</title></svelte:head>
+<svelte:head><title>Gear — Sótão</title></svelte:head>
 
 <div class="screen">
 	<div class="intro">
@@ -55,7 +55,7 @@
 				ticked, so a card never asks you to re-cable the room.
 			</p>
 			<p class="quieter">
-				The AR16c, the T5V pair, headphones and the laptop are always in the chain, so they are not
+				The desk, the monitor pair, headphones and the laptop are always in the chain, so they are not
 				listed here and never gate a draw. Cards can still name them in their text.
 			</p>
 		</div>
@@ -140,7 +140,7 @@
 			<form method="POST" action="?/add" use:enhance class="add-form">
 				<label>
 					<span class="label">Name</span>
-					<input name="name" bind:value={addName} required placeholder="Boss DD-3" />
+					<input name="name" bind:value={addName} required placeholder="Compact delay" />
 				</label>
 				<label>
 					<span class="label">Slug</span>
@@ -150,7 +150,7 @@
 						oninput={() => (slugTouched = true)}
 						required
 						pattern="[a-z0-9][a-z0-9\-]*"
-						placeholder="boss-dd-3"
+						placeholder="compact-delay"
 					/>
 				</label>
 				<label>

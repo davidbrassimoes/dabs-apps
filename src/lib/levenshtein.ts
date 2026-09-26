@@ -1,5 +1,5 @@
 // Edit distance, used by the importer to suggest a gear slug for a typo
-// (§8: "Did you mean sm57?"). Small and pure enough to live in $lib and be
+// (§8: "Did you mean condenser?"). Small and pure enough to live in $lib and be
 // tested on its own.
 
 export function levenshtein(a: string, b: string): number {

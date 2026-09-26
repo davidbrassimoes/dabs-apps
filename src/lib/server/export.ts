@@ -29,7 +29,7 @@ export type ExportCard = {
  */
 export function buildExportYaml(exportCards: ExportCard[]): string {
 	const doc = { version: 1, cards: exportCards };
-	return `# sótão cards — export v1\n${stringify(doc, { lineWidth: 0 })}`;
+	return `# sótão — export v1\n${stringify(doc, { lineWidth: 0 })}`;
 }
 
 export async function exportYaml(): Promise<string> {
@@ -71,5 +71,5 @@ export async function exportYaml(): Promise<string> {
 
 export function exportFilename(now = new Date()): string {
 	const iso = now.toISOString().slice(0, 10);
-	return `sotao-cards-${iso}.yaml`;
+	return `sotao-${iso}.yaml`;
 }

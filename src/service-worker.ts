@@ -21,7 +21,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 import { build, files, version } from '$service-worker';
 
-const CACHE = `sotao-cards-${version}`;
+const CACHE = `sotao-${version}`;
 const PRECACHE: readonly string[] = [...build, ...files];
 
 self.addEventListener('install', (event) => {

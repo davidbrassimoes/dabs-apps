@@ -31,6 +31,10 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
+					// The server modules open a client at import time. No test
+					// touches a database, so none gets a real one — and CI, which
+					// has no .env, needs no secrets to run the suite.
+					env: { DATABASE_URL: 'file::memory:' },
 					include: ['src/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 				}

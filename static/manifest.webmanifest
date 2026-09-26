@@ -1,6 +1,6 @@
 {
-	"name": "Sótão Cards",
-	"short_name": "Sótão Cards",
+	"name": "Sótão — studio cards",
+	"short_name": "Sótão",
 	"description": "Draw cards for studio inspiration.",
 	"start_url": "/draw?mode=single",
 	"scope": "/",

@@ -1,4 +1,11 @@
-# Sótão Cards — implementation specification
+# Sótão — implementation specification
+
+> **Since this was written** (ADR-017, 2026-09-26): the app is **Sótão — studio cards**, it
+> lives in the Escarpa Audio repository at `products/sotao/`, and three sections are
+> overridden. **§3 Hosting** is Cloudflare Workers + Turso. **§12 Theming** is the brand's
+> sea fog, Morning and Night, from `brand/tokens.md`, with the switch defaulting to Auto.
+> **§7** below is a generic stand-in for the real inventory, which stays out of git. Where
+> this document and ADR-017 disagree, the ADR wins. Everything else stands as written.
 
 **For:** the agent building this in a fresh Claude Code session.
 **From:** a design session with the owner (David / DABS). Everything in here was decided
@@ -13,7 +20,7 @@ layout, and this document is the source of truth for behaviour.
 
 A card app for musical inspiration, used in a home recording studio (an attic — *sótão* —
 in Portugal). The owner writes short prompt cards about things to try with his gear
-("Sample yourself whistling into the SK-1, pitch it down two octaves"), and the app deals
+("Sample yourself whistling into the toy sampler, pitch it down two octaves"), and the app deals
 them back at random when he wants a starting point.
 
 Two ways to draw:
@@ -53,7 +60,7 @@ comments or propose alternatives in your first message.
 | Themes | Dark **and** light, both designed. Dark is the default. |
 | Import format | YAML. Strict, schema-validated, idempotent. |
 | Gear | A first-class entity. Cards reference gear by slug. Unknown slugs are a hard error. |
-| Always-on gear | The AR16c, the ADAM T5V monitors, headphones and the laptop are **not** in the inventory and never gate a draw. |
+| Always-on gear | The desk, the monitors, headphones and the laptop are **not** in the inventory and never gate a draw. |
 | Try-log | Not built. No `triedAt`, no per-card notes. |
 
 ### Explicitly out of scope for phase 1
@@ -333,58 +340,61 @@ re-record anything.
 
 ## 7. Gear inventory
 
-Seed the `gear` table with exactly this. Slugs are the vocabulary for card imports and the
-card-generation skill, so they must match character-for-character.
+Seed the `gear` table with exactly this shape. The list below is the generic stand-in
+committed as `seed/gear.example.ts`. The real rig names real products, so it is
+`seed/gear.local.ts`, gitignored, and the same shape row for row (ADR-017). Slugs are the
+vocabulary for card imports and the card-generation skill, so they must match
+character-for-character.
 
 **strings**
-`fender-strat` Fender Stratocaster (MX) ·
-`aria-strat` Aria strat ·
-`epiphone-sg` Epiphone SG ·
-`gretsch-12` Gretsch 12-string ·
+`single-coil` Single-coil electric ·
+`spare-single-coil` Spare single-coil electric ·
+`humbucker` Humbucker electric ·
+`twelve-string` 12-string ·
 `nylon-classical` Nylon classical ·
 `bandolim` Bandolim ·
 `guitarra-portuguesa` Guitarra portuguesa ·
-`aria-bass` Aria bass ·
+`electric-bass` Electric bass ·
 `flamenca` Flamenca *(owned: false)* ·
 `steel-string` Steel-string acoustic *(owned: false)*
 
 **keys**
-`rd-08` Roland RD-08 ·
-`jv-880` Roland JV-880 ·
-`mpc-one-plus` MPC One+ ·
-`circuit-tracks` Circuit Tracks ·
-`circuit-rhythm` Circuit Rhythm ·
-`volca-keys` Volca Keys ·
-`sk-1` Casio SK-1
+`stage-piano` Stage piano ·
+`rack-synth` Rack synth module ·
+`pad-sampler` Pad sampler ·
+`synth-groovebox` Synth groovebox ·
+`drum-groovebox` Sampling drum groovebox ·
+`mini-synth` Mini analogue synth ·
+`toy-sampler` Toy sampling keyboard
 
 **amps**
-`ac30` Vox AC30 ·
-`pathfinder-15r` Pathfinder 15R ·
-`pathfinder-bass-10` Pathfinder Bass 10
+`valve-combo` 2×12 valve combo ·
+`practice-amp` 15 W practice combo ·
+`bass-practice-amp` 10 W bass combo
 
 **pedals**
-`fuzz-factory` Fuzz Factory (custom) ·
-`boss-fz5` Boss FZ-5 ·
-`french-toast` Danelectro French Toast ·
-`hardwire-od` DigiTech Hardwire OD ·
-`boss-phaser` Boss phaser ·
-`eleclady` Mooer ElecLady ·
-`pitch-fork-plus` EHX Pitch Fork+ ·
-`boss-volume` Boss volume pedal ·
-`flashback-2` TC Flashback 2 ·
-`hall-of-fame-2` TC Hall of Fame 2 ·
-`synth-wah` DigiTech Synth Wah ·
-`mooer-octaver` Mooer octaver ·
-`artec-eq` Artec parametric EQ ·
-`rp90` DigiTech RP90
+`fuzz` Fuzz (custom) ·
+`compact-fuzz` Compact fuzz ·
+`octave-fuzz` Octave fuzz ·
+`overdrive` Overdrive ·
+`phaser` Phaser ·
+`flanger` Flanger ·
+`pitch-shifter` Pitch shifter ·
+`volume-pedal` Volume pedal ·
+`delay` Delay ·
+`reverb` Reverb ·
+`envelope-filter` Envelope filter ·
+`octaver` Octaver ·
+`parametric-eq` Parametric EQ ·
+`multi-effect` Multi-effect
 
 **mics**
-`xm8500` Behringer XM8500 ·
-`cm25` Focusrite CM25 MkIII ·
-`h4essential` Zoom H4essential ·
-`sm57` Shure SM57 *(owned: false)* ·
-`ga-r1` Golden Age R1 MkIII *(owned: false)* ·
-`c2-pair` Behringer C2 pair *(owned: false)*
+`dynamic-mic` Dynamic vocal mic ·
+`condenser` Large-diaphragm condenser ·
+`handheld-recorder` Handheld recorder ·
+`instrument-dynamic` Instrument dynamic *(owned: false)* ·
+`ribbon` Ribbon mic *(owned: false)* ·
+`pencil-pair` Pencil condenser pair *(owned: false)*
 
 **small**
 `harmonicas` Harmonicas ·
@@ -405,9 +415,9 @@ the mockup is wrong, this list is right.)
   them. When the owner buys the thing, he flips `owned` and the cards come alive.
 - **`in_rack`** is "patched and reachable tonight", toggled on the gear screen. It is the
   one piece of state the owner changes most often. It is global, not per-session.
-- **Always-on gear is absent from this table.** The AR16c, the ADAM T5V monitors,
+- **Always-on gear is absent from this table.** The desk, the monitors,
   headphones and the laptop are always in the chain and choosing them means nothing. Cards
-  may name them in their *text* — "Nothing added after the AR16c" is a real card — but
+  may name them in their *text* — "Nothing added after the desk" is a real card — but
   there is no gear row and no gear reference. If the owner later asks to add a monitor,
   push back before doing it.
 - The owner can add gear from the UI. New slugs must match `^[a-z0-9][a-z0-9-]*$`.
@@ -428,16 +438,16 @@ defaults:
   author: claude
 cards:
   - text: >-
-      Play the RD-08 through the Pitch Fork+ at plus one octave,
-      reamp it into the AC30, and mic the amp from the staircase
+      Play the stage piano through the pitch shifter at plus one octave,
+      reamp it into the valve combo, and mic the amp from the staircase
       opening.
     kinds: [idea]
-    gear: [rd-08, pitch-fork-plus, ac30, cm25]
+    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
     tags: [reamping, room]
 
-  - text: Casio SK-1, sampled from something already in the room.
+  - text: toy sampler, sampled from something already in the room.
     kinds: [idea, source]
-    gear: [sk-1]
+    gear: [toy-sampler]
     tags: [sampling, lo-fi]
     favorite: true
 
@@ -473,7 +483,7 @@ half a file and stop at the first problem.
 Each error carries a **line number** (from `parseDocument`'s node ranges), the card index,
 and a message written for a human:
 
-> `Line 32 · card 5` — Gear `sm58` is not in your inventory. Did you mean `sm57`? Fix the
+> `Line 32 · card 5` — Gear `instrument-dynamics` is not in your inventory. Did you mean `instrument-dynamic`? Fix the
 > file, or add the gear first — this card will be skipped.
 
 Suggest a correction using Levenshtein distance ≤ 2 against known gear slugs.
@@ -835,7 +845,7 @@ for bulk import. Use when David asks for cards, prompts or ideas for studio expe
    the other five make it combinable — and that both together is fine and often best.
 3. The exact YAML schema from §8, with `version: 1` and `defaults: {author: claude}`.
 4. Writing guidance, which is the part that decides whether the cards are any good:
-   - Second person, imperative, present tense. "Sample yourself whistling into the SK-1",
+   - Second person, imperative, present tense. "Sample yourself whistling into the toy sampler",
      not "One could try sampling".
    - One action per card. If it needs an "and then", it is probably two cards.
    - Name specific gear by its real name. Vague cards are useless cards.
@@ -862,72 +872,72 @@ defaults:
   author: claude
 cards:
   - text: >-
-      Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into
-      the AC30, and mic the amp from the staircase opening.
+      Play the stage piano through the pitch shifter at plus one octave, reamp it into
+      the valve combo, and mic the amp from the staircase opening.
     kinds: [idea]
-    gear: [rd-08, pitch-fork-plus, ac30, cm25]
+    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
     tags: [reamping, room]
 
   - text: >-
-      Sample yourself whistling into the SK-1, pitch it down two octaves, and
+      Sample yourself whistling into the toy sampler, pitch it down two octaves, and
       build the bass line out of that.
     kinds: [idea, source]
-    gear: [sk-1]
+    gear: [toy-sampler]
     tags: [sampling, lo-fi]
     favorite: true
 
   - text: >-
-      Record the bandolim with the CM25 up close and the H4essential at the
+      Record the bandolim with the condenser up close and the handheld recorder at the
       bottom of the stairs. Blend until the room is half the sound.
     kinds: [idea, technique]
-    gear: [bandolim, cm25, h4essential]
+    gear: [bandolim, condenser, handheld-recorder]
     tags: [room, stereo]
 
   - text: >-
-      Loop a djembé pattern on the Circuit Rhythm, then play guitarra
+      Loop a djembé pattern on the drum groovebox, then play guitarra
       portuguesa over it in one take. Keep the take where you lost the thread.
     kinds: [idea]
-    gear: [circuit-rhythm, guitarra-portuguesa, djembes]
+    gear: [drum-groovebox, guitarra-portuguesa, djembes]
     tags: [one-take]
 
   - text: >-
-      Run the Volca Keys into the French Toast, then into the Pathfinder 15R
+      Run the mini synth into the octave fuzz, then into the practice combo
       turned up past where it stays clean. One microphone, three metres back.
     kinds: [idea, treatment]
-    gear: [volca-keys, french-toast, pathfinder-15r, xm8500]
+    gear: [mini-synth, octave-fuzz, practice-amp, dynamic-mic]
     tags: [saturation, room]
 
   - text: >-
       Play the ocarina and the melodica at the same time, one in each hand,
-      into the CM25. Do not fix the timing afterwards.
+      into the condenser. Do not fix the timing afterwards.
     kinds: [idea, technique]
-    gear: [ocarina, melodica, cm25]
+    gear: [ocarina, melodica, condenser]
     tags: [one-take, winds]
 
-  - text: Casio SK-1, sampled from something already in the room.
+  - text: toy sampler, sampled from something already in the room.
     kinds: [source]
-    gear: [sk-1]
+    gear: [toy-sampler]
     tags: [sampling, lo-fi]
     favorite: true
 
-  - text: Gretsch 12-string, tuned down until it rattles.
+  - text: 12-string, tuned down until it rattles.
     kinds: [source]
-    gear: [gretsch-12]
+    gear: [twelve-string]
     tags: [strings]
 
   - text: Melodica, into a microphone — never a DI.
     kinds: [source, technique]
-    gear: [melodica, xm8500]
+    gear: [melodica, dynamic-mic]
     tags: [winds]
 
-  - text: A JV-880 patch you would never choose on purpose.
+  - text: A rack synth patch you would never choose on purpose.
     kinds: [source]
-    gear: [jv-880]
+    gear: [rack-synth]
     tags: [presets]
 
   - text: Kalimba, close-miked, one metre off the slab.
     kinds: [source]
-    gear: [kalimba, cm25]
+    gear: [kalimba, condenser]
     tags: [small]
 
   - text: The tube. Whatever it is doing today.
@@ -940,40 +950,40 @@ cards:
     gear: [guitarra-portuguesa]
     tags: [strings]
 
-  - text: Pitch Fork+ at minus twelve, wet only.
+  - text: pitch shifter at minus twelve, wet only.
     kinds: [treatment]
-    gear: [pitch-fork-plus]
+    gear: [pitch-shifter]
     tags: [octave]
     favorite: true
 
-  - text: French Toast into the Hardwire, gain staged wrong on purpose.
+  - text: octave fuzz into the overdrive, gain staged wrong on purpose.
     kinds: [treatment]
-    gear: [french-toast, hardwire-od]
+    gear: [octave-fuzz, overdrive]
     tags: [fuzz]
 
-  - text: Hall of Fame 2 before the amp, not after.
+  - text: reverb before the amp, not after.
     kinds: [treatment]
-    gear: [hall-of-fame-2, ac30]
+    gear: [reverb, valve-combo]
     tags: [reverb]
 
-  - text: Flashback 2 with the mix pinned at 100%.
+  - text: delay with the mix pinned at 100%.
     kinds: [treatment]
-    gear: [flashback-2]
+    gear: [delay]
     tags: [delay]
 
-  - text: Synth Wah on a source that is not a guitar.
+  - text: envelope filter on a source that is not a guitar.
     kinds: [treatment, constraint]
-    gear: [synth-wah]
+    gear: [envelope-filter]
     tags: [filter]
 
-  - text: RP90, first preset, no editing allowed.
+  - text: multi-effect, first preset, no editing allowed.
     kinds: [treatment, constraint]
-    gear: [rp90]
+    gear: [multi-effect]
     tags: [lo-fi]
 
-  - text: ElecLady on the way in, Pathfinder Bass 10 on the way out.
+  - text: flanger on the way in, bass combo on the way out.
     kinds: [treatment]
-    gear: [eleclady, pathfinder-bass-10]
+    gear: [flanger, bass-practice-amp]
     tags: [phaser]
 
   - text: Mono. All of it.
@@ -989,7 +999,7 @@ cards:
     kinds: [constraint]
     tags: [limits]
 
-  - text: Nothing added after the AR16c.
+  - text: Nothing added after the desk.
     kinds: [constraint]
     tags: [limits]
 

@@ -313,7 +313,7 @@
 	});
 </script>
 
-<svelte:head><title>Draw — Sótão Cards</title></svelte:head>
+<svelte:head><title>Draw — Sótão</title></svelte:head>
 <svelte:window onkeydown={onKey} />
 
 <div class="screen">

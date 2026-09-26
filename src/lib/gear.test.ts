@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { SEED_GEAR } from '../../seed/gear';
+import { EXAMPLE_GEAR, SEED_GEAR } from '../../seed/index';
 import { CATEGORY_LABELS, CATEGORY_ORDER, isValidSlug, slugify } from './gear';
 
-describe('the seeded inventory', () => {
+// Two inventories: the committed example, always, and the real one when
+// seed/gear.local.ts is on this machine (it is gitignored, ADR-017). The example
+// mirrors §7 row for row, so §7's shape is pinned on it; the rules that make an
+// inventory valid are checked on both.
+const INVENTORIES: [string, typeof SEED_GEAR][] =
+	SEED_GEAR === EXAMPLE_GEAR
+		? [['example', EXAMPLE_GEAR]]
+		: [
+				['example', EXAMPLE_GEAR],
+				['local', SEED_GEAR]
+			];
+
+describe.each(INVENTORIES)('the seeded inventory (%s)', (_, SEED_GEAR) => {
 	it('is 47 rows: 42 owned and 5 on the wishlist', () => {
 		expect(SEED_GEAR).toHaveLength(47);
 		expect(SEED_GEAR.filter((g) => g.owned !== false)).toHaveLength(42);
@@ -16,9 +28,11 @@ describe('the seeded inventory', () => {
 		expect(counts).toEqual({ strings: 10, keys: 7, amps: 3, pedals: 14, mics: 6, small: 7 });
 	});
 
-	it('wishlists exactly the five the spec names', () => {
+	it('wishlists five, as the spec does: three mics and two strings', () => {
 		const wishlist = SEED_GEAR.filter((g) => g.owned === false).map((g) => g.id);
-		expect(wishlist.sort()).toEqual(['c2-pair', 'flamenca', 'ga-r1', 'sm57', 'steel-string']);
+		expect(wishlist).toHaveLength(5);
+		expect(SEED_GEAR.filter((g) => g.category === 'mics' && g.owned === false)).toHaveLength(3);
+		expect(SEED_GEAR.filter((g) => g.category === 'strings' && g.owned === false)).toHaveLength(2);
 	});
 
 	it('has unique slugs that all match the slug pattern', () => {
@@ -28,7 +42,7 @@ describe('the seeded inventory', () => {
 	});
 
 	it('names no always-on gear — the desk, the monitors, the laptop (§7)', () => {
-		const banned = ['ar16c', 'ar-16c', 't5v', 'adam', 'monitor', 'headphone', 'laptop'];
+		const banned = ['desk', 'monitor', 'headphone', 'laptop'];
 		const haystack = SEED_GEAR.map((g) => `${g.id} ${g.name}`.toLowerCase());
 		for (const word of banned) {
 			expect(
@@ -46,8 +60,8 @@ describe('the seeded inventory', () => {
 
 describe('slug rules', () => {
 	it('accepts the shapes §7 allows and rejects the rest', () => {
-		expect(isValidSlug('sk-1')).toBe(true);
-		expect(isValidSlug('rp90')).toBe(true);
+		expect(isValidSlug('toy-1')).toBe(true);
+		expect(isValidSlug('fx90')).toBe(true);
 		expect(isValidSlug('0-day')).toBe(true);
 		expect(isValidSlug('-leading')).toBe(false);
 		expect(isValidSlug('Upper')).toBe(false);
@@ -57,9 +71,9 @@ describe('slug rules', () => {
 	});
 
 	it('suggests a slug from a display name, accents folded', () => {
-		expect(slugify('Boss DD-3')).toBe('boss-dd-3');
+		expect(slugify('Compact Delay DL-3')).toBe('compact-delay-dl-3');
 		expect(slugify('Djembés')).toBe('djembes');
-		expect(slugify('  EHX Pitch Fork+  ')).toBe('ehx-pitch-fork');
+		expect(slugify('  Pitch Shifter+  ')).toBe('pitch-shifter');
 		expect(slugify('Guitarra portuguesa')).toBe('guitarra-portuguesa');
 	});
 });

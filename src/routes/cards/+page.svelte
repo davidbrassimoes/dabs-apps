@@ -76,7 +76,7 @@
 	);
 </script>
 
-<svelte:head><title>Cards — Sótão Cards</title></svelte:head>
+<svelte:head><title>Cards — Sótão</title></svelte:head>
 
 <div class="screen">
 	<div class="filters">

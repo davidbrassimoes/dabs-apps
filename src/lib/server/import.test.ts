@@ -8,7 +8,7 @@ import { cardId } from '$lib/cardId';
 // Unchanged" testable without spinning up a database — the second run is
 // simulated by feeding the first run's rows back in as existingCards.
 
-const KNOWN_GEAR = new Set(['sk-1', 'sm57', 'cm25', 'rd-08', 'ac30']);
+const KNOWN_GEAR = new Set(['toy-sampler', 'instrument-dynamic', 'condenser', 'stage-piano', 'valve-combo']);
 
 function noExisting(): Map<string, ExistingCardSnapshot> {
 	return new Map();
@@ -20,9 +20,9 @@ version: 1
 defaults:
   author: claude
 cards:
-  - text: Casio SK-1, sampled from something already in the room.
+  - text: The toy sampler, sampled from something already in the room.
     kinds: [idea, source]
-    gear: [sk-1]
+    gear: [toy-sampler]
     tags: [sampling, lo-fi]
     favorite: true
   - text: Mono. All of it.
@@ -39,7 +39,7 @@ cards:
 	it('resolves the id the same way cardId.ts does', () => {
 		const report = parseImport(yaml, { knownGear: KNOWN_GEAR, existingCards: noExisting() });
 		expect(report.rows[0].id).toBe(
-			cardId('Casio SK-1, sampled from something already in the room.')
+			cardId('The toy sampler, sampled from something already in the room.')
 		);
 	});
 
@@ -51,7 +51,7 @@ cards:
 	it('carries kinds, gear, tags and favorite through', () => {
 		const report = parseImport(yaml, { knownGear: KNOWN_GEAR, existingCards: noExisting() });
 		expect(report.rows[0].kinds).toEqual(['idea', 'source']);
-		expect(report.rows[0].gear).toEqual(['sk-1']);
+		expect(report.rows[0].gear).toEqual(['toy-sampler']);
 		expect(report.rows[0].tags.sort()).toEqual(['lo-fi', 'sampling']);
 		expect(report.rows[0].favorite).toBe(true);
 	});
@@ -61,9 +61,9 @@ describe('an unknown gear slug', () => {
 	const yaml = `
 version: 1
 cards:
-  - text: Mic the SM58 on the cabinet, off-axis by 45 degrees.
+  - text: Put the condenser on the cabinet, off-axis by 45 degrees.
     kinds: [idea]
-    gear: [sm58]
+    gear: [condensor]
     author: claude
 `;
 
@@ -75,10 +75,10 @@ cards:
 		expect(row.class).toBe('error');
 		expect(row.issue?.cardIndex).toBe(1);
 		// The fixture's leading blank line (from the template literal) makes
-		// `    gear: [sm58]` line 6, not 5.
+		// `    gear: [condensor]` line 6, not 5.
 		expect(row.issue?.line).toBe(6);
-		expect(row.issue?.message).toContain('sm58');
-		expect(row.issue?.message).toContain('sm57');
+		expect(row.issue?.message).toContain('condensor');
+		expect(row.issue?.message).toContain('condenser');
 	});
 });
 

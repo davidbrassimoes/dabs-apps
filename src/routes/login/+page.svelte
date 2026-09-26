@@ -2,7 +2,7 @@
 	let { data, form } = $props();
 </script>
 
-<svelte:head><title>Sign in — Sótão Cards</title></svelte:head>
+<svelte:head><title>Sign in — Sótão</title></svelte:head>
 
 <div class="ground">
 	<form method="POST" class="panel">

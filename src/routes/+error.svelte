@@ -9,7 +9,7 @@
 	let is404 = $derived(page.status === 404);
 </script>
 
-<svelte:head><title>{page.status} — Sótão Cards</title></svelte:head>
+<svelte:head><title>{page.status} — Sótão</title></svelte:head>
 
 <div class="page">
 	<span class="label">{page.status}</span>

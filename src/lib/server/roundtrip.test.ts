@@ -9,7 +9,7 @@ import { cardId } from '$lib/cardId';
 // database", which is what "produces zero changes" means in practice: every
 // card the file describes is already there.
 
-const KNOWN_GEAR = new Set(['sk-1', 'rd-08', 'pitch-fork-plus', 'ac30', 'cm25']);
+const KNOWN_GEAR = new Set(['toy-sampler', 'stage-piano', 'pitch-shifter', 'valve-combo', 'condenser']);
 
 function toExisting(cards: ExportCard[]): Map<string, ExistingCardSnapshot> {
 	const map = new Map<string, ExistingCardSnapshot>();
@@ -26,17 +26,17 @@ function toExisting(cards: ExportCard[]): Map<string, ExistingCardSnapshot> {
 
 const FIXTURE: ExportCard[] = [
 	{
-		text: 'Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.',
+		text: 'Play the stage piano through the pitch shifter at plus one octave, reamp it into the valve combo, and mic the amp from the staircase opening.',
 		kinds: ['idea'],
-		gear: ['rd-08', 'pitch-fork-plus', 'ac30', 'cm25'],
+		gear: ['stage-piano', 'pitch-shifter', 'valve-combo', 'condenser'],
 		tags: ['reamping', 'room'],
 		favorite: false,
 		author: 'claude'
 	},
 	{
-		text: 'Casio SK-1, sampled from something already in the room.',
+		text: 'The toy sampler, sampled from something already in the room.',
 		kinds: ['idea', 'source'],
-		gear: ['sk-1'],
+		gear: ['toy-sampler'],
 		tags: ['sampling', 'lo-fi'],
 		favorite: true,
 		author: 'david'

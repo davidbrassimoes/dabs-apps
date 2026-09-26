@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>Sótão Cards</title>
+	<title>Sótão</title>
 </svelte:head>
 
 {#if chromeless}

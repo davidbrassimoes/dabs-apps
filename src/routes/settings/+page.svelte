@@ -4,7 +4,7 @@
 	let { data } = $props();
 </script>
 
-<svelte:head><title>Settings — Sótão Cards</title></svelte:head>
+<svelte:head><title>Settings — Sótão</title></svelte:head>
 
 <div class="page">
 	<h1 class="display">Settings</h1>

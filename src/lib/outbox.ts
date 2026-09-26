@@ -98,7 +98,7 @@ export function createOutbox(deps: {
 
 // The IndexedDB adapter. One object store keyed by uuid.
 
-const DB_NAME = 'sotao-cards';
+const DB_NAME = 'sotao';
 const DB_VERSION = 1;
 export const OUTBOX_STORE = 'outbox';
 export const POOL_STORE = 'pool';
