@@ -1,11 +1,11 @@
 # Sótão — implementation specification
 
-> **Since this was written** (ADR-017, 2026-09-26): the app is **Sótão — studio cards**, it
+> **Since this was written** (ADR-027, 2026-09-26): the app is **Sótão — studio cards**, it
 > lives in the Escarpa Audio repository at `products/sotao/`, and three sections are
 > overridden. **§3 Hosting** is Cloudflare Workers + Turso. **§12 Theming** is the brand's
 > sea fog, Morning and Night, from `brand/tokens.md`, with the switch defaulting to Auto.
 > **§7** below is a generic stand-in for the real inventory, which stays out of git. Where
-> this document and ADR-017 disagree, the ADR wins. Everything else stands as written.
+> this document and ADR-027 disagree, the ADR wins. Everything else stands as written.
 
 **For:** the agent building this in a fresh Claude Code session.
 **From:** a design session with the owner (David / DABS). Everything in here was decided
@@ -342,7 +342,7 @@ re-record anything.
 
 Seed the `gear` table with exactly this shape. The list below is the generic stand-in
 committed as `seed/gear.example.ts`. The real rig names real products, so it is
-`seed/gear.local.ts`, gitignored, and the same shape row for row (ADR-017). Slugs are the
+`seed/gear.local.ts`, gitignored, and the same shape row for row (ADR-027). Slugs are the
 vocabulary for card imports and the card-generation skill, so they must match
 character-for-character.
 

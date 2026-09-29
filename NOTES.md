@@ -9,10 +9,10 @@ Decisions go in `docs/IMPLEMENTATION.md`, or in an ADR when they touch the compa
 |        |                                                          |
 | ------ | -------------------------------------------------------- |
 | Built  | M0–M5 of `docs/IMPLEMENTATION.md` §15, all of phase 1    |
-| Status | Unpublished Escarpa Audio tool (ADR-017). Never deployed |
+| Status | Unpublished Escarpa Audio tool (ADR-027). Never deployed |
 | Next   | The first deploy, then the two checks it opens (below)   |
 
-## 2026-09-26 — brought into the company repository (ADR-017)
+## 2026-09-26 — brought into the company repository (ADR-027)
 
 - **Moved** from `davidbrassimoes/sotao-cards` by `git subtree add`, history intact. The old
   repository is **not yet archived**: archive it (`gh repo archive davidbrassimoes/sotao-cards`)

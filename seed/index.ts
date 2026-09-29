@@ -10,7 +10,7 @@ import exampleCardsYaml from './cards.example.yaml?raw';
 //                                         committed
 //
 // Real product and manufacturer names stay out of the repository (rule H1,
-// ADR-017), and the real inventory is nothing but those names. The local file
+// ADR-027), and the real inventory is nothing but those names. The local file
 // wins when it exists. Otherwise — CI, a fresh clone — the example is used.
 //
 // Resolved at build time by Vite's import.meta.glob, so a deployed server

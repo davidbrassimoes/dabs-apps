@@ -3,7 +3,7 @@ import { EXAMPLE_GEAR, SEED_GEAR } from '../../seed/index';
 import { CATEGORY_LABELS, CATEGORY_ORDER, isValidSlug, slugify } from './gear';
 
 // Two inventories: the committed example, always, and the real one when
-// seed/gear.local.ts is on this machine (it is gitignored, ADR-017). The example
+// seed/gear.local.ts is on this machine (it is gitignored, ADR-027). The example
 // mirrors §7 row for row, so §7's shape is pinned on it; the rules that make an
 // inventory valid are checked on both.
 const INVENTORIES: [string, typeof SEED_GEAR][] =

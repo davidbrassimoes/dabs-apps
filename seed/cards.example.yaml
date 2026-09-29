@@ -1,5 +1,5 @@
 # The starter cards, written against the example rig in gear.example.ts. The
-# real set is cards.local.yaml, gitignored (seed/index.ts, ADR-017).
+# real set is cards.local.yaml, gitignored (seed/index.ts, ADR-027).
 version: 1
 defaults:
   author: claude

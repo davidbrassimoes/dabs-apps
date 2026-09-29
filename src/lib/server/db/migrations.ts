@@ -4,7 +4,7 @@ import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import journal from '../../../../drizzle/meta/_journal.json';
 
 // drizzle-orm's own migrator reads drizzle/ off the disk, and a Cloudflare
-// Worker has no disk (ADR-017). So the migrations are bundled at build time
+// Worker has no disk (ADR-027). So the migrations are bundled at build time
 // instead, and applied here the way drizzle-orm/libsql/migrator applies them —
 // the same __drizzle_migrations table, the same hash (SHA-256 of the file), the
 // same timestamp (the journal's `when`), the same statement breakpoints. A

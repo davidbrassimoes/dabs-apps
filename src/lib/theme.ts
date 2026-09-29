@@ -3,7 +3,7 @@
 // Auto follows the device and falls back to Morning where it cannot tell; a
 // hand-picked theme wins over the device. Persisted in settings.theme and
 // applied server-side on first render so the app never flashes the wrong
-// ground (§12, as amended by ADR-017).
+// ground (§12, as amended by ADR-027).
 
 export const THEMES = ['auto', 'morning', 'night'] as const;
 export type Theme = (typeof THEMES)[number];

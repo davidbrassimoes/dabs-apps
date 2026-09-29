@@ -1,4 +1,4 @@
-// Sótão on Cloudflare Workers, the database on Turso (ADR-017). The same
+// Sótão on Cloudflare Workers, the database on Turso (ADR-027). The same
 // account as escarpaaudio.com (ADR-010), and a separate Worker: the site and
 // this app deploy on their own schedules.
 //

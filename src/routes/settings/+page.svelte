@@ -44,7 +44,7 @@
 
 	<!--
 		The one place the brand appears: the marks, and the product's accent as a
-		lamp (ADR-004, ADR-017). Nowhere in the working screens.
+		lamp (ADR-004, ADR-027). Nowhere in the working screens.
 	-->
 	<section class="about" aria-labelledby="about-name">
 		<div class="name">

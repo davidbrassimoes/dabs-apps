@@ -5,14 +5,14 @@ or three partial cards (a source, a treatment, a constraint) that combine. Plus 
 manager, a gear inventory and a YAML import. SvelteKit on Cloudflare Workers, libSQL on
 Turso, installable on a phone and usable offline.
 
-An **unpublished Escarpa Audio tool** (`handbook/decisions/ADR-017-sotao.md`). It is his own
+An **unpublished Escarpa Audio tool** (`handbook/decisions/ADR-027-sotao.md`). It is his own
 tool, built for one attic and one rig. The rules it obeys as a product are
 `handbook/02-product-rules.md`, section "Tools". The ones that wait for publication are
-listed in ADR-017. This file covers the rules it obeys as a codebase. It wins here, and the
+listed in ADR-027. This file covers the rules it obeys as a codebase. It wins here, and the
 handbook's engineering page is about plugins.
 
 **`docs/IMPLEMENTATION.md` is the build contract.** Its behaviour, formats and numbers are
-binding. ADR-017 overrides it in three places, listed at its top: hosting (§3), theming
+binding. ADR-027 overrides it in three places, listed at its top: hosting (§3), theming
 (§12) and the inventory (§7). `docs/mockups/` is the layout reference and predates sea
 fog, so take layout from it, never colour or type.
 

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
-  Theme tokens — sea fog (ADR-012; ADR-017 for how Sótão takes it). Every colour
+  Theme tokens — sea fog (ADR-012; ADR-027 for how Sótão takes it). Every colour
   is a custom property, and the themes redefine the tokens, never the components.
 
   Morning fog is on :root, so it is what shows when nothing else applies — the

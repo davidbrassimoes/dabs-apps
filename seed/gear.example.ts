@@ -2,7 +2,7 @@ import type { SeedGear } from './types';
 
 // The committed inventory: DABS's rig from §7, described generically. The real
 // one names real products, and rule H1 keeps real product and manufacturer
-// names out of the repository (ADR-017), so it lives in gear.local.ts, which is
+// names out of the repository (ADR-027), so it lives in gear.local.ts, which is
 // gitignored. seed/index.ts uses that file when it is there, and this one when
 // it is not: in CI, and in a fresh clone.
 //
