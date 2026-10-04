@@ -1,7 +1,9 @@
 // Headless smoke test for the authoring page, driven over the Chrome DevTools Protocol.
 // Zero dependencies (Node >= 22 has a global WebSocket). Usage:
 //
-//   node scripts/smoke.mjs [--browser <path-to-chrome-or-edge>] [--url http://localhost:5180/] [--out <dir>]
+//   node scripts/smoke.mjs [--browser <path-to-chrome-or-edge>] [--url http://localhost:5180/] [--out <dir>] [--gpu]
+//
+//   --gpu  use the real GPU through ANGLE/D3D11 instead of SwiftShader (fps and GPU ms become meaningful)
 //
 // For every scene listed by /api/scenes: loads it, waits, collects console output and
 // the in-page error overlay, reads the stats line and saves a screenshot <out>/<scene>.png.
@@ -32,6 +34,7 @@ const CANDIDATES = [
     : [],
 ].filter((p) => p && fs.existsSync(p));
 const BROWSER = CANDIDATES[0];
+const USE_GPU = args.includes('--gpu');
 if (!BROWSER) {
   console.error('No Chromium browser found; pass --browser <path>.');
   process.exit(2);
@@ -46,8 +49,7 @@ const proc = spawn(
     '--headless=new',
     '--no-first-run',
     '--disable-extensions',
-    '--use-angle=swiftshader',
-    '--enable-unsafe-swiftshader',
+    ...(USE_GPU ? ['--use-angle=d3d11', '--enable-gpu-rasterization'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']),
     '--ignore-gpu-blocklist',
     `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${profileDir}`,
@@ -134,7 +136,7 @@ try {
   };
 
   const scenes = await (await fetch(new URL('/api/scenes', URL_BASE))).json();
-  console.log(`browser: ${BROWSER}`);
+  console.log(`browser: ${BROWSER} (${USE_GPU ? 'GPU via ANGLE/D3D11' : 'SwiftShader, software'})`);
   console.log(`scenes: ${scenes.join(', ')}`);
 
   for (const id of scenes) {
@@ -169,8 +171,40 @@ try {
       }
     } finally {
       fs.writeFileSync(fragPath, original);
-      await sleep(300); // let the restore recompile settle before the screenshot
+      await sleep(300); // let the restore recompile settle
     }
+
+    // Error overlay: inject a syntax error, expect the overlay to name scene.frag with a line number.
+    let errorText = '';
+    try {
+      fs.writeFileSync(fragPath, Buffer.concat([original, Buffer.from('void broken( {\n')]));
+      for (let i = 0; i < 100; i++) {
+        await sleep(50);
+        errorText = await evaluate(
+          "document.getElementById('errors').hidden ? '' : document.getElementById('errors').innerText",
+        );
+        if (errorText) break;
+      }
+      if (errorText) {
+        const errShot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
+        fs.writeFileSync(path.join(OUT, `${id}-error.png`), Buffer.from(errShot.data, 'base64'));
+      }
+    } finally {
+      fs.writeFileSync(fragPath, original);
+      await sleep(600);
+    }
+    const errorMapped = new RegExp(`scenes/${id}/scene.frag:\\d+`).test(errorText);
+    const stillRunning = await evaluate(
+      "document.getElementById('errors').hidden && window.__sv.compiles > 0",
+    );
+    // Let the scene run a bit more so the screenshot and stats are representative.
+    await sleep(2000);
+    state = await evaluate(`({
+      name: document.querySelector('.scene-name')?.textContent ?? '',
+      stats: document.getElementById('stats')?.textContent ?? '',
+      errors: document.getElementById('errors')?.hidden ? '' : document.getElementById('errors')?.innerText ?? '',
+      params: document.querySelectorAll('#sec-params .ctl').length,
+    })`);
     const shot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
     const file = path.join(OUT, `${id}.png`);
     fs.writeFileSync(file, Buffer.from(shot.data, 'base64'));
@@ -178,9 +212,13 @@ try {
     if (!ok) failed = true;
     console.log(`\n== ${id}: ${ok ? 'OK' : 'FAIL'}`);
     console.log(`   name: ${state?.name}  params: ${state?.params}`);
+    if (id === scenes[0]) console.log(`   renderer: ${await evaluate('window.__sv.renderer')}`);
     console.log(`   stats: ${state?.stats}`);
     console.log(`   hot reload (.frag -> recompiled): ${hotMs === null ? 'TIMEOUT' : hotMs + ' ms'}`);
     if (hotMs === null) failed = true;
+    console.log(`   error overlay mapped to scene.frag:line: ${errorMapped ? 'yes' : 'NO'}  recovered after fix: ${stillRunning ? 'yes' : 'NO'}`);
+    if (errorText) console.log(`   overlay: ${errorText.split('\n').slice(0, 2).join(' | ')}`);
+    if (!errorMapped || !stillRunning) failed = true;
     if (state?.errors) console.log(`   errors: ${state.errors.replace(/\n/g, '\n           ')}`);
     for (const l of logs) console.log(`   ${l}`);
     console.log(`   screenshot: ${file}`);
@@ -190,8 +228,14 @@ try {
   failed = true;
   console.error(err);
 } finally {
+  // Wait for the browser to exit before removing its profile; Windows keeps the files locked until then.
+  const exited = new Promise((r) => proc.once('exit', r));
   proc.kill();
-  await sleep(300);
-  fs.rmSync(profileDir, { recursive: true, force: true });
+  await Promise.race([exited, sleep(5000)]);
+  try {
+    fs.rmSync(profileDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+  } catch (err) {
+    console.warn(`could not remove temp profile ${profileDir}: ${err.message}`);
+  }
 }
 process.exit(failed ? 1 : 0);

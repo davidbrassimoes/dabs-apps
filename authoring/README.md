@@ -32,11 +32,19 @@ npm install            # uma vez
 npm run dev            # http://localhost:5180/  (watch + hot reload)
 npm run check          # tsc --noEmit
 npm run build          # bundle único, sem servidor
-node scripts/smoke.mjs # com o servidor a correr: abre cada cena num Chromium headless,
-                       # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
+node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chromium headless (SwiftShader),
+                              # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
+node scripts/smoke.mjs --gpu  # o mesmo com a GPU do PC (ANGLE/D3D11): fps e ms de GPU passam a ter significado
 ```
 
-O teste de fumo usa SwiftShader (render por software), por isso os fps que imprime **não** dizem nada sobre o desempenho real. Serve para apanhar erros de compilação e de carregamento, e mede a latência do hot reload: acrescenta um comentário ao `scene.frag` de cada cena, cronometra até a página recompilar e repõe o ficheiro. Medido em 2026-10-04: 140–190 ms por cena (critério do roadmap: < 1 s).
+O teste de fumo, por cena:
+
+1. carrega a cena e confirma que compila e produz frames;
+2. **hot reload**: acrescenta um comentário ao `scene.frag`, cronometra até a página recompilar e repõe o ficheiro (medido em 2026-10-04: 140–670 ms; critério do roadmap: < 1 s);
+3. **overlay de erros**: injeta um erro de sintaxe, verifica que o overlay aponta para `scenes/<id>/scene.frag:<linha>` e que a cena anterior continua a correr, repõe o ficheiro e confirma a recuperação;
+4. guarda `<id>.png` e `<id>-error.png` na pasta de saída (`--out`).
+
+Sem `--gpu` usa SwiftShader (render por software), por isso os fps **não** dizem nada sobre desempenho. Com `--gpu` corre na GPU do PC, que também não é a da box: para desempenho real só a medição no passo 0.5.
 
 ## Estrutura
 

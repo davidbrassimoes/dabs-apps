@@ -40,7 +40,7 @@ const secProfile = $('sec-profile');
 const secImage = $('sec-image');
 
 // Debug hook for scripts/smoke.mjs (read-only).
-const debug = { compiles: 0, lastCompileAt: 0, lastChangeAt: 0 };
+const debug = { compiles: 0, lastCompileAt: 0, lastChangeAt: 0, renderer: '', halfFloat: false };
 (window as unknown as { __sv: typeof debug }).__sv = debug;
 
 // ---------------------------------------------------------------- state
@@ -483,6 +483,8 @@ window.addEventListener('unhandledrejection', (e) => showErrors('Erro de JavaScr
 
 async function boot(): Promise<void> {
   document.title = 'Santa Vibes — authoring';
+  debug.renderer = info.renderer;
+  debug.halfFloat = info.halfFloat;
   statsBox.textContent = `${info.renderer} · RGBA16F ${info.halfFloat ? 'ok' : 'indisponível (fallback RGBA8)'}`;
   await loadOutputPass();
   await refreshProfileList();
