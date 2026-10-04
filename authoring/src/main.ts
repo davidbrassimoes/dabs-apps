@@ -39,6 +39,10 @@ const secRender = $('sec-render');
 const secProfile = $('sec-profile');
 const secImage = $('sec-image');
 
+// Debug hook for scripts/smoke.mjs (read-only).
+const debug = { compiles: 0, lastCompileAt: 0, lastChangeAt: 0 };
+(window as unknown as { __sv: typeof debug }).__sv = debug;
+
 // ---------------------------------------------------------------- state
 
 const { gl, info } = createGL(canvas);
@@ -116,6 +120,8 @@ async function recompile(): Promise<boolean> {
     try {
       renderer.setScene(scene, composed);
       clearErrors();
+      debug.compiles++;
+      debug.lastCompileAt = performance.now();
       return true;
     } catch (err) {
       if (err instanceof ShaderError) showErrors(`Erro de compilação em ${sceneId}`, mapErrorLog(err.log, composed));
@@ -411,6 +417,7 @@ connectHot({
     else location.reload();
   },
   onChange(path) {
+    debug.lastChangeAt = performance.now();
     if (path === `scenes/${sceneId}/scene.json`) void switchScene(sceneId, true);
     else if (path === `scenes/${sceneId}/scene.frag`) void recompile();
     else if (path.startsWith('scenes/')) void refreshSceneList();

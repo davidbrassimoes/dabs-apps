@@ -11,6 +11,9 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 const args = process.argv.slice(2);
 const opt = (name, def) => {
@@ -149,6 +152,25 @@ try {
       })`);
       if (state.errors || (state.name && /fps/.test(state.stats) && !/^0\\.0 fps/.test(state.stats))) break;
     }
+    // Hot reload latency: append a comment to scene.frag, wait for a recompile, restore the file.
+    let hotMs = null;
+    const fragPath = path.resolve(HERE, '..', '..', 'scenes', id, 'scene.frag');
+    const original = fs.readFileSync(fragPath);
+    try {
+      const before = await evaluate('window.__sv.compiles');
+      const t0 = performance.now();
+      fs.writeFileSync(fragPath, Buffer.concat([original, Buffer.from('// smoke-test touch\n')]));
+      for (let i = 0; i < 100; i++) {
+        await sleep(50);
+        if ((await evaluate('window.__sv.compiles')) > before) {
+          hotMs = Math.round(performance.now() - t0);
+          break;
+        }
+      }
+    } finally {
+      fs.writeFileSync(fragPath, original);
+      await sleep(300); // let the restore recompile settle before the screenshot
+    }
     const shot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
     const file = path.join(OUT, `${id}.png`);
     fs.writeFileSync(file, Buffer.from(shot.data, 'base64'));
@@ -157,6 +179,8 @@ try {
     console.log(`\n== ${id}: ${ok ? 'OK' : 'FAIL'}`);
     console.log(`   name: ${state?.name}  params: ${state?.params}`);
     console.log(`   stats: ${state?.stats}`);
+    console.log(`   hot reload (.frag -> recompiled): ${hotMs === null ? 'TIMEOUT' : hotMs + ' ms'}`);
+    if (hotMs === null) failed = true;
     if (state?.errors) console.log(`   errors: ${state.errors.replace(/\n/g, '\n           ')}`);
     for (const l of logs) console.log(`   ${l}`);
     console.log(`   screenshot: ${file}`);

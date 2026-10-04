@@ -28,7 +28,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 
 **Critérios de aceitação:**
 - As 3 cenas correm na box a ≥ 30 fps estáveis com a `renderScale` por defeito, durante 30 min, sem engasgos visíveis.
-- Uma alteração a um `.frag` aparece no authoring em < 1 s.
+- Uma alteração a um `.frag` aparece no authoring em < 1 s. _(medido 2026-10-04: 140–190 ms, `authoring/scripts/smoke.mjs`)_
 - Os mesmos ficheiros de cena produzem o mesmo resultado (visualmente) no authoring e na box.
 
 ---

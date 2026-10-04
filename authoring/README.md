@@ -36,7 +36,7 @@ node scripts/smoke.mjs # com o servidor a correr: abre cada cena num Chromium he
                        # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
 ```
 
-O teste de fumo usa SwiftShader (render por software), por isso os fps que imprime **não** dizem nada sobre o desempenho real. Serve para apanhar erros de compilação e de carregamento.
+O teste de fumo usa SwiftShader (render por software), por isso os fps que imprime **não** dizem nada sobre o desempenho real. Serve para apanhar erros de compilação e de carregamento, e mede a latência do hot reload: acrescenta um comentário ao `scene.frag` de cada cena, cronometra até a página recompilar e repõe o ficheiro. Medido em 2026-10-04: 140–190 ms por cena (critério do roadmap: < 1 s).
 
 ## Estrutura
 
