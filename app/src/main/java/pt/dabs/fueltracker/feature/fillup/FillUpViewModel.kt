@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.data.FillUpRepository
+import pt.dabs.fueltracker.core.data.SettingsRepository
 import pt.dabs.fueltracker.core.domain.FillUpDraft
 import pt.dabs.fueltracker.core.domain.FillUpValidator
 import pt.dabs.fueltracker.core.domain.FuelMath
@@ -58,6 +59,7 @@ data class FillUpUiState(
 class FillUpViewModel(
     private val fillUpId: Long,
     private val repository: FillUpRepository,
+    private val settingsRepository: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -65,8 +67,9 @@ class FillUpViewModel(
     constructor(
         savedStateHandle: SavedStateHandle,
         repository: FillUpRepository,
+        settingsRepository: SettingsRepository,
         clock: Clock,
-    ) : this(savedStateHandle.toRoute<FillUpRoute>().fillUpId, repository, clock)
+    ) : this(savedStateHandle.toRoute<FillUpRoute>().fillUpId, repository, settingsRepository, clock)
 
     private val _uiState = MutableStateFlow(
         FillUpUiState(
@@ -81,10 +84,12 @@ class FillUpViewModel(
     private val touched = LinkedHashSet<AmountField>()
     private var existing: List<FillUp> = emptyList()
     private var original: FillUp? = null
+    private var tankCapacityMl: Int? = null
 
     init {
         viewModelScope.launch {
             existing = repository.observeAll().first()
+            tankCapacityMl = settingsRepository.settings.first().tankCapacityMl
             val loaded = if (fillUpId != FillUp.NEW_ID) repository.getById(fillUpId) else null
             original = loaded
             if (loaded != null) {
@@ -183,7 +188,7 @@ class FillUpViewModel(
     private fun revalidate() {
         val state = _uiState.value
         val draft = currentDraft(state)
-        val issues = FillUpValidator.validate(draft, existing)
+        val issues = FillUpValidator.validate(draft, existing, tankCapacityMl = tankCapacityMl)
         val previous = FillUpValidator.previousFillUp(existing, draft.dateTime, excludingId = fillUpId)
         _uiState.update { it.copy(issues = issues, previousOdometerKm = previous?.odometerKm, askWarningConfirmation = false) }
     }

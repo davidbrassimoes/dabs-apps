@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,10 +41,11 @@ import java.time.ZoneId
 fun HomeScreen(
     onAddFillUp: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(state = state, onAddFillUp = onAddFillUp, onOpenHistory = onOpenHistory)
+    HomeContent(state = state, onAddFillUp = onAddFillUp, onOpenHistory = onOpenHistory, onOpenSettings = onOpenSettings)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +54,7 @@ fun HomeContent(
     state: HomeUiState,
     onAddFillUp: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -60,6 +63,9 @@ fun HomeContent(
                 actions = {
                     IconButton(onClick = onOpenHistory) {
                         Icon(Icons.Default.List, contentDescription = stringResource(R.string.home_open_history))
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_title))
                     }
                 },
             )
@@ -125,11 +131,17 @@ private fun HomeStats(state: HomeUiState) {
 
     StatCard(
         modifier = Modifier.fillMaxWidth(),
-        label = stringResource(R.string.home_estimated_range),
-        value = state.estimatedRange?.let { PtFormat.km(it.km) } ?: dash,
-        supporting = state.estimatedRange?.let {
-            if (it.fromTankCapacity) stringResource(R.string.home_range_from_tank)
-            else stringResource(R.string.home_range_from_cycles)
+        label = stringResource(R.string.home_typical_distance),
+        value = state.typicalDistancePerTankKm?.let { PtFormat.km(it) } ?: dash,
+        supporting = when {
+            state.typicalReserveMl != null && state.tankCapacityMl != null ->
+                stringResource(
+                    R.string.home_typical_reserve,
+                    PtFormat.liters(state.typicalReserveMl.toLong()),
+                    PtFormat.liters(state.tankCapacityMl.toLong()),
+                )
+            state.typicalDistancePerTankKm != null -> stringResource(R.string.home_range_from_cycles)
+            else -> null
         },
     )
 

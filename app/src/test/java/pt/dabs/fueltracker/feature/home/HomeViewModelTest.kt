@@ -9,10 +9,12 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
+import pt.dabs.fueltracker.core.data.UserSettings
 import pt.dabs.fueltracker.core.domain.LISBON
 import pt.dabs.fueltracker.core.domain.at
 import pt.dabs.fueltracker.core.domain.fillUp
 import pt.dabs.fueltracker.feature.FakeFillUpRepository
+import pt.dabs.fueltracker.feature.FakeSettingsRepository
 import pt.dabs.fueltracker.feature.MainDispatcherRule
 import java.time.Clock
 
@@ -31,16 +33,20 @@ class HomeViewModelTest {
         return state
     }
 
+    private fun newViewModel(fillUps: FakeFillUpRepository, settings: FakeSettingsRepository = FakeSettingsRepository()) =
+        HomeViewModel(fillUps, settings, clock)
+
     @Test
     fun `empty repository yields empty state`() = runTest {
-        val viewModel = HomeViewModel(FakeFillUpRepository(), clock)
+        val viewModel = newViewModel(FakeFillUpRepository())
         viewModel.uiState.test {
             val state = awaitLoaded()
             assertFalse(state.isLoading)
             assertEquals(0, state.fillUpCount)
             assertNull(state.lastCycle)
             assertNull(state.recentAverageMlPer100Km)
-            assertNull(state.estimatedRange)
+            assertNull(state.typicalDistancePerTankKm)
+            assertNull(state.typicalReserveMl)
             assertEquals(0L, state.thisMonth?.totalCents)
         }
     }
@@ -54,7 +60,7 @@ class HomeViewModelTest {
                 fillUp(3, "2026-02-15", 11_200, 36_000, 180_000),  // 6,0 L/100, em fevereiro
             )
         )
-        val viewModel = HomeViewModel(repository, clock)
+        val viewModel = newViewModel(repository)
         viewModel.uiState.test {
             val state = awaitLoaded()
             assertEquals(3, state.fillUpCount)
@@ -63,15 +69,37 @@ class HomeViewModelTest {
             assertEquals(6_250, state.recentAverageMlPer100Km) // 75 L / 1200 km
             assertEquals(600, state.thisMonth?.distanceKm)
             assertEquals(36_000L, state.thisMonth?.volumeMl)
-            assertEquals(600, state.estimatedRange?.km)
-            assertFalse(state.estimatedRange!!.fromTankCapacity)
+            assertEquals(600, state.typicalDistancePerTankKm)
+            assertNull(state.typicalReserveMl) // sem capacidade configurada
+            assertNull(state.tankCapacityMl)
+        }
+    }
+
+    @Test
+    fun `tank capacity from settings adds the typical reserve and reacts to changes`() = runTest {
+        val repository = FakeFillUpRepository(
+            listOf(
+                fillUp(1, "2026-01-05", 10_000, 40_000),
+                fillUp(2, "2026-01-25", 10_600, 38_000),
+            )
+        )
+        val settings = FakeSettingsRepository(UserSettings(tankCapacityMl = 45_000))
+        val viewModel = newViewModel(repository, settings)
+        viewModel.uiState.test {
+            val state = awaitLoaded()
+            assertEquals(45_000, state.tankCapacityMl)
+            assertEquals(6_000, state.typicalReserveMl) // 45 − média(40, 38) = 6
+            settings.setTankCapacityMl(null)
+            val cleared = awaitItem()
+            assertNull(cleared.typicalReserveMl)
+            assertNull(cleared.tankCapacityMl)
         }
     }
 
     @Test
     fun `state updates when a fill up is added`() = runTest {
         val repository = FakeFillUpRepository(listOf(fillUp(1, "2026-02-01", 10_000, 40_000)))
-        val viewModel = HomeViewModel(repository, clock)
+        val viewModel = newViewModel(repository)
         viewModel.uiState.test {
             assertNull(awaitLoaded().lastCycle)
             repository.insert(fillUp(0, "2026-02-18", 10_500, 35_000))

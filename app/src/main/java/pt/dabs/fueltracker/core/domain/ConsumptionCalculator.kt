@@ -105,6 +105,25 @@ object ConsumptionCalculator {
     data class RangeEstimate(val km: Int, val fromTankCapacity: Boolean)
 
     /**
+     * Litros que, em média, ainda estão no depósito quando o utilizador atesta:
+     * capacidade − média de litros dos últimos [lastN] abastecimentos cheios.
+     * Devolve null sem capacidade, sem abastecimentos cheios, ou se a média exceder a capacidade
+     * (sinal de capacidade mal configurada).
+     */
+    fun typicalReserveMl(
+        tankCapacityMl: Int?,
+        fillUps: List<FillUp>,
+        lastN: Int = DEFAULT_RECENT_CYCLES,
+    ): Int? {
+        if (tankCapacityMl == null || tankCapacityMl <= 0) return null
+        val recentFull = sortChronologically(fillUps).filter { it.isFullTank }.takeLast(lastN)
+        if (recentFull.isEmpty()) return null
+        val averageMl = FuelMath.roundDiv(recentFull.sumOf { it.volumeMl.toLong() }, recentFull.size.toLong())
+        val reserve = tankCapacityMl - averageMl
+        return if (reserve >= 0) reserve.toInt() else null
+    }
+
+    /**
      * Ids dos abastecimentos cujo ciclo tem consumo acima de (100 + [thresholdPercent])% da
      * média móvel ponderada dos [window] ciclos anteriores. Precisa de pelo menos [minHistory]
      * ciclos anteriores para haver comparação.

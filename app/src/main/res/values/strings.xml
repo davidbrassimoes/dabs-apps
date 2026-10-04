@@ -29,9 +29,9 @@
     <string name="home_last_consumption">Último consumo</string>
     <string name="home_recent_average">Média recente</string>
     <string name="home_overall_average">Global: %1$s</string>
-    <string name="home_estimated_range">Autonomia estimada por depósito</string>
-    <string name="home_range_from_tank">Com base na capacidade do depósito e na média recente</string>
-    <string name="home_range_from_cycles">Distância média dos últimos ciclos cheio-a-cheio</string>
+    <string name="home_typical_distance">Distância habitual por depósito</string>
+    <string name="home_range_from_cycles">Média dos últimos ciclos cheio-a-cheio</string>
+    <string name="home_typical_reserve">Costumas atestar com cerca de %1$s no depósito (capacidade %2$s)</string>
     <string name="home_this_month">Este mês</string>
     <string name="home_last_fill_up">Último abastecimento</string>
 
@@ -62,6 +62,17 @@
     <string name="validation_total_mismatch">Litros × preço dá %1$s, diferente do total indicado</string>
     <string name="validation_volume_exceeds_tank">Litros acima da capacidade do depósito (%1$s)</string>
     <string name="validation_duplicate_atcud">Este talão já foi registado</string>
+
+    <!-- Definições -->
+    <string name="settings_title">Definições</string>
+    <string name="settings_nif">O teu NIF</string>
+    <string name="settings_nif_hint">Para mostrar no posto e comparar com o talão</string>
+    <string name="settings_nif_invalid">NIF inválido: tem de ter 9 dígitos com dígito de controlo correto</string>
+    <string name="settings_tank_capacity">Capacidade do depósito</string>
+    <string name="settings_tank_capacity_hint">Opel Corsa D 1.2 gasolina: 45 L (confirma no manual)</string>
+    <string name="settings_tank_capacity_invalid">Indica a capacidade em litros, por exemplo 45</string>
+    <string name="settings_tank_capacity_explainer">A capacidade serve só para avisar quando os litros do talão a ultrapassam e para estimar a reserva com que costumas atestar. Os litros consumidos vêm sempre do talão.</string>
+    <string name="settings_saved">Definições guardadas</string>
 
     <!-- Histórico -->
     <string name="history_title">Histórico</string>

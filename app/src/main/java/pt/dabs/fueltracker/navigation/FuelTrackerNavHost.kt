@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import pt.dabs.fueltracker.feature.fillup.FillUpScreen
 import pt.dabs.fueltracker.feature.history.HistoryScreen
 import pt.dabs.fueltracker.feature.home.HomeScreen
+import pt.dabs.fueltracker.feature.settings.SettingsScreen
 
 @Composable
 fun FuelTrackerNavHost() {
@@ -16,6 +17,7 @@ fun FuelTrackerNavHost() {
             HomeScreen(
                 onAddFillUp = { navController.navigate(FillUpRoute()) },
                 onOpenHistory = { navController.navigate(HistoryRoute) },
+                onOpenSettings = { navController.navigate(SettingsRoute) },
             )
         }
         composable<HistoryRoute> {
@@ -27,6 +29,9 @@ fun FuelTrackerNavHost() {
         }
         composable<FillUpRoute> {
             FillUpScreen(onDone = { navController.popBackStack() })
+        }
+        composable<SettingsRoute> {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import pt.dabs.fueltracker.core.data.FillUpRepository
+import pt.dabs.fueltracker.core.data.SettingsRepository
+import pt.dabs.fueltracker.core.data.UserSettings
 import pt.dabs.fueltracker.core.domain.ConsumptionCalculator
 import pt.dabs.fueltracker.core.domain.model.ConsumptionCycle
 import pt.dabs.fueltracker.core.domain.model.FillUp
@@ -24,20 +26,26 @@ data class HomeUiState(
     val recentAverageMlPer100Km: Int? = null,
     val overallAverageMlPer100Km: Int? = null,
     val thisMonth: PeriodSummary? = null,
-    val estimatedRange: ConsumptionCalculator.RangeEstimate? = null,
+    /** Distância habitual por depósito (média dos últimos ciclos cheio-a-cheio). */
+    val typicalDistancePerTankKm: Int? = null,
+    /** Litros que costumam sobrar quando se atesta; só com capacidade configurada. */
+    val typicalReserveMl: Int? = null,
+    val tankCapacityMl: Int? = null,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    repository: FillUpRepository,
+    fillUpRepository: FillUpRepository,
+    settingsRepository: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
-    val uiState: StateFlow<HomeUiState> = repository.observeAll()
-        .map { fillUps -> buildState(fillUps) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+    val uiState: StateFlow<HomeUiState> =
+        combine(fillUpRepository.observeAll(), settingsRepository.settings) { fillUps, settings ->
+            buildState(fillUps, settings)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
-    private fun buildState(fillUps: List<FillUp>): HomeUiState {
+    private fun buildState(fillUps: List<FillUp>, settings: UserSettings): HomeUiState {
         val zone = clock.zone
         val sorted = ConsumptionCalculator.sortChronologically(fillUps)
         val cycles = ConsumptionCalculator.computeCycles(sorted)
@@ -49,8 +57,11 @@ class HomeViewModel @Inject constructor(
             recentAverageMlPer100Km = ConsumptionCalculator.recentAverageMlPer100Km(cycles),
             overallAverageMlPer100Km = ConsumptionCalculator.weightedAverageMlPer100Km(cycles),
             thisMonth = ConsumptionCalculator.monthSummary(sorted, LocalDate.now(clock), zone),
-            // Capacidade do depósito chega nas Definições (fase posterior); até lá usa o fallback.
-            estimatedRange = ConsumptionCalculator.estimateRangeKm(tankCapacityMl = null, cycles = cycles),
+            // O utilizador atesta logo após a reserva: a autonomia útil é o que costuma fazer por depósito,
+            // não a capacidade a dividir pela média.
+            typicalDistancePerTankKm = ConsumptionCalculator.estimateRangeKm(tankCapacityMl = null, cycles = cycles)?.km,
+            typicalReserveMl = ConsumptionCalculator.typicalReserveMl(settings.tankCapacityMl, sorted),
+            tankCapacityMl = settings.tankCapacityMl,
         )
     }
 }
