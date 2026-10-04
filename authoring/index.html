@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Santa Vibes — authoring</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="stage">
+    <canvas id="canvas" width="1920" height="1080"></canvas>
+    <div id="stats" class="mono"></div>
+    <div id="errors" class="mono" hidden></div>
+  </main>
+  <aside id="panel">
+    <header>
+      <h1>Santa Vibes</h1>
+      <span id="hot-status" class="mono">○</span>
+    </header>
+    <section id="sec-scene"></section>
+    <section id="sec-params"><h2>Parâmetros</h2></section>
+    <section id="sec-signals"></section>
+    <section id="sec-render"></section>
+    <section id="sec-profile"></section>
+    <section id="sec-image"></section>
+    <footer class="muted">← → cena · espaço pausa</footer>
+  </aside>
+  <script type="module" src="/dist/main.js"></script>
+</body>
+</html>

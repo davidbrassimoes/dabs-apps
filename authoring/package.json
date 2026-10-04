@@ -1,0 +1,16 @@
+{
+  "name": "santa-vibes-authoring",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Development-only WebGL2 authoring page for Santa Vibes scenes.",
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "build": "node dev-server.mjs --build",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}
