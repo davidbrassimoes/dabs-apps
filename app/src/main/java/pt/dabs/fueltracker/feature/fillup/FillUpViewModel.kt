@@ -22,9 +22,11 @@ import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.hasErrors
 import pt.dabs.fueltracker.core.domain.hasWarnings
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.scanning.AmountSource
 import pt.dabs.fueltracker.core.scanning.AtQrCode
 import pt.dabs.fueltracker.core.scanning.AtQrCodeParser
 import pt.dabs.fueltracker.core.scanning.AtQrParseResult
+import pt.dabs.fueltracker.core.scanning.ReceiptTextParser
 import pt.dabs.fueltracker.navigation.FillUpRoute
 import java.time.Clock
 import java.time.LocalDate
@@ -33,6 +35,8 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 enum class AmountField { VOLUME, PRICE, TOTAL }
+
+enum class OcrOutcome { VOLUME_AND_PRICE, VOLUME_ONLY, PRICE_ONLY, NOTHING }
 
 /** Dados do talão lidos do QR da AT e associados ao abastecimento. */
 data class ScannedReceipt(
@@ -62,6 +66,8 @@ data class FillUpUiState(
     val receipt: ScannedReceipt? = null,
     /** Última leitura de QR falhou (não era um QR da AT ou estava incompleto). */
     val scanFailed: Boolean = false,
+    /** O que o OCR conseguiu ler na última leitura de talão; null se ainda não houve leitura. */
+    val ocrOutcome: OcrOutcome? = null,
     val issues: List<ValidationIssue> = emptyList(),
     /** Só mostrar erros depois de o utilizador tentar guardar ou mexer no campo. */
     val showErrors: Boolean = false,
@@ -154,11 +160,43 @@ class FillUpViewModel(
      * Texto lido de um código QR. Se for um QR da AT, preenche data, total e dados do talão;
      * os valores ficam sempre editáveis e sujeitos a confirmação.
      */
-    fun onQrScanned(raw: String) {
-        when (val result = AtQrCodeParser.parse(raw)) {
+    fun onQrScanned(raw: String) = onReceiptScanned(raw, emptyList())
+
+    /**
+     * Leitura completa do talão: texto do QR e linhas reconhecidas por OCR na mesma imagem.
+     * Os litros e o preço/litro lidos são só sugestões; o utilizador confirma.
+     */
+    fun onReceiptScanned(qrRaw: String, ocrRows: List<String>) {
+        when (val result = AtQrCodeParser.parse(qrRaw)) {
             is AtQrParseResult.Failure -> _uiState.update { it.copy(scanFailed = true) }
-            is AtQrParseResult.Success -> applyReceipt(result.code)
+            is AtQrParseResult.Success -> {
+                applyReceipt(result.code)
+                applyOcr(ocrRows, result.code.totalCents)
+            }
         }
+    }
+
+    private fun applyOcr(ocrRows: List<String>, totalCents: Long) {
+        val amounts = ReceiptTextParser.parse(ocrRows, totalCents)
+        val volumeRead = amounts.volumeSource == AmountSource.OCR && amounts.volumeMl != null
+        val priceRead = amounts.priceSource == AmountSource.OCR && amounts.pricePerLiterMilliCents != null
+        // Só os valores lidos contam como "escritos"; o terceiro deriva do total pela regra habitual.
+        if (volumeRead) touched += AmountField.VOLUME
+        if (priceRead) touched += AmountField.PRICE
+        _uiState.update {
+            it.copy(
+                volumeText = if (volumeRead) NumberInput.formatScaled(amounts.volumeMl!!.toLong(), 3, trimTrailingZeros = true) else it.volumeText,
+                priceText = if (priceRead) NumberInput.formatScaled(amounts.pricePerLiterMilliCents!!.toLong(), 5, trimTrailingZeros = true) else it.priceText,
+                ocrOutcome = when {
+                    volumeRead && priceRead -> OcrOutcome.VOLUME_AND_PRICE
+                    volumeRead -> OcrOutcome.VOLUME_ONLY
+                    priceRead -> OcrOutcome.PRICE_ONLY
+                    else -> OcrOutcome.NOTHING
+                },
+            )
+        }
+        deriveMissingAmount()
+        revalidate()
     }
 
     fun onDismissScanError() {
@@ -174,16 +212,22 @@ class FillUpViewModel(
             documentDate = code.documentDate,
             totalCents = code.totalCents,
         )
+        // O total passa a vir do talão. Litros e preço já escritos (à mão ou por uma leitura anterior)
+        // continuam a contar como escritos; uma nova leitura por OCR substitui-os se ler valores.
+        val current = _uiState.value
+        touched.clear()
+        if (current.volumeText.isNotBlank()) touched += AmountField.VOLUME
+        if (current.priceText.isNotBlank()) touched += AmountField.PRICE
         touched += AmountField.TOTAL
         _uiState.update {
             it.copy(
                 scanFailed = false,
                 receipt = receipt,
+                ocrOutcome = null,
                 date = code.documentDate,
                 totalText = NumberInput.formatScaled(code.totalCents, 2),
             )
         }
-        deriveMissingAmount()
         viewModelScope.launch {
             atcudAlreadyUsed = repository.isAtcudUsed(code.atcud, excludeId = fillUpId)
             revalidate()

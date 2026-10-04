@@ -33,17 +33,25 @@ fun FuelTrackerNavHost() {
         composable<FillUpRoute> { entry ->
             // O ecrã de leitura devolve o texto do QR pelo SavedStateHandle desta entrada.
             val scannedQr by entry.savedStateHandle.getStateFlow<String?>(SCANNED_QR_KEY, null).collectAsStateWithLifecycle()
+            val scannedText by entry.savedStateHandle.getStateFlow<String?>(SCANNED_TEXT_KEY, null).collectAsStateWithLifecycle()
             FillUpScreen(
                 onDone = { navController.popBackStack() },
                 onScanReceipt = { navController.navigate(ScanReceiptRoute) },
                 scannedQr = scannedQr,
-                onScannedQrConsumed = { entry.savedStateHandle[SCANNED_QR_KEY] = null },
+                scannedText = scannedText,
+                onScannedQrConsumed = {
+                    entry.savedStateHandle[SCANNED_QR_KEY] = null
+                    entry.savedStateHandle[SCANNED_TEXT_KEY] = null
+                },
             )
         }
         composable<ScanReceiptRoute> {
             ScanReceiptScreen(
-                onResult = { raw ->
-                    navController.previousBackStackEntry?.savedStateHandle?.set(SCANNED_QR_KEY, raw)
+                onResult = { qrRaw, ocrRows ->
+                    navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
+                        handle[SCANNED_TEXT_KEY] = ocrRows.joinToString("\n")
+                        handle[SCANNED_QR_KEY] = qrRaw
+                    }
                     navController.popBackStack()
                 },
                 onBack = { navController.popBackStack() },

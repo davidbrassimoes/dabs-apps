@@ -52,6 +52,10 @@
     <string name="fillup_receipt_station_nif">NIF do posto: %1$s</string>
     <string name="fillup_scan_receipt">Ler talão (QR)</string>
     <string name="fillup_scan_receipt_again">Ler outro talão</string>
+    <string name="fillup_ocr_both">Litros e preço lidos do talão. Confirma antes de guardar.</string>
+    <string name="fillup_ocr_volume_only">Litros lidos do talão; o preço foi calculado a partir do total.</string>
+    <string name="fillup_ocr_price_only">Preço lido do talão; os litros foram calculados a partir do total.</string>
+    <string name="fillup_ocr_nothing">Não consegui ler os litros nem o preço. Preenche à mão ou lê o talão de novo com mais luz.</string>
     <string name="fillup_warnings_title">Confirmar valores</string>
     <string name="fillup_warnings_question">Queres guardar mesmo assim?</string>
     <string name="fillup_save_anyway">Guardar mesmo assim</string>
@@ -72,7 +76,8 @@
 
     <!-- Leitura do QR -->
     <string name="scan_title">Ler talão</string>
-    <string name="scan_hint">Aponta a câmara ao código QR do talão. A leitura é automática.</string>
+    <string name="scan_hint">Enquadra o talão inteiro, com o código QR e a linha dos litros visíveis. A leitura é automática.</string>
+    <string name="scan_reading_text">QR lido. A ler os litros e o preço, mantém o talão quieto…</string>
     <string name="scan_permission_denied">Sem acesso à câmara não é possível ler o talão. Podes continuar a preencher à mão.</string>
     <string name="scan_permission_retry">Permitir câmara</string>
     <string name="scan_failed_title">Não é um QR de fatura</string>

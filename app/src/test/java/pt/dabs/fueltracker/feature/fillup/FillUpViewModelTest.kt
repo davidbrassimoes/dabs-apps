@@ -119,6 +119,67 @@ class FillUpViewModelTest {
     }
 
     @Test
+    fun `ocr rows fill liters and price when they match the qr total`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(receiptQr, listOf("GASOLINA 95 SIMPLES", "40,00 L x 1,749 EUR/L", "TOTAL 69,96"))
+        val state = viewModel.uiState.value
+        assertEquals("40", state.volumeText)
+        assertEquals("1,749", state.priceText)
+        assertEquals("69,96", state.totalText)
+        assertEquals(OcrOutcome.VOLUME_AND_PRICE, state.ocrOutcome)
+        assertFalse(state.issues.any { it is ValidationIssue.TotalMismatch })
+    }
+
+    @Test
+    fun `ocr with liters only derives the price from the receipt total`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(receiptQr, listOf("GASOLEO", "QUANTIDADE 40,00 L", "TOTAL 69,96"))
+        val state = viewModel.uiState.value
+        assertEquals("40", state.volumeText)
+        assertEquals("1,749", state.priceText)
+        assertEquals(OcrOutcome.VOLUME_ONLY, state.ocrOutcome)
+    }
+
+    @Test
+    fun `ocr that reads nothing leaves liters and price empty`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(receiptQr, listOf("OBRIGADO", "VOLTE SEMPRE"))
+        val state = viewModel.uiState.value
+        assertEquals("", state.volumeText)
+        assertEquals("", state.priceText)
+        assertEquals("69,96", state.totalText)
+        assertEquals(OcrOutcome.NOTHING, state.ocrOutcome)
+        // escrever os litros a seguir continua a derivar o preço do total
+        viewModel.onVolumeChange("40")
+        assertEquals("1,749", viewModel.uiState.value.priceText)
+    }
+
+    @Test
+    fun `ocr values inconsistent with the total are kept and the mismatch warns`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        // talão com café: litros × preço = 65,61 mas o total do QR é 69,96
+        viewModel.onReceiptScanned(receiptQr, listOf("GASOLEO SIMPLES", "41,03 LT 1,599 €/L 65,61", "CAFE 4,35", "TOTAL 69,96"))
+        val state = viewModel.uiState.value
+        assertEquals("41,03", state.volumeText)
+        assertEquals("1,599", state.priceText)
+        assertEquals("69,96", state.totalText)
+        assertTrue(state.issues.any { it is ValidationIssue.TotalMismatch })
+    }
+
+    @Test
+    fun `a second scan replaces what the first one filled in`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(receiptQr, listOf("40,00 L x 1,749 EUR/L"))
+        val second = receiptQr.replace("O:69.96", "O:52.47").replace("H:JFK2H8QX-4471", "H:JFK2H8QX-4472")
+        viewModel.onReceiptScanned(second, listOf("30,00 L x 1,749 EUR/L"))
+        val state = viewModel.uiState.value
+        assertEquals("30", state.volumeText)
+        assertEquals("1,749", state.priceText)
+        assertEquals("52,47", state.totalText)
+        assertEquals("JFK2H8QX-4472", state.receipt?.atcud)
+    }
+
+    @Test
     fun `non AT qr sets the scan error and leaves the form untouched`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
         viewModel.onTotalChange("10")

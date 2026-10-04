@@ -1,0 +1,6 @@
+ESTACAO DE SERVICO
+Produto Qtd Preco Valor
+Ultimate 98 35,50 1,899 67,41
+TOTAL A PAGAR 67,41
+IVA incluido 12,61
+Pago em Multibanco 67,41

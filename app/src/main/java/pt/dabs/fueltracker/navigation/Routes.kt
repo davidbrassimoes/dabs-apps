@@ -12,11 +12,15 @@ data object HistoryRoute
 @Serializable
 data object SettingsRoute
 
-/** Leitura do QR do talão; devolve o texto lido ao ecrã anterior em [SCANNED_QR_KEY]. */
+/**
+ * Leitura do talão; devolve ao ecrã anterior o texto do QR em [SCANNED_QR_KEY] e as linhas
+ * reconhecidas por OCR (separadas por `\n`) em [SCANNED_TEXT_KEY].
+ */
 @Serializable
 data object ScanReceiptRoute
 
 const val SCANNED_QR_KEY = "scanned_qr"
+const val SCANNED_TEXT_KEY = "scanned_text"
 
 /** Novo abastecimento quando [fillUpId] é [FillUp.NEW_ID]; edição caso contrário. */
 @Serializable

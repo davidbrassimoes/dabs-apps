@@ -1,0 +1,151 @@
+package pt.dabs.fueltracker.core.scanning
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * As amostras em `src/test/resources/receipts` são textos sintéticos com os layouts habituais
+ * dos talões portugueses (linha única, tabela, linhas separadas, ruído de OCR). Devem ser
+ * substituídas ou complementadas por talões reais anonimizados à medida que forem aparecendo.
+ */
+class ReceiptTextParserTest {
+
+    private fun sample(name: String): List<String> {
+        val stream = checkNotNull(javaClass.classLoader?.getResourceAsStream("receipts/$name.txt")) { "sample $name missing" }
+        return stream.bufferedReader(Charsets.UTF_8).readLines()
+    }
+
+    @Test
+    fun `single line with liters x price confirmed by the qr total`() {
+        val result = ReceiptTextParser.parse(sample("galp_linha_unica"), totalCents = 7_017)
+        assertEquals(40_120, result.volumeMl)
+        assertEquals(174_900, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.OCR, result.volumeSource)
+        assertEquals(AmountSource.OCR, result.priceSource)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `table layout with quantity, price and value columns`() {
+        val result = ReceiptTextParser.parse(sample("bp_tabela"), totalCents = 6_741)
+        assertEquals(35_500, result.volumeMl)
+        assertEquals(189_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `liters and price on separate labelled lines`() {
+        val result = ReceiptTextParser.parse(sample("repsol_linhas_separadas"), totalCents = 5_000)
+        assertEquals(28_588, result.volumeMl)
+        assertEquals(174_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `receipt with another item keeps both values and flags the total`() {
+        val result = ReceiptTextParser.parse(sample("super_com_cafe"), totalCents = 6_641)
+        assertEquals(41_030, result.volumeMl)
+        assertEquals(159_900, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.OCR, result.volumeSource)
+        assertEquals(AmountSource.OCR, result.priceSource)
+        assertEquals(false, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `ocr confusions between O and 0, l and 1 are repaired`() {
+        val result = ReceiptTextParser.parse(sample("ocr_ruido"), totalCents = 7_017)
+        assertEquals(40_120, result.volumeMl)
+        assertEquals(174_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `only liters printed derives the price from the total`() {
+        val result = ReceiptTextParser.parse(sample("so_litros"), totalCents = 6_700)
+        assertEquals(38_200, result.volumeMl)
+        assertEquals(AmountSource.OCR, result.volumeSource)
+        // 67,00 / 38,20 = 1,75392... → 1,754 €/L
+        assertEquals(175_400, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.DERIVED, result.priceSource)
+    }
+
+    @Test
+    fun `only price printed derives the liters from the total`() {
+        val result = ReceiptTextParser.parse(sample("so_preco"), totalCents = 6_000)
+        assertEquals(169_900, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.OCR, result.priceSource)
+        // 60,00 / 1,699 = 35,315 L
+        assertEquals(35_315, result.volumeMl)
+        assertEquals(AmountSource.DERIVED, result.volumeSource)
+    }
+
+    @Test
+    fun `price before volume on different lines`() {
+        val result = ReceiptTextParser.parse(sample("colunas_trocadas"), totalCents = 7_125)
+        assertEquals(44_010, result.volumeMl)
+        assertEquals(161_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `nothing usable yields empty`() {
+        assertEquals(ReceiptAmounts.EMPTY, ReceiptTextParser.parse(sample("sem_valores"), totalCents = 7_017))
+        assertEquals(ReceiptAmounts.EMPTY, ReceiptTextParser.parse(emptyList(), totalCents = 7_017))
+    }
+
+    @Test
+    fun `without total, keywords alone are needed`() {
+        val withKeywords = ReceiptTextParser.parse(listOf("GASOLINA 95", "40,12 L", "1,749 €/L"), totalCents = null)
+        assertEquals(40_120, withKeywords.volumeMl)
+        assertEquals(174_900, withKeywords.pricePerLiterMilliCents)
+        assertNull(withKeywords.consistentWithTotal)
+
+        val bareNumbers = ReceiptTextParser.parse(listOf("40,12", "1,749"), totalCents = null)
+        assertNull(bareNumbers.volumeMl)
+        // 1,749 com 3 decimais ainda pontua como preço (2 pontos)
+        assertEquals(174_900, bareNumbers.pricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `total itself is never taken as liters or price`() {
+        val result = ReceiptTextParser.parse(listOf("TOTAL 1,80", "GASOLINA 1,80 L"), totalCents = 180)
+        // 1,80 L × preço desconhecido: sem preço plausível nada é derivado (1,80 € / 1,80 L = 1,000 €/L é plausível)
+        assertEquals(1_800, result.volumeMl)
+        assertEquals(100_000, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.DERIVED, result.priceSource)
+    }
+
+    @Test
+    fun `money marked numbers are not liters`() {
+        val result = ReceiptTextParser.parse(listOf("GASOLINA 95 SIMPLES", "€ 45,00", "TOTAL 45,00"), totalCents = 4_500)
+        assertNull(result.volumeMl)
+        assertNull(result.pricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `dates, times and percentages are ignored`() {
+        val result = ReceiptTextParser.parse(listOf("01/03/2026 14:07", "IVA 23%", "NIF 500697256"), totalCents = 7_017)
+        assertEquals(ReceiptAmounts.EMPTY, result)
+    }
+
+    @Test
+    fun `implausible values are discarded`() {
+        val result = ReceiptTextParser.parse(listOf("LITROS 950,00", "PREÇO 9,999 €/L"), totalCents = null)
+        assertNull(result.volumeMl)
+        assertNull(result.pricePerLiterMilliCents)
+        assertFalse(result.consistentWithTotal == true)
+    }
+
+    @Test
+    fun `tolerance grows slightly with the total`() {
+        // 40,12 × 1,749 = 70,17; total do QR 70,20 (3 cêntimos + 7 de 0,1 %) ainda confirma
+        val ok = ReceiptTextParser.parse(listOf("40,12 L 1,749 €/L"), totalCents = 7_020)
+        assertEquals(true, ok.consistentWithTotal)
+        val off = ReceiptTextParser.parse(listOf("40,12 L 1,749 €/L"), totalCents = 7_100)
+        assertEquals(false, off.consistentWithTotal)
+        assertTrue(off.volumeMl == 40_120 && off.pricePerLiterMilliCents == 174_900)
+    }
+}

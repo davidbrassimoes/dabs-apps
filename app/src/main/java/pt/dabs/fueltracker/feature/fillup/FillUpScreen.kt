@@ -65,6 +65,7 @@ fun FillUpScreen(
     onDone: () -> Unit,
     onScanReceipt: () -> Unit,
     scannedQr: String?,
+    scannedText: String?,
     onScannedQrConsumed: () -> Unit,
     viewModel: FillUpViewModel = hiltViewModel(),
 ) {
@@ -76,7 +77,8 @@ fun FillUpScreen(
 
     LaunchedEffect(scannedQr) {
         if (scannedQr != null) {
-            viewModel.onQrScanned(scannedQr)
+            val rows = scannedText?.lines()?.filter { it.isNotBlank() }.orEmpty()
+            viewModel.onReceiptScanned(scannedQr, rows)
             onScannedQrConsumed()
         }
     }
@@ -155,7 +157,7 @@ fun FillUpContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ReceiptCard(receipt = state.receipt, onScanReceipt = onScanReceipt)
+            ReceiptCard(receipt = state.receipt, ocrOutcome = state.ocrOutcome, onScanReceipt = onScanReceipt)
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
@@ -323,7 +325,7 @@ fun FillUpContent(
 }
 
 @Composable
-private fun ReceiptCard(receipt: ScannedReceipt?, onScanReceipt: () -> Unit) {
+private fun ReceiptCard(receipt: ScannedReceipt?, ocrOutcome: OcrOutcome?, onScanReceipt: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (receipt == null) {
@@ -343,6 +345,20 @@ private fun ReceiptCard(receipt: ScannedReceipt?, onScanReceipt: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                ocrOutcome?.let { outcome ->
+                    Text(
+                        text = stringResource(
+                            when (outcome) {
+                                OcrOutcome.VOLUME_AND_PRICE -> R.string.fillup_ocr_both
+                                OcrOutcome.VOLUME_ONLY -> R.string.fillup_ocr_volume_only
+                                OcrOutcome.PRICE_ONLY -> R.string.fillup_ocr_price_only
+                                OcrOutcome.NOTHING -> R.string.fillup_ocr_nothing
+                            }
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (outcome == OcrOutcome.NOTHING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
             OutlinedButton(onClick = onScanReceipt, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(if (receipt == null) R.string.fillup_scan_receipt else R.string.fillup_scan_receipt_again))
