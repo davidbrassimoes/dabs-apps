@@ -39,6 +39,8 @@ fun ValidationIssue.message(): String = when (this) {
     is ValidationIssue.VolumeExceedsTank ->
         stringResource(R.string.validation_volume_exceeds_tank, PtFormat.liters(tankCapacityMl.toLong()))
     ValidationIssue.DuplicateAtcud -> stringResource(R.string.validation_duplicate_atcud)
+    ValidationIssue.ReceiptWithoutNif -> stringResource(R.string.validation_receipt_without_nif)
+    is ValidationIssue.ReceiptNifMismatch -> stringResource(R.string.validation_receipt_nif_mismatch, buyerNif)
 }
 
 @Composable

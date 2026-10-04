@@ -16,11 +16,15 @@ import pt.dabs.fueltracker.core.data.SettingsRepository
 import pt.dabs.fueltracker.core.domain.FillUpDraft
 import pt.dabs.fueltracker.core.domain.FillUpValidator
 import pt.dabs.fueltracker.core.domain.FuelMath
+import pt.dabs.fueltracker.core.domain.Nif
 import pt.dabs.fueltracker.core.domain.NumberInput
 import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.hasErrors
 import pt.dabs.fueltracker.core.domain.hasWarnings
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.scanning.AtQrCode
+import pt.dabs.fueltracker.core.scanning.AtQrCodeParser
+import pt.dabs.fueltracker.core.scanning.AtQrParseResult
 import pt.dabs.fueltracker.navigation.FillUpRoute
 import java.time.Clock
 import java.time.LocalDate
@@ -29,6 +33,16 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 enum class AmountField { VOLUME, PRICE, TOTAL }
+
+/** Dados do talão lidos do QR da AT e associados ao abastecimento. */
+data class ScannedReceipt(
+    val issuerNif: String,
+    val buyerNif: String,
+    val atcud: String,
+    val documentId: String?,
+    val documentDate: LocalDate,
+    val totalCents: Long,
+)
 
 data class FillUpUiState(
     val isLoading: Boolean = true,
@@ -44,6 +58,10 @@ data class FillUpUiState(
     val notes: String = "",
     /** Odómetro do abastecimento anterior (por data), para sugestão. */
     val previousOdometerKm: Int? = null,
+    /** Talão lido nesta sessão ou guardado com o abastecimento em edição. */
+    val receipt: ScannedReceipt? = null,
+    /** Última leitura de QR falhou (não era um QR da AT ou estava incompleto). */
+    val scanFailed: Boolean = false,
     val issues: List<ValidationIssue> = emptyList(),
     /** Só mostrar erros depois de o utilizador tentar guardar ou mexer no campo. */
     val showErrors: Boolean = false,
@@ -85,11 +103,15 @@ class FillUpViewModel(
     private var existing: List<FillUp> = emptyList()
     private var original: FillUp? = null
     private var tankCapacityMl: Int? = null
+    private var userNif: String? = null
+    private var atcudAlreadyUsed = false
 
     init {
         viewModelScope.launch {
             existing = repository.observeAll().first()
-            tankCapacityMl = settingsRepository.settings.first().tankCapacityMl
+            val settings = settingsRepository.settings.first()
+            tankCapacityMl = settings.tankCapacityMl
+            userNif = settings.nif
             val loaded = if (fillUpId != FillUp.NEW_ID) repository.getById(fillUpId) else null
             original = loaded
             if (loaded != null) {
@@ -107,6 +129,7 @@ class FillUpViewModel(
                         isFullTank = loaded.isFullTank,
                         stationName = loaded.stationName.orEmpty(),
                         notes = loaded.notes.orEmpty(),
+                        receipt = loaded.toStoredReceipt(),
                     )
                 }
             } else {
@@ -126,6 +149,46 @@ class FillUpViewModel(
     fun onVolumeChange(text: String) = onAmountChange(AmountField.VOLUME, text)
     fun onPriceChange(text: String) = onAmountChange(AmountField.PRICE, text)
     fun onTotalChange(text: String) = onAmountChange(AmountField.TOTAL, text)
+
+    /**
+     * Texto lido de um código QR. Se for um QR da AT, preenche data, total e dados do talão;
+     * os valores ficam sempre editáveis e sujeitos a confirmação.
+     */
+    fun onQrScanned(raw: String) {
+        when (val result = AtQrCodeParser.parse(raw)) {
+            is AtQrParseResult.Failure -> _uiState.update { it.copy(scanFailed = true) }
+            is AtQrParseResult.Success -> applyReceipt(result.code)
+        }
+    }
+
+    fun onDismissScanError() {
+        _uiState.update { it.copy(scanFailed = false) }
+    }
+
+    private fun applyReceipt(code: AtQrCode) {
+        val receipt = ScannedReceipt(
+            issuerNif = code.issuerNif,
+            buyerNif = code.buyerNif,
+            atcud = code.atcud,
+            documentId = code.documentId,
+            documentDate = code.documentDate,
+            totalCents = code.totalCents,
+        )
+        touched += AmountField.TOTAL
+        _uiState.update {
+            it.copy(
+                scanFailed = false,
+                receipt = receipt,
+                date = code.documentDate,
+                totalText = NumberInput.formatScaled(code.totalCents, 2),
+            )
+        }
+        deriveMissingAmount()
+        viewModelScope.launch {
+            atcudAlreadyUsed = repository.isAtcudUsed(code.atcud, excludeId = fillUpId)
+            revalidate()
+        }
+    }
 
     private fun onAmountChange(field: AmountField, text: String) {
         touched += field
@@ -182,13 +245,20 @@ class FillUpViewModel(
         pricePerLiterMilliCents = NumberInput.parsePricePerLiterToMilliCents(state.priceText),
         totalCents = NumberInput.parseEurosToCents(state.totalText),
         isFullTank = state.isFullTank,
-        atcud = original?.atcud,
+        atcud = state.receipt?.atcud,
+        buyerNif = state.receipt?.buyerNif,
     )
 
     private fun revalidate() {
         val state = _uiState.value
         val draft = currentDraft(state)
-        val issues = FillUpValidator.validate(draft, existing, tankCapacityMl = tankCapacityMl)
+        val issues = FillUpValidator.validate(
+            draft = draft,
+            existing = existing,
+            tankCapacityMl = tankCapacityMl,
+            atcudAlreadyUsed = atcudAlreadyUsed,
+            userNif = userNif,
+        )
         val previous = FillUpValidator.previousFillUp(existing, draft.dateTime, excludingId = fillUpId)
         _uiState.update { it.copy(issues = issues, previousOdometerKm = previous?.odometerKm, askWarningConfirmation = false) }
     }
@@ -224,6 +294,7 @@ class FillUpViewModel(
         _uiState.update { it.copy(isSaving = true, askWarningConfirmation = false) }
         viewModelScope.launch {
             val base = original
+            val receipt = state.receipt
             val fillUp = FillUp(
                 id = fillUpId,
                 dateTime = draft.dateTime,
@@ -232,15 +303,32 @@ class FillUpViewModel(
                 pricePerLiterMilliCents = price,
                 totalCents = total,
                 isFullTank = state.isFullTank,
-                stationNif = base?.stationNif,
+                stationNif = receipt?.issuerNif,
                 stationName = state.stationName.trim().ifEmpty { null },
-                atcud = base?.atcud,
-                buyerNifPresent = base?.buyerNifPresent,
+                // O ATCUD é único na base de dados: um talão repetido guarda-se sem a ligação ao ATCUD.
+                atcud = receipt?.atcud?.takeUnless { atcudAlreadyUsed },
+                buyerNifPresent = receipt?.let { !it.buyerIsFinalConsumer },
                 notes = state.notes.trim().ifEmpty { null },
                 createdAt = base?.createdAt ?: clock.instant(),
             )
             if (base == null) repository.insert(fillUp) else repository.update(fillUp)
             _uiState.update { it.copy(isSaving = false, saved = true) }
         }
+    }
+
+    private val ScannedReceipt.buyerIsFinalConsumer: Boolean get() = buyerNif == Nif.FINAL_CONSUMER
+
+    /** Reconstrói o que se sabe do talão de um abastecimento guardado (sem o texto do QR). */
+    private fun FillUp.toStoredReceipt(): ScannedReceipt? {
+        val atcud = atcud ?: return null
+        val issuer = stationNif ?: return null
+        return ScannedReceipt(
+            issuerNif = issuer,
+            buyerNif = if (buyerNifPresent == true) (userNif ?: "") else Nif.FINAL_CONSUMER,
+            atcud = atcud,
+            documentId = null,
+            documentDate = LocalDateTime.ofInstant(dateTime, clock.zone).toLocalDate(),
+            totalCents = totalCents,
+        )
     }
 }

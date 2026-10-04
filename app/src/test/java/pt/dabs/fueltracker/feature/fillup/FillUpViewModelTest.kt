@@ -47,6 +47,90 @@ class FillUpViewModelTest {
         clock = clock,
     )
 
+    private val receiptQr = "A:500697256*B:999999990*C:PT*D:FS*E:N*F:20260301*G:FS 01P2026/4471*H:JFK2H8QX-4471" +
+        "*I1:PT*I7:56.88*I8:13.08*N:13.08*O:69.96*Q:Ab3d*R:1234"
+
+    @Test
+    fun `scanning an AT qr fills date, total and receipt data`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onDateChange(LocalDate.of(2026, 2, 20))
+        viewModel.onQrScanned(receiptQr)
+        val state = viewModel.uiState.value
+        assertFalse(state.scanFailed)
+        assertEquals(LocalDate.of(2026, 3, 1), state.date)
+        assertEquals("69,96", state.totalText)
+        assertEquals("JFK2H8QX-4471", state.receipt?.atcud)
+        assertEquals("500697256", state.receipt?.issuerNif)
+        assertEquals("FS 01P2026/4471", state.receipt?.documentId)
+        assertTrue(state.issues.any { it is ValidationIssue.ReceiptWithoutNif })
+    }
+
+    @Test
+    fun `after scanning, typing the volume derives the price from the receipt total`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onQrScanned(receiptQr)
+        viewModel.onVolumeChange("40")
+        assertEquals("1,749", viewModel.uiState.value.priceText)
+    }
+
+    @Test
+    fun `saving a scanned receipt stores station nif, atcud and nif flag`() = runTest {
+        val repository = FakeFillUpRepository(existing)
+        val viewModel = newViewModel(repository)
+        viewModel.onQrScanned(receiptQr)
+        viewModel.onOdometerChange("11200")
+        viewModel.onVolumeChange("40")
+        viewModel.onSaveClick()           // aviso de talão sem NIF
+        assertTrue(viewModel.uiState.value.askWarningConfirmation)
+        viewModel.onConfirmWarnings()
+        val saved = repository.current.single { it.id == 3L }
+        assertEquals("500697256", saved.stationNif)
+        assertEquals("JFK2H8QX-4471", saved.atcud)
+        assertEquals(false, saved.buyerNifPresent)
+        assertEquals(6_996L, saved.totalCents)
+        assertEquals(174_900, saved.pricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `receipt with the user's nif does not warn, another nif does`() = runTest {
+        val withUserNif = receiptQr.replace("B:999999990", "B:123456789")
+        val ok = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(nif = "123456789"))
+        ok.onQrScanned(withUserNif)
+        assertFalse(ok.uiState.value.issues.any { it is ValidationIssue.ReceiptWithoutNif || it is ValidationIssue.ReceiptNifMismatch })
+
+        val other = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(nif = "987654321"))
+        other.onQrScanned(withUserNif)
+        assertTrue(other.uiState.value.issues.any { it is ValidationIssue.ReceiptNifMismatch })
+    }
+
+    @Test
+    fun `duplicate atcud warns and is saved without the atcud link`() = runTest {
+        val repository = FakeFillUpRepository(existing + fillUp(3, "2026-02-10", 11_000, 30_000, atcud = "JFK2H8QX-4471"))
+        val viewModel = newViewModel(repository)
+        viewModel.onQrScanned(receiptQr)
+        assertTrue(viewModel.uiState.value.issues.any { it is ValidationIssue.DuplicateAtcud })
+        viewModel.onOdometerChange("11600")
+        viewModel.onVolumeChange("40")
+        viewModel.onSaveClick()
+        viewModel.onConfirmWarnings()
+        val saved = repository.current.single { it.id == 4L }
+        assertNull(saved.atcud)
+        assertEquals("500697256", saved.stationNif)
+    }
+
+    @Test
+    fun `non AT qr sets the scan error and leaves the form untouched`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onTotalChange("10")
+        viewModel.onQrScanned("https://example.com")
+        val state = viewModel.uiState.value
+        assertTrue(state.scanFailed)
+        assertNull(state.receipt)
+        assertEquals("10", state.totalText)
+        viewModel.onDismissScanError()
+        assertFalse(viewModel.uiState.value.scanFailed)
+    }
+
     @Test
     fun `tank capacity from settings produces a warning when exceeded`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(tankCapacityMl = 45_000))

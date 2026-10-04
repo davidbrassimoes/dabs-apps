@@ -47,6 +47,11 @@
     <string name="fillup_full_tank_hint">Atestar fecha um ciclo de consumo</string>
     <string name="fillup_station">Posto (opcional)</string>
     <string name="fillup_notes">Notas (opcional)</string>
+    <string name="fillup_receipt_none">Lê o QR do talão para preencher a data, o total e o posto.</string>
+    <string name="fillup_receipt_read">Talão lido</string>
+    <string name="fillup_receipt_station_nif">NIF do posto: %1$s</string>
+    <string name="fillup_scan_receipt">Ler talão (QR)</string>
+    <string name="fillup_scan_receipt_again">Ler outro talão</string>
     <string name="fillup_warnings_title">Confirmar valores</string>
     <string name="fillup_warnings_question">Queres guardar mesmo assim?</string>
     <string name="fillup_save_anyway">Guardar mesmo assim</string>
@@ -61,7 +66,18 @@
     <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
     <string name="validation_total_mismatch">Litros × preço dá %1$s, diferente do total indicado</string>
     <string name="validation_volume_exceeds_tank">Litros acima da capacidade do depósito (%1$s)</string>
-    <string name="validation_duplicate_atcud">Este talão já foi registado</string>
+    <string name="validation_duplicate_atcud">Este talão já foi registado. Se guardares, fica sem a ligação ao ATCUD</string>
+    <string name="validation_receipt_without_nif">O talão foi emitido sem NIF (consumidor final)</string>
+    <string name="validation_receipt_nif_mismatch">O talão tem o NIF %1$s, diferente do teu</string>
+
+    <!-- Leitura do QR -->
+    <string name="scan_title">Ler talão</string>
+    <string name="scan_hint">Aponta a câmara ao código QR do talão. A leitura é automática.</string>
+    <string name="scan_permission_denied">Sem acesso à câmara não é possível ler o talão. Podes continuar a preencher à mão.</string>
+    <string name="scan_permission_retry">Permitir câmara</string>
+    <string name="scan_failed_title">Não é um QR de fatura</string>
+    <string name="scan_failed_body">O código lido não tem o formato das faturas portuguesas (campos A, B, F, H, O). Tenta o QR impresso no talão.</string>
+    <string name="scan_retry">Tentar de novo</string>
 
     <!-- Definições -->
     <string name="settings_title">Definições</string>

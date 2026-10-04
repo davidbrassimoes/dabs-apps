@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +63,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun FillUpScreen(
     onDone: () -> Unit,
+    onScanReceipt: () -> Unit,
+    scannedQr: String?,
+    onScannedQrConsumed: () -> Unit,
     viewModel: FillUpViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,9 +74,18 @@ fun FillUpScreen(
         if (state.saved) onDone()
     }
 
+    LaunchedEffect(scannedQr) {
+        if (scannedQr != null) {
+            viewModel.onQrScanned(scannedQr)
+            onScannedQrConsumed()
+        }
+    }
+
     FillUpContent(
         state = state,
         onBack = onDone,
+        onScanReceipt = onScanReceipt,
+        onDismissScanError = viewModel::onDismissScanError,
         onDateChange = viewModel::onDateChange,
         onTimeChange = viewModel::onTimeChange,
         onOdometerChange = viewModel::onOdometerChange,
@@ -93,6 +106,8 @@ fun FillUpScreen(
 fun FillUpContent(
     state: FillUpUiState,
     onBack: () -> Unit,
+    onScanReceipt: () -> Unit,
+    onDismissScanError: () -> Unit,
     onDateChange: (LocalDate) -> Unit,
     onTimeChange: (LocalTime) -> Unit,
     onOdometerChange: (String) -> Unit,
@@ -140,6 +155,8 @@ fun FillUpContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            ReceiptCard(receipt = state.receipt, onScanReceipt = onScanReceipt)
+
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
                     Text(state.date.format(dateFormatter))
@@ -271,6 +288,20 @@ fun FillUpContent(
         )
     }
 
+    if (state.scanFailed) {
+        AlertDialog(
+            onDismissRequest = onDismissScanError,
+            title = { Text(stringResource(R.string.scan_failed_title)) },
+            text = { Text(stringResource(R.string.scan_failed_body)) },
+            confirmButton = {
+                TextButton(onClick = { onDismissScanError(); onScanReceipt() }) { Text(stringResource(R.string.scan_retry)) }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissScanError) { Text(stringResource(R.string.action_ok)) }
+            },
+        )
+    }
+
     if (state.askWarningConfirmation) {
         AlertDialog(
             onDismissRequest = onDismissWarnings,
@@ -288,6 +319,35 @@ fun FillUpContent(
                 TextButton(onClick = onDismissWarnings) { Text(stringResource(R.string.action_review)) }
             },
         )
+    }
+}
+
+@Composable
+private fun ReceiptCard(receipt: ScannedReceipt?, onScanReceipt: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (receipt == null) {
+                Text(stringResource(R.string.fillup_receipt_none), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(stringResource(R.string.fillup_receipt_read), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = listOfNotNull(
+                        receipt.documentId,
+                        receipt.documentDate.format(dateFormatter),
+                        PtFormat.euros(receipt.totalCents),
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.fillup_receipt_station_nif, receipt.issuerNif),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            OutlinedButton(onClick = onScanReceipt, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(if (receipt == null) R.string.fillup_scan_receipt else R.string.fillup_scan_receipt_again))
+            }
+        }
     }
 }
 

@@ -67,6 +67,14 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
+
+    // Câmara e leitura de QR (modelo empacotado, sem download do Play Services)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.mlkit.barcode.scanning)
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)

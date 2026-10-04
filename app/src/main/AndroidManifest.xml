@@ -2,6 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Leitura do QR do talão e do conta-km. A app continua utilizável sem câmara. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+
+    <!-- A app é totalmente offline. As bibliotecas do ML Kit / Play Services trazem estas
+         permissões no manifesto delas; removem-se na fusão para garantir que a app nunca as tem. -->
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
+
     <application
         android:name=".FuelTrackerApp"
         android:allowBackup="true"
