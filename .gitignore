@@ -1,0 +1,32 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Node (authoring)
+node_modules/
+dist/
+
+# Rust
+target/
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Generated assets (copied from scenes/ and shared/ at build time)
+tv-app/**/src/main/assets/scenes/
+tv-app/**/src/main/assets/shared/
+
+# Secrets
+secrets.json
+*.keystore
+.env

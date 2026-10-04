@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "id": "tv",
+  "name": "TV",
+  "brightness": 0.85,
+  "contrast": 1.0,
+  "saturation": 1.0,
+  "gamma": 1.0,
+  "blackFloor": 0.0,
+  "temperature": 0.1,
+  "dither": 1,
+  "renderScale": 0.5,
+  "maxFps": 30
+}

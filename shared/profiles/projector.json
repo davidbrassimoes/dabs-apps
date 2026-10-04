@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "id": "projector",
+  "name": "Projetor",
+  "_note": "Valores iniciais por palpite. Afinar no projetor real (Fase 3.5).",
+  "brightness": 1.0,
+  "contrast": 1.1,
+  "saturation": 1.25,
+  "gamma": 1.15,
+  "blackFloor": 0.02,
+  "temperature": 0.0,
+  "dither": 1,
+  "renderScale": 0.5,
+  "maxFps": 30
+}
