@@ -27,7 +27,7 @@ Lê por esta ordem antes de qualquer trabalho:
 1. **Leveza e desempenho acima de tudo.** A escolha de tecnologia não depende de preferências pessoais de linguagem; depende do que for mais performativo, eficiente e leve. O dono do projeto aceita qualquer linguagem.
 2. **Na box: nativo e mínimo.** Kotlin + OpenGL ES 3.0 sobre `GLSurfaceView`. Sem WebView, sem Compose no caminho de render, sem motores de jogo. Cada dependência nova na `tv-app` precisa de justificação escrita (ADR curto).
 3. **Zero alocações por frame** no loop de render (Kotlin). Buffers, arrays de uniforms e objetos reutilizados. Nada de lambdas/boxing no `onDrawFrame`.
-4. **Orçamento de render**: as cenas renderizam a uma **escala interna** (tipicamente 0.5 de 4K = 1080p, ou menos) e são escaladas; **limite de fps por cena** (30 por defeito para cenas lentas). Escala dinâmica de resolução se o frame time ultrapassar o orçamento.
+4. **Orçamento de render**: as cenas renderizam a uma **escala interna** relativa à surface real (na TV atual a surface é 1080p, logo 0.5 = 960×540) e são escaladas; **limite de fps por cena** (30 por defeito para cenas lentas). Escala dinâmica de resolução se o frame time ultrapassar o orçamento.
 5. **Fonte única de verdade para as cenas**: `scenes/<id>/scene.frag` + `scenes/<id>/scene.json`, e a biblioteca GLSL em `shared/glsl/`. A `tv-app`, a ferramenta `authoring` e a página `control-web` leem destes ficheiros — nunca há cópias editadas à mão.
 6. **As cenas nunca sabem de onde vêm os sinais.** Leem só os uniforms do contrato (`docs/FORMATO-CENA.md`). A mistura entre sinais reais e sinais sintéticos (pela "intensidade de reatividade") é feita no host, antes de enviar uniforms.
 7. **Offline-first.** A TV tem de funcionar sozinha: sem PC, sem telemóvel, sem internet (modo sem reatividade + imagens em cache ou cenas sintetizadas).
@@ -79,7 +79,7 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 
 | Componente | Compilar | Correr | Testar |
 |---|---|---|---|
-| authoring | _a definir_ | _a definir_ | _a definir_ |
+| authoring | `cd authoring && npm install && npm run build` | `npm run dev` → http://localhost:5180/ | `npm run check` (tipos) · `node scripts/smoke.mjs` (headless, com o servidor a correr) |
 | tv-app | _a definir_ | _a definir_ | _a definir_ |
 | signals-core | _a definir_ | — | _a definir_ |
 | pc-bridge | _a definir_ | _a definir_ | _a definir_ |

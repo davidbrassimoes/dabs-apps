@@ -8,8 +8,8 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 
 **Objetivo:** iterar cenas rapidamente no PC e validar o desempenho real na box desde o primeiro dia.
 
-- [ ] **0.1 Repo base** — `git init`, `.gitignore`, verificação do ambiente (Node, JDK, Android SDK, adb ligado à box). Confirmar versão do Android TV na box.
-- [ ] **0.2 Ferramenta de autoria (`authoring/`)** — página WebGL2 só para desenvolvimento:
+- [x] **0.1 Repo base** (2026-10-04; dados da box em `tv-app/README.md`) — `git init`, `.gitignore`, verificação do ambiente (Node, JDK, Android SDK, adb ligado à box). Confirmar versão do Android TV na box.
+- [x] **0.2 Ferramenta de autoria (`authoring/`)** (2026-10-04; ver `authoring/README.md`) — página WebGL2 só para desenvolvimento:
   - lê `scenes/*` e `shared/*` diretamente (servidor de dev leve, ex.: Vite sem framework),
   - pré-processador `#include` + composição de cabeçalho/parâmetros igual ao da tv-app,
   - **hot reload** de `.frag` e `.json`,

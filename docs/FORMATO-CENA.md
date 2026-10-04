@@ -18,7 +18,7 @@ O host (tv-app e authoring, com o mesmo algoritmo) monta o shader final assim:
 2. Uma linha por parâmetro declarado: `uniform float p_<id>;` (ou `vec3` para `color`)
 3. O corpo de `scene.frag`, com as diretivas `#include "<caminho>"` substituídas pelo conteúdo de `shared/glsl/<caminho>` (cada ficheiro incluído no máximo uma vez).
 
-`scene.frag` define `void main()` e escreve em `fragColor` (RGB linear-ish, 0..1; alfa ignorado).
+`scene.frag` define `void main()` e escreve em `fragColor` (RGB *display-referred*, 0..1, sem conversão sRGB em lado nenhum; alfa ignorado). O passe de saída trata o valor como já pronto para o ecrã.
 
 ## Uniforms do contrato
 
