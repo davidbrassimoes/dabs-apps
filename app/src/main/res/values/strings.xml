@@ -1,3 +1,75 @@
 <resources>
     <string name="app_name">Fuel Tracker</string>
+    <string name="no_value">—</string>
+
+    <!-- Ações -->
+    <string name="action_back">Voltar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_ok">OK</string>
+    <string name="action_delete">Apagar</string>
+    <string name="action_undo">Anular</string>
+    <string name="action_review">Rever</string>
+
+    <!-- Rótulos partilhados -->
+    <string name="label_distance">Distância</string>
+    <string name="label_spent">Gasto</string>
+    <string name="label_volume">Litros</string>
+    <string name="label_average_consumption">Consumo médio</string>
+    <string name="label_cost_per_km">Custo por km</string>
+    <string name="label_average_price">Preço médio</string>
+    <string name="label_date">Data</string>
+    <string name="label_odometer">Conta-km</string>
+
+    <!-- Início -->
+    <string name="home_add_fill_up">Abastecer</string>
+    <string name="home_open_history">Histórico</string>
+    <string name="home_empty_title">Ainda não há abastecimentos</string>
+    <string name="home_empty_body">Regista o primeiro abastecimento com o botão Abastecer. O consumo aparece a partir do segundo depósito cheio.</string>
+    <string name="home_last_consumption">Último consumo</string>
+    <string name="home_recent_average">Média recente</string>
+    <string name="home_overall_average">Global: %1$s</string>
+    <string name="home_estimated_range">Autonomia estimada por depósito</string>
+    <string name="home_range_from_tank">Com base na capacidade do depósito e na média recente</string>
+    <string name="home_range_from_cycles">Distância média dos últimos ciclos cheio-a-cheio</string>
+    <string name="home_this_month">Este mês</string>
+    <string name="home_last_fill_up">Último abastecimento</string>
+
+    <!-- Novo abastecimento -->
+    <string name="fillup_title_new">Novo abastecimento</string>
+    <string name="fillup_title_edit">Editar abastecimento</string>
+    <string name="fillup_odometer">Conta-km total</string>
+    <string name="fillup_previous_odometer">Anterior: %1$s</string>
+    <string name="fillup_volume">Litros</string>
+    <string name="fillup_price">Preço por litro</string>
+    <string name="fillup_total">Total pago</string>
+    <string name="fillup_full_tank">Depósito cheio</string>
+    <string name="fillup_full_tank_hint">Atestar fecha um ciclo de consumo</string>
+    <string name="fillup_station">Posto (opcional)</string>
+    <string name="fillup_notes">Notas (opcional)</string>
+    <string name="fillup_warnings_title">Confirmar valores</string>
+    <string name="fillup_warnings_question">Queres guardar mesmo assim?</string>
+    <string name="fillup_save_anyway">Guardar mesmo assim</string>
+
+    <!-- Validações -->
+    <string name="validation_missing_odometer">Indica o conta-km</string>
+    <string name="validation_missing_volume">Indica os litros</string>
+    <string name="validation_missing_price">Indica o preço por litro</string>
+    <string name="validation_missing_total">Indica o total pago</string>
+    <string name="validation_odometer_not_after_previous">O conta-km tem de ser maior do que o do abastecimento anterior (%1$s)</string>
+    <string name="validation_odometer_not_before_next">O conta-km tem de ser menor do que o do abastecimento seguinte (%1$s)</string>
+    <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
+    <string name="validation_total_mismatch">Litros × preço dá %1$s, diferente do total indicado</string>
+    <string name="validation_volume_exceeds_tank">Litros acima da capacidade do depósito (%1$s)</string>
+    <string name="validation_duplicate_atcud">Este talão já foi registado</string>
+
+    <!-- Histórico -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Sem abastecimentos registados</string>
+    <string name="history_partial">Parcial</string>
+    <string name="history_cycle">%1$s · %2$s · %3$s</string>
+    <string name="history_anomaly">Consumo acima do habitual</string>
+    <string name="history_deleted">Abastecimento apagado</string>
+    <string name="history_delete_title">Apagar abastecimento?</string>
+    <string name="history_delete_body">Podes anular logo a seguir na mensagem que aparece em baixo.</string>
 </resources>
