@@ -20,4 +20,4 @@ fundadoras: quem aprova cada gate, língua, stack inicial, forma de trabalhar a 
 
 | ADR | Título | Estado | Data |
 |---|---|---|---|
-| 001 | <Decisões fundadoras> | proposto | |
+| 001 | Decisões fundadoras do workspace | aceite | 2026-10-05 |

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Verificação do gota: testes unitários e lint, output só com falhas.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+out="$(./gradlew -q --console=plain testDebugUnitTest lintDebug 2>&1)"; rc=$?
+if [ "$rc" -ne 0 ]; then
+  echo "$out" | grep -vE '^(> Task|BUILD |Deprecated Gradle|$)' | tail -n 80
+fi
+exit "$rc"

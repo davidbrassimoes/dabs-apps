@@ -7,12 +7,11 @@
 
 ## O que fazemos
 
-Uma a três frases. Que tipo de software, para que uso.
+Apps pessoais de DABS, em qualquer plataforma: Android, Android TV, Windows, servidor Ubuntu. Algumas podem vir a ser produtos; quando isso acontecer, o produto muda para o workspace da entidade que o vende (ADR-001).
 
 ## Para quem
 
-Quem usa o que fazemos. Quem paga, se alguém paga. Que língua, que dispositivos, que
-contexto.
+DABS, e família ou amigos quando faz sentido. Ninguém paga.
 
 ## O que recusamos
 
@@ -23,20 +22,12 @@ que não aceitamos, e porquê. Um agente que encontre um destes pára.
 
 | Decisão | Quem | Onde fica |
 |---|---|---|
-| Spec aprovado | <nome ou "dono do produto" ou "ambos"> | `products/<nome>/SPEC.md`, "Estado" |
-| Mockup aprovado | | `products/<nome>/NOTES.md` |
-| Publicação | | `products/<nome>/RELEASE.md` |
-| Texto final | | `products/<nome>/NOTES.md` |
-| Regra do handbook muda | | ADR |
-| Stack de um produto | | ADR |
-
-Com mais de uma pessoa: o que acontece quando não há acordo.
-
-## Como partilhamos (se houver mais de uma pessoa)
-
-Quem detém o código. Como se divide o que render. Que acordo escrito existe e onde está.
-**Isto resolve-se antes do primeiro produto sair**, porque muda a licença do repo e o que
-cada um pode fazer com ele.
+| Spec aprovado | DABS | `products/<nome>/SPEC.md`, "Estado" |
+| Mockup aprovado | DABS | `products/<nome>/NOTES.md` |
+| Publicação | DABS | `products/<nome>/RELEASE.md` |
+| Texto final | DABS | `products/<nome>/NOTES.md` |
+| Regra do handbook muda | DABS, por ADR | ADR |
+| Stack de um produto | DABS, por ADR | ADR |
 
 ## Princípios
 

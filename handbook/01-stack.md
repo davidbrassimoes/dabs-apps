@@ -15,9 +15,9 @@ esse tipo de produto, e escreve-se aqui.
 
 | Tipo | Stack por defeito | Decidido em |
 |---|---|---|
-| <ex.: app Android> | <por decidir> | |
-| <ex.: site ou webapp> | <por decidir> | |
-| <ex.: serviço em servidor> | <por decidir> | |
+| App Android | Kotlin, Jetpack Compose, Material 3, Hilt, Room; Gradle com version catalog; JDK 17 de alvo | ADR-001 (de `gota`) |
+| App Android TV | Kotlin + OpenGL ES sobre `GLSurfaceView`, sem Compose no render (de `santa-vibes`, quando entrar) | por decidir |
+| Desktop Windows, servidor Ubuntu | por decidir | |
 
 ## Quando desviar
 

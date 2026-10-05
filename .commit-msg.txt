@@ -1,0 +1,10 @@
+dabs-apps: founding decisions (ADR-001), gota as the first product
+
+Fills the template for the personal apps workspace of DABS. DABS approves
+all four gates, PT-PT docs, stack per product with the Kotlin/Compose stack
+of gota as the Android default. gota gets scripts/check (unit tests and
+lint, failures only), a path-filtered Gradle job on JDK 21, Dependabot for
+its catalog, and projects/gota.md. A personal app that becomes a product
+moves to the selling entity workspace via subtree split.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

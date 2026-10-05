@@ -11,3 +11,10 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+  - package-ecosystem: gradle
+    directory: /products/gota
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ["*"]

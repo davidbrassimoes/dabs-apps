@@ -35,10 +35,10 @@ O trabalho pára e espera **exatamente** nestes pontos:
 
 | Gate | Quando | Quem aprova | Registo |
 |---|---|---|---|
-| 1. Spec | Antes de existir código. O sítio mais barato para mudar de ideias. | <ADR-001> | `SPEC.md`, "Estado: aprovado (data)" |
-| 2. Mockup | Antes de a interface ser construída | <ADR-001> | `NOTES.md` |
-| 3. Publicação | Antes de algo sair para fora | <ADR-001> | `RELEASE.md` |
-| 4. Texto | Antes de texto público ir para fora | <ADR-001> | `NOTES.md` |
+| 1. Spec | Antes de existir código. O sítio mais barato para mudar de ideias. | DABS (ADR-001) | `SPEC.md`, "Estado: aprovado (data)" |
+| 2. Mockup | Antes de a interface ser construída | DABS (ADR-001) | `NOTES.md` |
+| 3. Publicação | Antes de algo sair para fora | DABS (ADR-001) | `RELEASE.md` |
+| 4. Texto | Antes de texto público ir para fora | DABS (ADR-001) | `NOTES.md` |
 
 Não são gates: fazer merge, gastar tempo de CI, escolher um nome de variável. Dentro de um
 spec aprovado o agente tem **autonomia total**: decide o como, incluindo testes e

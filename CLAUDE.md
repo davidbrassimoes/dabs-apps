@@ -1,6 +1,6 @@
-# <NOME DO WORKSPACE> — instruções da raiz
+# dabs-apps — instruções da raiz
 
-Monorepo de <ENTIDADE: quem detém este código>, com agentes como forma principal de
+Monorepo de DABS (`davidbrassimoes`), a título pessoal, com agentes como forma principal de
 trabalho. **O repo é a fonte de verdade**: decisões ficam aqui, em commits. Nunca
 contradizer uma decisão commitada; muda-se com um commit que diga porquê.
 
@@ -38,7 +38,6 @@ e o seu build; este ficheiro não assume nenhuma.
 4. Segredos nunca entram no repo. `.env.example` sim, `.env` não.
 5. Ficheiros pequenos. Acima de ~300 linhas, dividir.
 6. Texto visível passa por i18n quando o produto tem mais de uma língua.
-7. <REGRA ESPECÍFICA DESTA ENTIDADE, se houver; apagar se não>
 
 ## Gates
 
@@ -57,10 +56,12 @@ total, incluindo testes e documentação, e só volta quando acaba ou está bloq
 
 ## Língua
 
-Documentação em <português de Portugal | inglês>. Código, identificadores e commits em inglês.
+Documentação em português de Portugal. Código, identificadores e commits em inglês.
 
 ## Por fazer
 
-- [ ] Preencher `handbook/00-manifesto.md`
-- [ ] ADR-001: quem aprova cada gate, língua, stack inicial
-- [ ] Primeiro produto em `products/<nome>/`
+- [x] ADR-001: DABS aprova todos os gates, PT-PT, stack por produto (2026-10-05)
+- [x] `gota` movido para `products/gota` com história (2026-10-05)
+- [ ] `santa-vibes` movido para `products/santa-vibes` (monorepo próprio: tv-app, phone-app, pc-bridge, signals-core)
+- [ ] Preencher os princípios em `handbook/00-manifesto.md`
+- [ ] Arquivar `davidbrassimoes/gota` no GitHub depois de a CI aqui ficar verde

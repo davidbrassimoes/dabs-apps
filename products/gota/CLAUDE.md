@@ -11,7 +11,7 @@ Kotlin · Jetpack Compose · Material 3 · Hilt · Room · Coroutines/Flow · Na
 - Testes instrumentados: `./gradlew connectedDebugAndroidTest`
 - Lint: `./gradlew lintDebug`
 
-Correr build e testes unitários antes de dar uma tarefa por terminada.
+Correr `scripts/check` (ou, da raiz do workspace, `scripts/check gota`) antes de dar uma tarefa por terminada. As regras da raiz (`../../CLAUDE.md`) aplicam-se; este ficheiro tem prioridade onde discordam.
 
 ## Arquitetura
 - Pacotes por funcionalidade (`feature/fillup`, `feature/history`, `feature/stats`, `feature/settings`) + `core/` (data, database, domain, ui, scanning).
