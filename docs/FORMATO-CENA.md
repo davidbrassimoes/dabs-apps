@@ -43,7 +43,7 @@ Definidos em `shared/glsl/header.glsl`. As cenas **só** podem depender destes e
 | `uMood` | `vec4` | `moodEnergy`, `moodBrightness`, `centroid`, `reservado` |
 | `uBeat` | `vec4` | `beat` (envelope), `beatPhase`, `bpm`, `onset` (1 no frame do onset) |
 | `uPalette[5]` | `vec3[5]` | paleta atual (da imagem, de um preset ou da cena) |
-| `uImage` | `sampler2D` | imagem atual (se `image` ≠ `none`) |
+| `uImage` | `sampler2D` | imagem atual (se `image` ≠ `none`); origem em baixo à esquerda, como `gl_FragCoord`. Para manter o aspeto, amostrar com `imageCoverUV(uv)` de `lib/image.glsl` |
 | `uImageInfo` | `vec4` | `hasImage` (0/1), `aspect`, `mix de transição` (0..1), `reservado` |
 | `uPrev` | `sampler2D` | frame anterior da própria cena (se `feedback: true`) |
 

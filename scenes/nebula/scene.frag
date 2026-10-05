@@ -1,7 +1,10 @@
 // Nebula — domain-warped fbm (after Inigo Quilez's warping technique).
 // Optionally blends a source image displaced by the same warp field.
+// Brightness: the palette walk starts above the darkest entry and the fbm shading
+// never drops below ~0.6, so the scene lights the room instead of reading as black.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/image.glsl"
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
@@ -18,15 +21,15 @@ void main() {
     float f = fbm(p + p_warp * energy * r, 4);
 
     float pc = tri(f * 1.2 + length(q) * 0.4 + uMood.y * 0.3 + t * 0.05);
-    vec3 col = palette(pc);
-    col *= 0.35 + 1.3 * f * f;
+    vec3 col = palette(0.15 + 0.85 * pc);
+    col *= 0.6 + 0.9 * f;
     col += palette(1.0) * pow(max(r.x - 0.55, 0.0), 2.0) * 2.0 * (0.6 + 0.6 * uBands.y);
 
-    // Hybrid mode: image displaced by the warp field.
+    // Hybrid mode: image (cover-fitted, aspect kept) displaced by the warp field.
     if (uImageInfo.x > 0.5) {
-        vec2 iuv = uv + (r - 0.5) * 0.08 * p_warp;
+        vec2 iuv = imageCoverUV(uv) + (r - 0.5) * 0.08 * p_warp;
         vec3 img = texture(uImage, iuv).rgb;
-        col = mix(col, img * (0.4 + 1.2 * f), p_imageMix * uImageInfo.z);
+        col = mix(col, img * (0.5 + 1.0 * f), p_imageMix * uImageInfo.z);
     }
 
     col *= 1.0 + p_pulse * 0.15 * uBeat.x;
