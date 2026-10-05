@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "glitch-drift",
   "name": "Glitch Calmo",
   "description": "Um gradiente ambiente que, de vez em quando, escorrega em fatias, separa os canais de cor e se quantiza em blocos, e volta a compor-se. Glitch como textura, não como susto.",
@@ -15,5 +15,25 @@
     { "id": "amount", "label": "Intensidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.15 },
     { "id": "slices", "label": "Fatias", "type": "float", "min": 4.0, "max": 40.0, "default": 14.0, "step": 1.0, "drift": 0.0 },
     { "id": "pulse", "label": "Glitch no beat", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "vhs",
+      "name": "VHS",
+      "params": { "rate": 0.4, "amount": 0.7, "slices": 24 },
+      "palette": ["#120a1e", "#3a1a5a", "#d43a8a", "#3ad0d8", "#f8f0c0"]
+    },
+    {
+      "id": "quase-calmo",
+      "name": "Quase calmo",
+      "params": { "speed": 0.2, "rate": 0.12, "amount": 0.3, "slices": 8, "pulse": 0.15 },
+      "palette": ["#0f1420", "#24304a", "#4f7a8a", "#d8a07a", "#f4e6cf"]
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "params": { "rate": 0.3, "amount": 0.5, "slices": 30 },
+      "palette": ["#020a06", "#0a2a18", "#1a7a40", "#5fe08a", "#d8ffd0"]
+    }
   ]
 }

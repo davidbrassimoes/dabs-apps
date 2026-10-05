@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "veils",
   "name": "Véus",
   "description": "Véus de seda translúcidos sobrepostos, a ondular ao vento devagar. Camadas que se misturam por transparência.",
@@ -16,5 +16,25 @@
     { "id": "width", "label": "Largura", "type": "float", "min": 0.3, "max": 3.0, "default": 0.9, "drift": 0.2 },
     { "id": "opacity", "label": "Opacidade", "type": "float", "min": 0.2, "max": 1.0, "default": 0.75, "drift": 0.1 },
     { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "linho",
+      "name": "Linho",
+      "params": { "layers": 4, "wave": 0.7, "width": 1.2, "opacity": 0.8 },
+      "palette": ["#4a3e36", "#7a6656", "#c0a68e", "#ecd8c2", "#fff8ee"]
+    },
+    {
+      "id": "fundo-do-mar",
+      "name": "Fundo do mar",
+      "params": { "wave": 1.3 },
+      "palette": ["#04121e", "#0a2e4a", "#1a6a8a", "#4ab0b8", "#c8f0f0"]
+    },
+    {
+      "id": "crepusculo",
+      "name": "Crepúsculo",
+      "params": { "speed": 0.2, "layers": 2, "width": 1.6, "opacity": 0.85 },
+      "palette": ["#1a1030", "#3d1e5c", "#8a3b7a", "#e0806a", "#f5d0a0"]
+    }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "breath",
   "name": "Respiração",
   "description": "Sem forma nenhuma: o ecrã inteiro é um gradiente que roda, muda de cor e respira num ciclo lento. Pura luz de ambiente.",
@@ -15,5 +15,25 @@
     { "id": "depth", "label": "Profundidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.1 },
     { "id": "spread", "label": "Abertura", "type": "float", "min": 0.5, "max": 3.0, "default": 1.8, "drift": 0.2 },
     { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.15, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "amanhecer",
+      "name": "Amanhecer",
+      "params": { "speed": 0.2, "period": 30, "depth": 0.4, "spread": 2.2 },
+      "palette": ["#2b1a2e", "#7a3f5a", "#e0786a", "#f8b878", "#ffe8b0"]
+    },
+    {
+      "id": "mare",
+      "name": "Maré",
+      "params": { "period": 24, "depth": 0.6, "spread": 1.4 },
+      "palette": ["#0a1a2e", "#174a6e", "#2f8fa8", "#7fd0c8", "#e0f6ef"]
+    },
+    {
+      "id": "vela",
+      "name": "Vela",
+      "params": { "speed": 0.15, "period": 40, "depth": 0.3, "spread": 2.6, "pulse": 0.05 },
+      "palette": ["#1e0e06", "#5a2410", "#b8501e", "#f0903a", "#ffd27a"]
+    }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "flow-particles",
   "name": "Correntes",
   "description": "Trilhos de luz levados por um campo de fluxo. Versão provisória por feedback.",
@@ -15,5 +15,19 @@
     { "id": "decay",   "label": "Persistência",    "type": "float", "min": 0.90, "max": 0.999, "default": 0.985, "drift": 0.0 },
     { "id": "density", "label": "Densidade",       "type": "float", "min": 0.0,  "max": 1.0,   "default": 0.4,   "drift": 0.2 },
     { "id": "pulse",   "label": "Rajadas (beat)",  "type": "float", "min": 0.0,  "max": 1.0,   "default": 0.4,   "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "neon",
+      "name": "Néon",
+      "params": { "flow": 1.6, "scale": 3, "decay": 0.98, "density": 0.5 },
+      "palette": ["#05040f", "#1a1050", "#6a2cff", "#ff3fb4", "#ffe0ff"]
+    },
+    {
+      "id": "seda",
+      "name": "Fios de seda",
+      "params": { "flow": 0.6, "scale": 1.4, "decay": 0.994, "density": 0.3, "pulse": 0.2 },
+      "palette": ["#0e0a14", "#3a2440", "#a0607a", "#e8b090", "#fff0d8"]
+    }
   ]
 }

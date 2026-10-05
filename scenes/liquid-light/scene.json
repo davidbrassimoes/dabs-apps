@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "liquid-light",
   "name": "Luz Líquida",
   "description": "Óleo e água num retroprojetor: bolhas que se fundem, rebordos de lente, cores que escorrem. Liquid light show dos anos 60.",
@@ -16,5 +16,25 @@
     { "id": "warp", "label": "Distorção", "type": "float", "min": 0.0, "max": 2.0, "default": 0.8, "drift": 0.25 },
     { "id": "rim", "label": "Rebordo", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.1 },
     { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "fillmore",
+      "name": "Fillmore 1967",
+      "params": { "blobs": 7, "warp": 1.1 },
+      "palette": ["#140a1e", "#2a6a2a", "#e0302a", "#f8a01e", "#fff06a"]
+    },
+    {
+      "id": "oceano",
+      "name": "Oceano",
+      "params": { "speed": 0.2, "blobs": 4, "size": 0.3, "warp": 0.6 },
+      "palette": ["#06121e", "#0e3a5a", "#1f8aa0", "#6fd0c0", "#e8fff0"]
+    },
+    {
+      "id": "lava",
+      "name": "Lâmpada de lava",
+      "params": { "speed": 0.15, "blobs": 3, "size": 0.35, "warp": 0.4, "rim": 0.3 },
+      "palette": ["#1e0812", "#5a0e1e", "#c8281e", "#f8781e", "#ffd06a"]
+    }
   ]
 }

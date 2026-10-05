@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "id": "spiral-melt",
   "name": "Espiral a Derreter",
   "description": "Anéis concêntricos e braços em espiral que derretem devagar, como um cartaz de 1967 a escorrer. Hipnótico mas lento.",
@@ -16,5 +16,25 @@
     { "id": "melt", "label": "Derreter", "type": "float", "min": 0.0, "max": 2.0, "default": 0.8, "drift": 0.25 },
     { "id": "soft", "label": "Suavidade", "type": "float", "min": 0.05, "max": 0.5, "default": 0.25, "drift": 0.1 },
     { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "hipnose",
+      "name": "Hipnose",
+      "params": { "rings": 9, "twist": 2.2, "melt": 0.5, "soft": 0.12 },
+      "palette": ["#0e0a1e", "#3a1a6a", "#c03aa0", "#f87a4a", "#fff0a0"]
+    },
+    {
+      "id": "mel",
+      "name": "Mel",
+      "params": { "speed": 0.15, "rings": 3, "twist": 0.5, "melt": 1.5, "soft": 0.4 },
+      "palette": ["#2a1404", "#6a3a0a", "#c87a1e", "#f0b04a", "#fff0b0"]
+    },
+    {
+      "id": "menta",
+      "name": "Menta",
+      "params": { "rings": 5, "twist": 1.3, "melt": 1 },
+      "palette": ["#06181a", "#0e4a4a", "#2aa08a", "#a0e0b0", "#f8fff0"]
+    }
   ]
 }
