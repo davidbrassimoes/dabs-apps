@@ -18,3 +18,17 @@ updates:
     groups:
       gradle:
         patterns: ["*"]
+  - package-ecosystem: gradle
+    directory: /products/santa-vibes/tv-app
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /products/santa-vibes/authoring
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]

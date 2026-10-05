@@ -84,3 +84,10 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 | signals-core | _a definir_ | — | _a definir_ |
 | pc-bridge | _a definir_ | _a definir_ | _a definir_ |
 | phone-app | _a definir_ | _a definir_ | _a definir_ |
+
+## Neste workspace
+
+Este produto vive em `dabs-apps/products/santa-vibes/` desde 2026-10-06. As regras da raiz
+(`../../CLAUDE.md`) aplicam-se; este ficheiro tem prioridade onde discordam. Antes de dar
+uma tarefa por terminada: `scripts/check` (ou, da raiz, `scripts/check santa-vibes`).
+Estado do projeto em `../../projects/santa-vibes.md`.

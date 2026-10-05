@@ -16,7 +16,7 @@ esse tipo de produto, e escreve-se aqui.
 | Tipo | Stack por defeito | Decidido em |
 |---|---|---|
 | App Android | Kotlin, Jetpack Compose, Material 3, Hilt, Room; Gradle com version catalog; JDK 17 de alvo | ADR-001 (de `gota`) |
-| App Android TV | Kotlin + OpenGL ES sobre `GLSurfaceView`, sem Compose no render (de `santa-vibes`, quando entrar) | por decidir |
+| App Android TV | Kotlin + OpenGL ES sobre `GLSurfaceView`, sem Compose no render | `products/santa-vibes/docs/decisoes/` |
 | Desktop Windows, servidor Ubuntu | por decidir | |
 
 ## Quando desviar

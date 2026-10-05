@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Verificação do santa-vibes: testes do núcleo da tv-app (Gradle) e check + testes da
+# ferramenta de autoria (npm). Output só com falhas. As cenas e os contratos em scenes/ e
+# shared/ são verificados pelos testes destes dois.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+rc=0
+
+out="$(cd tv-app && ./gradlew -q --console=plain :core:test 2>&1)" || {
+  rc=1; echo "[tv-app]"; echo "$out" | grep -vE '^(> Task|BUILD |Deprecated Gradle|$)' | tail -n 60
+}
+
+if [ -d authoring/node_modules ]; then
+  out="$(cd authoring && npm run -s check 2>&1 && npm test -s 2>&1)" || {
+    rc=1; echo "[authoring]"; echo "$out" | tail -n 60
+  }
+else
+  echo "[authoring] sem node_modules: corre 'npm ci' em products/santa-vibes/authoring"; rc=1
+fi
+
+exit "$rc"

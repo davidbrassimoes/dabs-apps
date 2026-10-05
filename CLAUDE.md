@@ -62,6 +62,6 @@ Documentação em português de Portugal. Código, identificadores e commits em 
 
 - [x] ADR-001: DABS aprova todos os gates, PT-PT, stack por produto (2026-10-05)
 - [x] `gota` movido para `products/gota` com história (2026-10-05)
-- [ ] `santa-vibes` movido para `products/santa-vibes` (monorepo próprio: tv-app, phone-app, pc-bridge, signals-core)
+- [x] `santa-vibes` movido para `products/santa-vibes` com história (2026-10-06)
 - [ ] Preencher os princípios em `handbook/00-manifesto.md`
-- [ ] Arquivar `davidbrassimoes/gota` no GitHub depois de a CI aqui ficar verde
+- [ ] Arquivar `davidbrassimoes/gota` e `davidbrassimoes/santa-vibes` no GitHub depois de a CI aqui ficar verde
