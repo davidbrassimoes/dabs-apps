@@ -24,7 +24,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - overlay de diagnóstico,
   - **zero alocações por frame**.
 - [ ] **0.5 Medição na box** — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
-- [ ] **0.6 Drift e transições** — drift de parâmetros e crossfade entre cenas (no authoring e na tv-app).
+- [ ] **0.6 Drift e transições** — drift de parâmetros e crossfade entre cenas (no authoring e na tv-app). Incluir **variação de paleta** no host (pedido do dono, 2026-10-05): cada cena pode ter várias paletas em `scene.json` e o host roda entre elas devagar, ou deriva o matiz; as cenas continuam a ler só `uPalette`.
 
 **Critérios de aceitação:**
 - As 3 cenas correm na box a ≥ 30 fps estáveis com a `renderScale` por defeito, durante 30 min, sem engasgos visíveis.
