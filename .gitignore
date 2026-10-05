@@ -34,3 +34,6 @@ output-metadata.json
 
 # Logs
 *.log
+
+# Fotografias reais de talões e do painel (dados pessoais); no repositório só o texto anonimizado
+test-photos/

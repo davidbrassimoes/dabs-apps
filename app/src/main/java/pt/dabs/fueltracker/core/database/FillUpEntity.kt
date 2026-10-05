@@ -28,6 +28,9 @@ data class FillUpEntity(
     val pricePerLiterMilliCents: Int,
     @ColumnInfo(name = "total_cents")
     val totalCents: Long,
+    /** Descontos do talão (positivos); litros × preço = total + desconto. */
+    @ColumnInfo(name = "discount_cents", defaultValue = "0")
+    val discountCents: Long = 0,
     @ColumnInfo(name = "is_full_tank", defaultValue = "1")
     val isFullTank: Boolean = true,
     @ColumnInfo(name = "station_nif")

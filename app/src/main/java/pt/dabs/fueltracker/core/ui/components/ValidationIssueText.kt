@@ -28,6 +28,7 @@ fun ValidationIssue.message(): String = when (this) {
     ValidationIssue.MissingVolume -> stringResource(R.string.validation_missing_volume)
     ValidationIssue.MissingPrice -> stringResource(R.string.validation_missing_price)
     ValidationIssue.MissingTotal -> stringResource(R.string.validation_missing_total)
+    ValidationIssue.InvalidDiscount -> stringResource(R.string.validation_invalid_discount)
     is ValidationIssue.OdometerNotAfterPrevious ->
         stringResource(R.string.validation_odometer_not_after_previous, PtFormat.km(previousOdometerKm))
     is ValidationIssue.OdometerNotBeforeNext ->

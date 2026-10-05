@@ -90,7 +90,8 @@ fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
                 onResult = { qrRaw, ocrRows ->
                     navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
                         handle[SCANNED_TEXT_KEY] = ocrRows.joinToString("\n")
-                        handle[SCANNED_QR_KEY] = qrRaw
+                        // Vazio = talão sem QR legível (só texto); ver ScanReceiptRoute.
+                        handle[SCANNED_QR_KEY] = qrRaw.orEmpty()
                     }
                     navController.popBackStack()
                 },

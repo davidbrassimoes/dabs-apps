@@ -20,7 +20,15 @@ import kotlin.coroutines.resumeWithException
  */
 class StillImageScanner(private val context: Context) {
 
-    data class ReceiptScan(val qrRaw: String?, val ocrRows: List<String>)
+    data class ReceiptScan(val qrRaw: String?, val ocrRows: List<String>) {
+        /** Sem QR, o talão só serve se o texto tiver pelo menos os litros ou o preço. */
+        val isUsable: Boolean get() = qrRaw != null || hasFuelAmounts(ocrRows)
+    }
+
+    companion object {
+        fun hasFuelAmounts(rows: List<String>): Boolean =
+            ReceiptTextParser.parse(rows, totalCents = null).let { it.volumeMl != null || it.pricePerLiterMilliCents != null }
+    }
 
     suspend fun scanReceipt(uri: Uri): ReceiptScan {
         val image = InputImage.fromFilePath(context, uri)
@@ -40,21 +48,38 @@ class StillImageScanner(private val context: Context) {
     }
 
     /** Linhas de texto da fotografia, já fundidas por faixa vertical. */
-    suspend fun recognizeRows(uri: Uri): List<String> {
+    suspend fun recognizeRows(uri: Uri): List<String> = recognizeText(uri).rows
+
+    /**
+     * Texto da fotografia tal como o ML Kit o devolve e já fundido por faixa vertical.
+     * Usado também para diagnóstico (teste instrumentado das amostras e secção de debug).
+     */
+    suspend fun recognizeText(uri: Uri): RecognizedText {
         val image = InputImage.fromFilePath(context, uri)
         val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         try {
-            return textRecognizer.process(image).await().toRows()
+            val text = textRecognizer.process(image).await()
+            val lines = text.toOcrLines()
+            return RecognizedText(image.width, image.height, text.text, lines, OcrRows.merge(lines))
         } finally {
             textRecognizer.close()
         }
     }
 
-    private fun Text.toRows(): List<String> = OcrRows.merge(
+    data class RecognizedText(
+        val imageWidth: Int,
+        val imageHeight: Int,
+        val fullText: String,
+        val lines: List<OcrLine>,
+        val rows: List<String>,
+    )
+
+    private fun Text.toRows(): List<String> = OcrRows.merge(toOcrLines())
+
+    private fun Text.toOcrLines(): List<OcrLine> =
         textBlocks.flatMap { it.lines }.mapNotNull { line ->
             line.boundingBox?.let { box -> OcrLine(line.text, box.top, box.bottom, box.left) }
         }
-    )
 }
 
 private suspend fun <T> Task<T>.await(): T = suspendCancellableCoroutine { continuation ->

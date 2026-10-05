@@ -22,6 +22,7 @@ class FillUpValidatorTest {
         id: Long = 0L,
         isFullTank: Boolean = true,
         atcud: String? = null,
+        discountCents: Long? = 0,
     ) = FillUpDraft(
         id = id,
         dateTime = at(date),
@@ -31,6 +32,7 @@ class FillUpValidatorTest {
         totalCents = totalCents,
         isFullTank = isFullTank,
         atcud = atcud,
+        discountCents = discountCents,
     )
 
     @Test
@@ -149,6 +151,26 @@ class FillUpValidatorTest {
         val beyond = FillUpValidator.validate(draft(totalCents = expected + 6), existing)
         assertTrue(ValidationIssue.TotalMismatch(expected) in beyond)
         assertFalse(beyond.hasErrors)
+    }
+
+    @Test
+    fun `discount closes the gap between liters times price and the total`() {
+        // Talão real: 42,630 L × 2,299 = 98,01 €; desconto 2,13 €; total pago 95,88 €.
+        val withDiscount = FillUpValidator.validate(
+            draft(volumeMl = 42_630, price = 229_900, totalCents = 9_588, discountCents = 213), emptyList()
+        )
+        assertTrue(withDiscount.isEmpty())
+
+        val withoutDiscount = FillUpValidator.validate(
+            draft(volumeMl = 42_630, price = 229_900, totalCents = 9_588), emptyList()
+        )
+        assertTrue(ValidationIssue.TotalMismatch(9_801) in withoutDiscount)
+    }
+
+    @Test
+    fun `invalid or negative discount is an error`() {
+        assertTrue(ValidationIssue.InvalidDiscount in FillUpValidator.validate(draft(discountCents = null), existing))
+        assertTrue(ValidationIssue.InvalidDiscount in FillUpValidator.validate(draft(discountCents = -1), existing))
     }
 
     @Test

@@ -2,12 +2,14 @@ package pt.dabs.fueltracker.feature.scan
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.SystemClock
+import android.net.Uri
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.mlkit.vision.MlKitAnalyzer
@@ -62,17 +64,21 @@ import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.scanning.OcrLine
 import pt.dabs.fueltracker.core.scanning.OcrRows
 import pt.dabs.fueltracker.core.scanning.StillImageScanner
+import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Lê o código QR do talão e, nas mesmas imagens, o texto do talão (litros e preço/litro).
+ * Lê o código QR do talão e o texto do talão (litros, preço/litro, desconto, total).
  *
- * Depois de o QR ser lido continua a analisar durante um curto período e fica com a melhor
- * leitura de texto (a que tem mais carateres). Toda a análise corre no dispositivo.
+ * Os frames de análise (1920×1440) chegam para o QR mas são curtos para o texto miúdo de um
+ * talão inteiro: assim que o QR é lido tira-se uma fotografia em resolução máxima e o OCR corre
+ * sobre ela, como numa foto da galeria. A melhor leitura dos frames fica como recurso.
+ * Toda a análise corre no dispositivo; a fotografia vai para a cache e é apagada logo a seguir.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanReceiptScreen(
-    onResult: (qrRaw: String, ocrRows: List<String>) -> Unit,
+    onResult: (qrRaw: String?, ocrRows: List<String>) -> Unit,
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -102,7 +108,8 @@ fun ScanReceiptScreen(
             photoError = null
             try {
                 val scan = stillScanner.scanReceipt(uri)
-                if (scan.qrRaw != null) currentOnResult(scan.qrRaw, scan.ocrRows) else photoError = R.string.scan_photo_no_qr
+                // Sem QR legível aceita-se o talão se o texto tiver os litros ou o preço.
+                if (scan.isUsable) currentOnResult(scan.qrRaw, scan.ocrRows) else photoError = R.string.scan_photo_no_qr
             } catch (e: Exception) {
                 photoError = R.string.scan_photo_failed
             } finally {
@@ -180,10 +187,6 @@ fun ScanReceiptScreen(
     }
 }
 
-/** Quanto tempo, depois do QR, se continua a tentar melhorar a leitura do texto. */
-private const val TEXT_GRACE_MILLIS = 1_500L
-private const val TEXT_GRACE_FRAMES = 8
-
 @Composable
 private fun ReceiptCameraPreview(
     onQrFound: () -> Unit,
@@ -199,9 +202,12 @@ private fun ReceiptCameraPreview(
         BarcodeScanning.getClient(BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build())
     }
     val textRecognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+    val scope = rememberCoroutineScope()
+    val stillScanner = remember { StillImageScanner(context.applicationContext) }
     val controller = remember {
         LifecycleCameraController(context).apply {
-            setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
+            // A análise lê o QR; depois tira-se uma fotografia em resolução máxima para o texto.
+            setEnabledUseCases(CameraController.IMAGE_ANALYSIS or CameraController.IMAGE_CAPTURE)
             // O OCR precisa de mais resolução do que o predefinido (640x480) para ler um talão inteiro.
             imageAnalysisResolutionSelector = ResolutionSelector.Builder()
                 .setResolutionStrategy(
@@ -214,18 +220,57 @@ private fun ReceiptCameraPreview(
     DisposableEffect(controller, lifecycleOwner) {
         val executor = ContextCompat.getMainExecutor(context)
         var qrRaw: String? = null
-        var qrFoundAt = 0L
-        var framesAfterQr = 0
         var bestRows: List<String> = emptyList()
         var bestChars = 0
         var delivered = false
+        var capturing = false
 
-        fun deliver() {
+        fun deliver(stillRows: List<String> = emptyList()) {
             val qr = qrRaw ?: return
             if (delivered) return
             delivered = true
             controller.clearImageAnalysisAnalyzer()
-            currentOnResult(qr, bestRows)
+            // A fotografia tem muito mais resolução do que os frames de análise: preferi-la quando
+            // tem os valores, ou quando os frames também não os têm.
+            val rows = when {
+                StillImageScanner.hasFuelAmounts(stillRows) -> stillRows
+                StillImageScanner.hasFuelAmounts(bestRows) -> bestRows
+                stillRows.isNotEmpty() -> stillRows
+                else -> bestRows
+            }
+            currentOnResult(qr, rows)
+        }
+
+        /** Fotografia em resolução máxima para o OCR, guardada só em cache e apagada a seguir. */
+        fun captureStill() {
+            if (capturing) return
+            capturing = true
+            val file = File(context.cacheDir, "receipt-scan.jpg")
+            controller.takePicture(
+                ImageCapture.OutputFileOptions.Builder(file).build(),
+                executor,
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                        scope.launch {
+                            val rows = try {
+                                stillScanner.recognizeRows(Uri.fromFile(file))
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                emptyList()
+                            } finally {
+                                file.delete()
+                            }
+                            deliver(rows)
+                        }
+                    }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        file.delete()
+                        deliver()
+                    }
+                },
+            )
         }
 
         controller.setImageAnalysisAnalyzer(
@@ -250,13 +295,9 @@ private fun ReceiptCameraPreview(
                         ?.firstNotNullOfOrNull { it.rawValue?.takeIf { v -> v.isNotBlank() } }
                     if (raw != null) {
                         qrRaw = raw
-                        qrFoundAt = SystemClock.elapsedRealtime()
                         currentOnQrFound()
+                        captureStill()
                     }
-                } else {
-                    framesAfterQr++
-                    val elapsed = SystemClock.elapsedRealtime() - qrFoundAt
-                    if (elapsed >= TEXT_GRACE_MILLIS || framesAfterQr >= TEXT_GRACE_FRAMES) deliver()
                 }
             },
         )

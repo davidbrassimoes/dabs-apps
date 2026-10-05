@@ -13,6 +13,7 @@ class FillUpCsvTest {
 
     private val sample = listOf(
         fillUp(1, "2026-01-05", 10_000, 40_120, 174_900).copy(
+            totalCents = 6_804, discountCents = 213,
             stationNif = "500697256", stationName = "Galp A1", atcud = "JFK2H8QX-4471", buyerNifPresent = false,
             notes = "cheio; \"primeiro\" talão\ncom duas linhas",
         ),
@@ -25,8 +26,8 @@ class FillUpCsvTest {
         val lines = csv.removePrefix("﻿").split("\r\n")
         assertEquals(FillUpCsv.HEADER.joinToString(";"), lines[0])
         assertTrue(csv.startsWith("﻿"))
-        assertTrue(lines[1].startsWith("1;" + at("2026-01-05") + ";10000;40,120;1,74900;70,17;1;500697256;Galp A1;JFK2H8QX-4471;0;\"cheio; \"\"primeiro\"\" talão"))
-        assertTrue(csv.contains("2;" + at("2026-01-25") + ";10600;39,000;1,69900;66,26;0;;;;;;"))
+        assertTrue(lines[1].startsWith("1;" + at("2026-01-05") + ";10000;40,120;1,74900;68,04;2,13;1;500697256;Galp A1;JFK2H8QX-4471;0;\"cheio; \"\"primeiro\"\" talão"))
+        assertTrue(csv.contains("2;" + at("2026-01-25") + ";10600;39,000;1,69900;66,26;0,00;0;;;;;;"))
     }
 
     @Test
@@ -50,10 +51,21 @@ class FillUpCsvTest {
         assertEquals(40_120, fillUp.volumeMl)
         assertEquals(174_900, fillUp.pricePerLiterMilliCents)
         assertEquals(7_017L, fillUp.totalCents)
+        assertEquals(0L, fillUp.discountCents) // ficheiros sem a coluna desconto_eur
         assertEquals(11_200, fillUp.odometerKm)
         assertTrue(fillUp.isFullTank)
         assertNull(fillUp.atcud)
         assertEquals(fillUp.dateTime, fillUp.createdAt)
+    }
+
+    @Test
+    fun `invalid or negative discount is a row error`() {
+        val csv = "data_hora;odometro_km;litros;preco_litro;total_eur;desconto_eur\n" +
+            "2026-03-01T12:00:00Z;11200;40,12;1,749;68,04;abc\n" +
+            "2026-03-02T12:00:00Z;11300;40,12;1,749;68,04;-2,13\n"
+        val result = FillUpCsv.parse(csv)
+        assertTrue(result.fillUps.isEmpty())
+        assertEquals(listOf(2, 3), result.errors.map { it.line })
     }
 
     @Test

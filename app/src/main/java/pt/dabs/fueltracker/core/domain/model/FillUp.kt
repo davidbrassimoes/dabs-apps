@@ -6,7 +6,8 @@ import java.time.Instant
  * Um abastecimento. Todos os valores monetários e volumes são inteiros:
  * - [volumeMl]: mililitros (litros × 1000)
  * - [pricePerLiterMilliCents]: milésimos de cêntimo por litro (1,749 €/L = 174 900)
- * - [totalCents]: cêntimos
+ * - [totalCents]: cêntimos; total pago (o do QR, já com os descontos do talão)
+ * - [discountCents]: cêntimos; descontos do talão, positivos. litros × preço = total + desconto
  */
 data class FillUp(
     val id: Long = NEW_ID,
@@ -15,6 +16,7 @@ data class FillUp(
     val volumeMl: Int,
     val pricePerLiterMilliCents: Int,
     val totalCents: Long,
+    val discountCents: Long = 0,
     val isFullTank: Boolean = true,
     val stationNif: String? = null,
     val stationName: String? = null,

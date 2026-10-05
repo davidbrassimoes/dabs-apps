@@ -12,14 +12,21 @@ enum class AmountSource {
     NONE,
 }
 
-/** Litros e preço/litro extraídos do texto de um talão. São sempre sugestões a confirmar. */
+/** Valores extraídos do texto de um talão. São sempre sugestões a confirmar. */
 data class ReceiptAmounts(
     val volumeMl: Int?,
     val volumeSource: AmountSource,
     val pricePerLiterMilliCents: Int?,
     val priceSource: AmountSource,
-    /** null sem total ou sem os dois valores; false quando litros × preço se afasta do total. */
+    /**
+     * null sem total ou sem os dois valores; false quando litros × preço se afasta do total
+     * mais os descontos.
+     */
     val consistentWithTotal: Boolean?,
+    /** Soma dos descontos impressos no talão (positiva); 0 quando não há. */
+    val discountCents: Long = 0,
+    /** Total impresso na linha "Total" do talão, se lido. */
+    val printedTotalCents: Long? = null,
 ) {
     companion object {
         val EMPTY = ReceiptAmounts(null, AmountSource.NONE, null, AmountSource.NONE, null)
@@ -37,20 +44,34 @@ data class ReceiptParserOptions(
 )
 
 /**
- * Extrai litros e preço por litro do texto OCR de talões de combustível portugueses.
+ * Extrai litros, preço por litro, descontos e total do texto OCR de talões de combustível
+ * portugueses.
+ *
+ * Os descontos (ex.: "Desconto Imediato -2,13 €") baixam o total do documento (o do QR), mas não
+ * o preço por litro: litros × preço = total + descontos.
  *
  * Regras, por ordem de confiança:
- * 1. Um par (litros, preço) cujo produto bate com o total do QR.
+ * 1. Um par (litros, preço) cujo produto bate com o total (do QR ou impresso) mais os descontos.
  * 2. Litros e preço ambos com palavras-chave fortes, mesmo que não batam com o total
  *    (o talão pode incluir outros artigos); fica assinalado como inconsistente.
- * 3. Só litros ou só preço com palavra-chave; o outro deriva do total.
+ * 3. Só litros ou só preço com palavra-chave; o outro deriva do total mais os descontos.
  */
 object ReceiptTextParser {
 
     private val VOLUME_KEYWORDS = Regex("""\b(LITROS?|LTS?|QTD\.?|QUANT(IDADE)?\.?|VOLUME)\b""")
     private val VOLUME_UNIT_AFTER = Regex("""^\s?(L|LT|LTS)\b""")
-    private val PRICE_KEYWORDS = Regex("""(€|EUR)\s?/\s?L|/\s?L\b|PRE[ÇC]O|P\.?\s?UNIT|\bPVP\b|\bUNIT""")
+    /** "€/L", "EUR/LT", e também "E/LTR": o OCR lê muitas vezes o "€" como "e". */
+    private val PRICE_UNIT_AFTER = Regex("""^\s?(€|EUR|E)\s?/\s?L""")
+    private val PRICE_KEYWORDS = Regex("""(€|EUR|\bE)\s?/\s?L|/\s?L\b|PRE[ÇC]O|P\.?\s?UNIT|\bPVP\b|\bUNIT""")
     private val FUEL_KEYWORDS = Regex("""GASOLINA|GAS[OÓ]LEO|DIESEL|SIMPLES|ADITIVAD|EFITEC|ULTIMATE|EXCELLIUM|EVOLOGIC|G-?FORCE|HI-?ENERGY|\bGPL\b|\b9[58]\b""")
+    /**
+     * Quadros de impostos ("ISP 0,583 €/Lt 42,63 24,85 €", "IVA 23% 77,95 17,93") têm o mesmo
+     * padrão quantidade × taxa = valor da linha do combustível e não podem ganhar-lhe.
+     */
+    private val TAX_ROW = Regex("""\bISP\b|\bIVA\b|\bTAXA\b|\bBASE\b|\bIMPOSTO""")
+    private val DISCOUNT_ROW = Regex("""\bDESC(ONTOS?|\.)?(?![A-Z])|\bPROMO|POUPAN[ÇC]A|\bCUP[AÃ]O|\bVALE\b|\bB[OÓ]NUS""")
+    /** Linha do total do documento: começa por "TOTAL" e não é cabeçalho nem quadro de impostos. */
+    private val TOTAL_ROW = Regex("""^TOTAL\b(?!.*\b(IVA|ISP|BASE)\b)""")
     private val MONEY_BEFORE = Regex("""(€|EUR)\s?$""")
     private val MONEY_AFTER = Regex("""^\s?(€|EUR)(?!\s?/)""")
 
@@ -76,6 +97,10 @@ object ReceiptTextParser {
 
     private data class Candidate(val token: Token, val value: Int, var score: Int)
 
+    /**
+     * @param totalCents total do documento (campo O do QR, já com os descontos do talão); sem QR
+     * usa-se o total impresso, se for lido.
+     */
     fun parse(
         rows: List<String>,
         totalCents: Long?,
@@ -85,16 +110,25 @@ object ReceiptTextParser {
         val tokens = normalizedRows.flatMapIndexed { index, row -> tokensOf(index, row) }
         if (tokens.isEmpty()) return ReceiptAmounts.EMPTY
 
+        val discountCents = discountCents(normalizedRows, tokens)
+        val printedTotal = printedTotalCents(normalizedRows, tokens)
+        val total = totalCents ?: printedTotal
+        // O que litros × preço deve dar: o total antes dos descontos.
+        val grossCents = total?.plus(discountCents)
+
         val volumes = ArrayList<Candidate>()
         val prices = ArrayList<Candidate>()
         for (token in tokens) {
             val row = normalizedRows[token.row]
+            if (DISCOUNT_ROW.containsMatchIn(row)) continue
             val before = row.substring(0, token.start)
             val after = row.substring(token.end)
             val moneyMarked = MONEY_BEFORE.containsMatchIn(before) || MONEY_AFTER.containsMatchIn(after)
             val unitAfter = VOLUME_UNIT_AFTER.containsMatchIn(after)
-            val equalsTotal = totalCents != null && token.asCents == totalCents
+            val priceUnitAfter = PRICE_UNIT_AFTER.containsMatchIn(after)
+            val equalsTotal = token.asCents?.let { it == total || it == grossCents || it == printedTotal } == true
             val fuelRow = FUEL_KEYWORDS.containsMatchIn(row)
+            val taxRow = TAX_ROW.containsMatchIn(row)
 
             token.asVolumeMl?.takeIf { it in options.minVolumeMl..options.maxVolumeMl }?.let { ml ->
                 var score = 0
@@ -103,6 +137,8 @@ object ReceiptTextParser {
                 if (fuelRow) score += 1
                 if (moneyMarked && !unitAfter) score -= 3
                 if (equalsTotal && !unitAfter) score -= 5
+                if (priceUnitAfter) score -= 3
+                if (taxRow) score -= 4
                 volumes += Candidate(token, ml, score)
             }
             token.asPriceMilliCents?.takeIf { it in options.minPriceMilliCents..options.maxPriceMilliCents }?.let { price ->
@@ -112,22 +148,28 @@ object ReceiptTextParser {
                 if (fuelRow) score += 1
                 if (unitAfter) score -= 2
                 if (equalsTotal) score -= 5
+                if (taxRow) score -= 6
                 prices += Candidate(token, price, score)
             }
         }
 
         boostArithmeticTriples(tokens, volumes, prices, options)
 
-        val tolerance = { total: Long -> options.baseToleranceCents + total / 1000 }
+        val tolerance = { amount: Long -> options.baseToleranceCents + amount / 1000 }
+        // Com desconto lido confirma-se contra o bruto; o total sozinho cobre um desconto mal lido.
+        val targets = listOfNotNull(grossCents, total).distinct()
+        fun matchesAnyTarget(v: Candidate, p: Candidate) = targets.any { matchesTotal(v, p, it, tolerance(it)) }
+        fun result(volume: Int?, volumeSource: AmountSource, price: Int?, priceSource: AmountSource, consistent: Boolean?) =
+            ReceiptAmounts(volume, volumeSource, price, priceSource, consistent, discountCents, printedTotal)
 
-        // 1. Par confirmado pelo total do QR.
-        if (totalCents != null) {
+        // 1. Par confirmado pelo total.
+        if (targets.isNotEmpty()) {
             val consistent = volumes.flatMap { v ->
-                prices.filter { p -> p.token != v.token && matchesTotal(v, p, totalCents, tolerance(totalCents)) }
+                prices.filter { p -> p.token != v.token && matchesAnyTarget(v, p) }
                     .map { p -> Triple(v, p, v.score + p.score) }
             }
             consistent.maxByOrNull { it.third }?.let { (v, p, _) ->
-                return ReceiptAmounts(v.value, AmountSource.OCR, p.value, AmountSource.OCR, true)
+                return result(v.value, AmountSource.OCR, p.value, AmountSource.OCR, true)
             }
         }
 
@@ -136,32 +178,46 @@ object ReceiptTextParser {
 
         // 2. Ambos lidos com confiança, mas sem bater com o total (ex.: café no mesmo talão).
         if (bestVolume != null && bestPrice != null) {
-            val consistent = totalCents?.let { total -> matchesTotal(bestVolume, bestPrice, total, tolerance(total)) }
-            return ReceiptAmounts(bestVolume.value, AmountSource.OCR, bestPrice.value, AmountSource.OCR, consistent)
+            val consistent = if (targets.isEmpty()) null else matchesAnyTarget(bestVolume, bestPrice)
+            return result(bestVolume.value, AmountSource.OCR, bestPrice.value, AmountSource.OCR, consistent)
         }
 
-        // 3. Só um dos valores; o outro deriva do total quando plausível.
+        // 3. Só um dos valores; o outro deriva do total (antes dos descontos) quando plausível.
         if (bestVolume != null) {
-            val derived = totalCents?.let { FuelMath.pricePerLiterMilliCents(it, bestVolume.value) }
+            val derived = grossCents?.let { FuelMath.pricePerLiterMilliCents(it, bestVolume.value) }
                 ?.let { FuelMath.roundDiv(it.toLong(), 100).toInt() * 100 }
                 ?.takeIf { it in options.minPriceMilliCents..options.maxPriceMilliCents }
-            return ReceiptAmounts(
+            return result(
                 bestVolume.value, AmountSource.OCR,
                 derived, if (derived != null) AmountSource.DERIVED else AmountSource.NONE,
                 if (derived != null) true else null,
             )
         }
         if (bestPrice != null) {
-            val derived = totalCents?.let { FuelMath.volumeMl(it, bestPrice.value) }
+            val derived = grossCents?.let { FuelMath.volumeMl(it, bestPrice.value) }
                 ?.takeIf { it in options.minVolumeMl..options.maxVolumeMl }
-            return ReceiptAmounts(
+            return result(
                 derived, if (derived != null) AmountSource.DERIVED else AmountSource.NONE,
                 bestPrice.value, AmountSource.OCR,
                 if (derived != null) true else null,
             )
         }
-        return ReceiptAmounts.EMPTY
+        return result(null, AmountSource.NONE, null, AmountSource.NONE, null)
     }
+
+    /** Soma dos valores (2 casas decimais) das linhas de desconto; ignora descontos por litro. */
+    private fun discountCents(rows: List<String>, tokens: List<Token>): Long =
+        rows.indices.filter { DISCOUNT_ROW.containsMatchIn(rows[it]) }.sumOf { index ->
+            tokens.lastOrNull { it.row == index && it.decimals == 2 && !PRICE_UNIT_AFTER.containsMatchIn(rows[index].substring(it.end)) }
+                ?.asCents ?: 0L
+        }
+
+    /** Valor da primeira linha "TOTAL ..." com um montante (2 casas decimais). */
+    private fun printedTotalCents(rows: List<String>, tokens: List<Token>): Long? =
+        rows.indices.firstNotNullOfOrNull { index ->
+            if (!TOTAL_ROW.containsMatchIn(rows[index])) return@firstNotNullOfOrNull null
+            tokens.lastOrNull { it.row == index && it.decimals == 2 }?.asCents?.takeIf { it > 0 }
+        }
 
     /** litros × preço ≈ total, dentro da tolerância. */
     private fun matchesTotal(volume: Candidate, price: Candidate, totalCents: Long, toleranceCents: Long): Boolean =

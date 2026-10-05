@@ -20,7 +20,8 @@ data object ShowNifRoute
 
 /**
  * Leitura do talão; devolve ao ecrã anterior o texto do QR em [SCANNED_QR_KEY] e as linhas
- * reconhecidas por OCR (separadas por `\n`) em [SCANNED_TEXT_KEY].
+ * reconhecidas por OCR (separadas por `\n`) em [SCANNED_TEXT_KEY]. Um QR vazio significa que o
+ * talão foi lido só pelo texto (fotografia sem QR legível).
  */
 @Serializable
 data object ScanReceiptRoute

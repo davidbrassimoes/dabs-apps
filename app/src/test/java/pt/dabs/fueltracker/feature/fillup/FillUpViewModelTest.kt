@@ -189,6 +189,79 @@ class FillUpViewModelTest {
         assertFalse(state.issues.any { it is ValidationIssue.TotalMismatch })
     }
 
+    private fun realReceiptRows(): List<String> =
+        checkNotNull(javaClass.classLoader?.getResourceAsStream("receipts/real_repsol_desconto_imediato.txt"))
+            .bufferedReader(Charsets.UTF_8).readLines()
+
+    /** QR do talão real anonimizado: O é o total do documento, já com o desconto. */
+    private val realReceiptQr = "A:503769959*B:999999990*C:PT*D:FR*E:N*F:20261004*G:FR 1234TPV2/260000001" +
+        "*H:ABCD1234-260000001*I1:PT*I7:77.95*I8:17.93*N:17.93*O:95.88*Q:Ab3d*R:1234"
+
+    @Test
+    fun `real receipt with discount fills liters, price, discount and the qr total`() = runTest {
+        val repository = FakeFillUpRepository(existing)
+        val viewModel = newViewModel(repository)
+        viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        val state = viewModel.uiState.value
+        assertEquals("42,63", state.volumeText)
+        assertEquals("2,299", state.priceText)
+        assertEquals("2,13", state.discountText)
+        assertEquals("95,88", state.totalText)
+        assertEquals(213L, state.ocrDiscountCents)
+        assertEquals(OcrOutcome.VOLUME_AND_PRICE, state.ocrOutcome)
+        assertFalse(state.issues.any { it is ValidationIssue.TotalMismatch })
+        assertEquals(realReceiptQr, state.ocrDebug?.qrRaw)
+        assertEquals(realReceiptRows(), state.ocrDebug?.rows)
+
+        viewModel.onOdometerChange("11200")
+        viewModel.onSaveClick()
+        viewModel.onConfirmWarnings() // talão sem NIF
+        val saved = repository.current.single { it.id == 3L }
+        assertEquals(42_630, saved.volumeMl)
+        assertEquals(229_900, saved.pricePerLiterMilliCents)
+        assertEquals(9_588L, saved.totalCents)
+        assertEquals(213L, saved.discountCents)
+    }
+
+    @Test
+    fun `receipt photo without qr uses the printed total`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(null, realReceiptRows())
+        val state = viewModel.uiState.value
+        assertNull(state.receipt)
+        assertTrue(state.receiptTextOnly)
+        assertEquals("42,63", state.volumeText)
+        assertEquals("2,299", state.priceText)
+        assertEquals("2,13", state.discountText)
+        assertEquals("95,88", state.totalText)
+        assertTrue(state.pendingOdometerScan)
+        assertNull(state.ocrDebug?.qrRaw)
+        assertFalse(state.issues.any { it is ValidationIssue.TotalMismatch })
+    }
+
+    @Test
+    fun `discount enters the derivation of the missing amount`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onDiscountChange("2,13")
+        viewModel.onVolumeChange("42,63")
+        viewModel.onPriceChange("2,299")
+        assertEquals("95,88", viewModel.uiState.value.totalText)
+        // mudar o desconto volta a calcular o total
+        viewModel.onDiscountChange("")
+        assertEquals("98,01", viewModel.uiState.value.totalText)
+        viewModel.onDiscountChange("abc")
+        assertTrue(viewModel.uiState.value.issues.contains(ValidationIssue.InvalidDiscount))
+    }
+
+    @Test
+    fun `editing a record with discount shows it`() = runTest {
+        val withDiscount = existing + fillUp(3, "2026-02-10", 11_200, 42_630, 229_900).copy(totalCents = 9_588, discountCents = 213)
+        val viewModel = newViewModel(FakeFillUpRepository(withDiscount), fillUpId = 3L)
+        val state = viewModel.uiState.value
+        assertEquals("2,13", state.discountText)
+        assertFalse(state.issues.any { it is ValidationIssue.TotalMismatch })
+    }
+
     @Test
     fun `ocr with liters only derives the price from the receipt total`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))

@@ -27,6 +27,7 @@ import pt.dabs.fueltracker.core.scanning.AmountSource
 import pt.dabs.fueltracker.core.scanning.AtQrCode
 import pt.dabs.fueltracker.core.scanning.AtQrCodeParser
 import pt.dabs.fueltracker.core.scanning.AtQrParseResult
+import pt.dabs.fueltracker.core.scanning.ReceiptAmounts
 import pt.dabs.fueltracker.core.scanning.ReceiptTextParser
 import pt.dabs.fueltracker.navigation.FillUpRoute
 import java.time.Clock
@@ -38,6 +39,9 @@ import javax.inject.Inject
 enum class AmountField { VOLUME, PRICE, TOTAL }
 
 enum class OcrOutcome { VOLUME_AND_PRICE, VOLUME_ONLY, PRICE_ONLY, NOTHING }
+
+/** O que a câmara devolveu na última leitura de talão (só para diagnóstico). */
+data class OcrDebug(val qrRaw: String?, val rows: List<String>)
 
 /** Dados do talão lidos do QR da AT e associados ao abastecimento. */
 data class ScannedReceipt(
@@ -58,6 +62,8 @@ data class FillUpUiState(
     val volumeText: String = "",
     val priceText: String = "",
     val totalText: String = "",
+    /** Descontos do talão; vazio = sem desconto. */
+    val discountText: String = "",
     val isFullTank: Boolean = true,
     val stationName: String = "",
     val notes: String = "",
@@ -75,6 +81,12 @@ data class FillUpUiState(
     val scanFailed: Boolean = false,
     /** O que o OCR conseguiu ler na última leitura de talão; null se ainda não houve leitura. */
     val ocrOutcome: OcrOutcome? = null,
+    /** Desconto lido do talão na última leitura (para o informar), se houver. */
+    val ocrDiscountCents: Long? = null,
+    /** A última leitura não tinha QR: valores e total vieram só do texto do talão. */
+    val receiptTextOnly: Boolean = false,
+    /** Texto bruto da última leitura de talão, para a secção de debug. */
+    val ocrDebug: OcrDebug? = null,
     val issues: List<ValidationIssue> = emptyList(),
     /** Só mostrar erros depois de o utilizador tentar guardar ou mexer no campo. */
     val showErrors: Boolean = false,
@@ -147,6 +159,7 @@ class FillUpViewModel(
                         volumeText = NumberInput.formatScaled(loaded.volumeMl.toLong(), 3, trimTrailingZeros = true),
                         priceText = NumberInput.formatScaled(loaded.pricePerLiterMilliCents.toLong(), 5, trimTrailingZeros = true),
                         totalText = NumberInput.formatScaled(loaded.totalCents, 2),
+                        discountText = if (loaded.discountCents > 0) NumberInput.formatScaled(loaded.discountCents, 2) else "",
                         isFullTank = loaded.isFullTank,
                         stationName = loaded.stationName.orEmpty(),
                         notes = loaded.notes.orEmpty(),
@@ -171,6 +184,13 @@ class FillUpViewModel(
     fun onPriceChange(text: String) = onAmountChange(AmountField.PRICE, text)
     fun onTotalChange(text: String) = onAmountChange(AmountField.TOTAL, text)
 
+    /** O desconto não conta como valor "escrito": entra no cálculo do valor em falta. */
+    fun onDiscountChange(text: String) {
+        _uiState.update { it.copy(discountText = text) }
+        deriveMissingAmount()
+        revalidate()
+    }
+
     /**
      * Texto lido de um código QR. Se for um QR da AT, preenche data, total e dados do talão;
      * os valores ficam sempre editáveis e sujeitos a confirmação.
@@ -179,22 +199,51 @@ class FillUpViewModel(
 
     /**
      * Leitura completa do talão: texto do QR e linhas reconhecidas por OCR na mesma imagem.
-     * Os litros e o preço/litro lidos são só sugestões; o utilizador confirma.
+     * Sem QR ([qrRaw] null ou vazio) usam-se só os valores e o total impressos.
+     * Os valores lidos são só sugestões; o utilizador confirma.
      */
-    fun onReceiptScanned(qrRaw: String, ocrRows: List<String>) {
+    fun onReceiptScanned(qrRaw: String?, ocrRows: List<String>) {
+        _uiState.update { it.copy(ocrDebug = OcrDebug(qrRaw?.takeIf { raw -> raw.isNotBlank() }, ocrRows)) }
+        if (qrRaw.isNullOrBlank()) {
+            applyTextOnlyReceipt(ocrRows)
+            return
+        }
         when (val result = AtQrCodeParser.parse(qrRaw)) {
             is AtQrParseResult.Failure -> _uiState.update { it.copy(scanFailed = true) }
             is AtQrParseResult.Success -> {
                 applyReceipt(result.code)
-                applyOcr(ocrRows, result.code.totalCents)
+                applyOcr(ReceiptTextParser.parse(ocrRows, result.code.totalCents))
             }
         }
     }
 
-    private fun applyOcr(ocrRows: List<String>, totalCents: Long) {
-        val amounts = ReceiptTextParser.parse(ocrRows, totalCents)
+    /** Talão sem QR legível: o total impresso faz as vezes do total do QR. */
+    private fun applyTextOnlyReceipt(ocrRows: List<String>) {
+        val amounts = ReceiptTextParser.parse(ocrRows, totalCents = null)
+        val printedTotal = amounts.printedTotalCents
+        val current = _uiState.value
+        if (printedTotal != null) {
+            touched.clear()
+            if (current.volumeText.isNotBlank()) touched += AmountField.VOLUME
+            if (current.priceText.isNotBlank()) touched += AmountField.PRICE
+            touched += AmountField.TOTAL
+        }
+        _uiState.update {
+            it.copy(
+                scanFailed = false,
+                receipt = null,
+                receiptTextOnly = true,
+                totalText = printedTotal?.let { total -> NumberInput.formatScaled(total, 2) } ?: it.totalText,
+                pendingOdometerScan = it.odometerText.isBlank(),
+            )
+        }
+        applyOcr(amounts)
+    }
+
+    private fun applyOcr(amounts: ReceiptAmounts) {
         val volumeRead = amounts.volumeSource == AmountSource.OCR && amounts.volumeMl != null
         val priceRead = amounts.priceSource == AmountSource.OCR && amounts.pricePerLiterMilliCents != null
+        val discountRead = amounts.discountCents > 0
         // Só os valores lidos contam como "escritos"; o terceiro deriva do total pela regra habitual.
         if (volumeRead) touched += AmountField.VOLUME
         if (priceRead) touched += AmountField.PRICE
@@ -202,6 +251,8 @@ class FillUpViewModel(
             it.copy(
                 volumeText = if (volumeRead) NumberInput.formatScaled(amounts.volumeMl!!.toLong(), 3, trimTrailingZeros = true) else it.volumeText,
                 priceText = if (priceRead) NumberInput.formatScaled(amounts.pricePerLiterMilliCents!!.toLong(), 5, trimTrailingZeros = true) else it.priceText,
+                discountText = if (discountRead) NumberInput.formatScaled(amounts.discountCents, 2) else it.discountText,
+                ocrDiscountCents = amounts.discountCents.takeIf { discountRead },
                 ocrOutcome = when {
                     volumeRead && priceRead -> OcrOutcome.VOLUME_AND_PRICE
                     volumeRead -> OcrOutcome.VOLUME_ONLY
@@ -262,6 +313,7 @@ class FillUpViewModel(
             it.copy(
                 scanFailed = false,
                 receipt = receipt,
+                receiptTextOnly = false,
                 ocrOutcome = null,
                 date = code.documentDate,
                 totalText = NumberInput.formatScaled(code.totalCents, 2),
@@ -288,25 +340,32 @@ class FillUpViewModel(
         revalidate()
     }
 
-    /** Com exatamente dois dos três valores editados pelo utilizador, calcula o terceiro. */
+    /**
+     * Com exatamente dois dos três valores editados pelo utilizador, calcula o terceiro.
+     * O desconto entra sempre na conta: litros × preço = total + desconto.
+     */
     private fun deriveMissingAmount() {
         if (touched.size != 2) return
         val state = _uiState.value
         val volume = NumberInput.parseLitersToMl(state.volumeText)
         val price = NumberInput.parsePricePerLiterToMilliCents(state.priceText)
         val total = NumberInput.parseEurosToCents(state.totalText)
+        val discount = parseDiscount(state.discountText)?.takeIf { it >= 0 } ?: 0L
+        val gross = total?.plus(discount)
         val missing = AmountField.entries.first { it !in touched }
         val derived = when (missing) {
-            AmountField.TOTAL ->
-                if (volume != null && price != null && volume > 0 && price > 0) NumberInput.formatScaled(FuelMath.totalCents(volume, price), 2) else ""
+            AmountField.TOTAL -> {
+                val derivedTotal = if (volume != null && price != null && volume > 0 && price > 0) FuelMath.totalCents(volume, price) - discount else null
+                derivedTotal?.takeIf { it > 0 }?.let { NumberInput.formatScaled(it, 2) }.orEmpty()
+            }
             AmountField.PRICE ->
-                if (volume != null && total != null && volume > 0 && total > 0) {
+                if (volume != null && gross != null && volume > 0 && gross > 0) {
                     // Os talões mostram o preço com 3 casas decimais: arredonda a múltiplos de 100 milésimos de cêntimo.
-                    val price = FuelMath.roundDiv(FuelMath.pricePerLiterMilliCents(total, volume).toLong(), 100) * 100
+                    val price = FuelMath.roundDiv(FuelMath.pricePerLiterMilliCents(gross, volume).toLong(), 100) * 100
                     NumberInput.formatScaled(price, 5, trimTrailingZeros = true)
                 } else ""
             AmountField.VOLUME ->
-                if (price != null && total != null && price > 0 && total > 0) NumberInput.formatScaled(FuelMath.volumeMl(total, price).toLong(), 3, trimTrailingZeros = true) else ""
+                if (price != null && gross != null && price > 0 && gross > 0) NumberInput.formatScaled(FuelMath.volumeMl(gross, price).toLong(), 3, trimTrailingZeros = true) else ""
         }
         _uiState.update {
             when (missing) {
@@ -316,6 +375,9 @@ class FillUpViewModel(
             }
         }
     }
+
+    /** Vazio = sem desconto; null = texto inválido. */
+    private fun parseDiscount(text: String): Long? = if (text.isBlank()) 0L else NumberInput.parseEurosToCents(text)
 
     private fun edit(transform: FillUpUiState.() -> FillUpUiState) {
         _uiState.update { it.transform() }
@@ -329,6 +391,7 @@ class FillUpViewModel(
         volumeMl = NumberInput.parseLitersToMl(state.volumeText),
         pricePerLiterMilliCents = NumberInput.parsePricePerLiterToMilliCents(state.priceText),
         totalCents = NumberInput.parseEurosToCents(state.totalText),
+        discountCents = parseDiscount(state.discountText),
         isFullTank = state.isFullTank,
         atcud = state.receipt?.atcud,
         buyerNif = state.receipt?.buyerNif,
@@ -384,6 +447,7 @@ class FillUpViewModel(
         val volume = draft.volumeMl ?: return
         val price = draft.pricePerLiterMilliCents ?: return
         val total = draft.totalCents ?: return
+        val discount = draft.discountCents ?: return
 
         _uiState.update { it.copy(isSaving = true, askWarningConfirmation = false) }
         viewModelScope.launch {
@@ -396,6 +460,7 @@ class FillUpViewModel(
                 volumeMl = volume,
                 pricePerLiterMilliCents = price,
                 totalCents = total,
+                discountCents = discount,
                 isFullTank = state.isFullTank,
                 stationNif = receipt?.issuerNif,
                 stationName = state.stationName.trim().ifEmpty { null },

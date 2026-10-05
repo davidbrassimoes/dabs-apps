@@ -30,7 +30,8 @@ O utilizador **atesta sempre**, por isso cada abastecimento fecha um ciclo cheio
 | odometerKm | Int | total do conta-km no momento do abastecimento |
 | volumeMl | Int | litros × 1000 (evitar floats) |
 | pricePerLiterMilliCents | Int ou Long | preço/litro com 3 casas decimais (ex: 1,749 €) |
-| totalCents | Long | total pago em cêntimos |
+| totalCents | Long | total pago em cêntimos (= campo O do QR: total do documento, já com os descontos do talão) |
+| discountCents | Long | descontos do talão em cêntimos (positivos, default 0); `litros × preço/litro = total + desconto` |
 | isFullTank | Boolean | default true |
 | stationNif | String? | do QR code |
 | stationName | String? | opcional, editável |
@@ -61,7 +62,7 @@ Toda a lógica de cálculo em funções puras, testadas unitariamente.
 ## Validações
 - `odometerKm` > odómetro do abastecimento anterior (por data)
 - Distância desde o último abastecimento plausível face aos litros (ex: consumo entre 2 e 25 L/100 km); aviso, não bloqueio
-- `litros × preço/litro ≈ total` (tolerância de alguns cêntimos)
+- `litros × preço/litro − desconto ≈ total` (tolerância de alguns cêntimos)
 - Litros ≤ capacidade do depósito (se configurada)
 - ATCUD duplicado → aviso "este talão já foi registado"
 
@@ -74,13 +75,15 @@ Formato: campos `CHAVE:valor` separados por `*`. Campos relevantes:
 - `F` data do documento (`AAAAMMDD`)
 - `G` identificação do documento
 - `H` ATCUD
-- `O` total do documento com impostos
+- `O` total do documento com impostos (já descontados os descontos do talão)
 - (outros: C, D, E, I*/J*/K*, N, Q, R; ignorar se não precisos)
 
 Confirmar o formato contra a especificação técnica da AT para o código QR antes de implementar o parser e escrever testes com exemplos reais.
 
 ### OCR do talão (mesma imagem)
-O QR não inclui litros nem preço/litro. Extrair por ML Kit Text Recognition com regras/regex tolerantes a variações dos talões portugueses (ex: `LITROS`, `L`, `QTD`, `€/L`, `PREÇO`). Usar o total do QR para validar: `litros × preço ≈ total`. Guardar amostras anonimizadas de talões para testes.
+O QR não inclui litros nem preço/litro. Extrair por ML Kit Text Recognition com regras/regex tolerantes a variações dos talões portugueses (ex: `LITROS`, `L`, `QTD`, `€/L`, `PREÇO`; o OCR lê muitas vezes `€/L` como `e/L`). Extrair também os descontos (`DESCONTO`, `PROMO`, `CUPÃO`…; num desconto por litro conta o valor, não a taxa) e o total impresso. Usar o total do QR para validar: `litros × preço ≈ total + desconto`. Ignorar os quadros de impostos (ISP, IVA), que têm o mesmo padrão quantidade × taxa = valor. Sem QR legível, o total impresso substitui o do QR. Guardar amostras anonimizadas de talões para testes (`app/src/test/resources/receipts`, `real_*` = texto devolvido pelo ML Kit para fotografias reais).
+
+Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia em resolução máxima tirada logo a seguir (apagada depois). Para afinar os parsers com fotografias reais: pô-las em `test-photos/` (fora do git) e correr `SamplePhotoOcrDumpTest` com `adb shell am instrument`, que escreve o texto reconhecido em `Android/data/pt.dabs.fueltracker/files/ocr-dump/`. Em builds de debug, o formulário mostra a secção "Texto lido (debug)".
 
 ## Leitura do conta-km
 - Conta-km digital (LCD, sete segmentos).

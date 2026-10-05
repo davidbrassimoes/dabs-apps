@@ -14,6 +14,9 @@ sealed interface ValidationIssue {
     data object MissingPrice : ValidationIssue { override val severity = Severity.ERROR }
     data object MissingTotal : ValidationIssue { override val severity = Severity.ERROR }
 
+    /** Desconto escrito mas inválido (vazio conta como zero). */
+    data object InvalidDiscount : ValidationIssue { override val severity = Severity.ERROR }
+
     /** Odómetro não é maior do que o do abastecimento anterior (por data). */
     data class OdometerNotAfterPrevious(val previousOdometerKm: Int) : ValidationIssue {
         override val severity = Severity.ERROR
@@ -29,7 +32,7 @@ sealed interface ValidationIssue {
         override val severity = Severity.WARNING
     }
 
-    /** litros × preço/litro difere do total além da tolerância. */
+    /** litros × preço/litro − desconto difere do total além da tolerância. */
     data class TotalMismatch(val expectedTotalCents: Long) : ValidationIssue {
         override val severity = Severity.WARNING
     }
@@ -57,6 +60,8 @@ data class FillUpDraft(
     val volumeMl: Int?,
     val pricePerLiterMilliCents: Int?,
     val totalCents: Long?,
+    /** Descontos do talão; 0 sem desconto, null = valor inválido. */
+    val discountCents: Long? = 0,
     val isFullTank: Boolean = true,
     val atcud: String? = null,
     /** NIF do adquirente lido do QR (campo B); null se não houve leitura. */
@@ -99,6 +104,8 @@ object FillUpValidator {
         if (volume == null) issues += ValidationIssue.MissingVolume
         if (price == null) issues += ValidationIssue.MissingPrice
         if (total == null) issues += ValidationIssue.MissingTotal
+        val discount = draft.discountCents?.takeIf { it >= 0 }
+        if (discount == null) issues += ValidationIssue.InvalidDiscount
 
         val previous = others.lastOrNull { it.dateTime <= draft.dateTime }
         val next = others.firstOrNull { it.dateTime > draft.dateTime }
@@ -112,8 +119,8 @@ object FillUpValidator {
             }
         }
 
-        if (volume != null && price != null && total != null) {
-            val expected = FuelMath.totalCents(volume, price)
+        if (volume != null && price != null && total != null && discount != null) {
+            val expected = FuelMath.totalCents(volume, price) - discount
             if (kotlin.math.abs(expected - total) > options.totalToleranceCents) {
                 issues += ValidationIssue.TotalMismatch(expected)
             }

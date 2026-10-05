@@ -77,6 +77,13 @@
     <string name="fillup_volume">Litros</string>
     <string name="fillup_price">Preço por litro</string>
     <string name="fillup_total">Total pago</string>
+    <string name="fillup_discount">Desconto</string>
+    <string name="fillup_discount_hint">Descontos do talão; litros × preço = total + desconto</string>
+    <string name="fillup_ocr_discount">Desconto de %1$s lido do talão.</string>
+    <string name="fillup_receipt_without_qr">Talão lido sem QR</string>
+    <string name="fillup_ocr_debug_title">Texto lido (debug)</string>
+    <string name="fillup_ocr_debug_qr">QR: %1$s</string>
+    <string name="fillup_ocr_debug_none">Sem texto reconhecido.</string>
     <string name="fillup_full_tank">Depósito cheio</string>
     <string name="fillup_full_tank_hint">Atestar fecha um ciclo de consumo</string>
     <string name="fillup_station">Posto (opcional)</string>
@@ -99,10 +106,11 @@
     <string name="validation_missing_volume">Indica os litros</string>
     <string name="validation_missing_price">Indica o preço por litro</string>
     <string name="validation_missing_total">Indica o total pago</string>
+    <string name="validation_invalid_discount">Desconto inválido</string>
     <string name="validation_odometer_not_after_previous">O conta-km tem de ser maior do que o do abastecimento anterior (%1$s)</string>
     <string name="validation_odometer_not_before_next">O conta-km tem de ser menor do que o do abastecimento seguinte (%1$s)</string>
     <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
-    <string name="validation_total_mismatch">Litros × preço dá %1$s, diferente do total indicado</string>
+    <string name="validation_total_mismatch">Litros × preço − desconto dá %1$s, diferente do total indicado</string>
     <string name="validation_volume_exceeds_tank">Litros acima da capacidade do depósito (%1$s)</string>
     <string name="validation_duplicate_atcud">Este talão já foi registado. Se guardares, fica sem a ligação ao ATCUD</string>
     <string name="validation_receipt_without_nif">O talão foi emitido sem NIF (consumidor final)</string>
@@ -120,7 +128,7 @@
     <string name="scan_pick_photo">Escolher foto</string>
     <string name="scan_photo_only_hint">Sem câmara podes escolher uma fotografia do talão já tirada.</string>
     <string name="scan_photo_analyzing">A analisar a fotografia…</string>
-    <string name="scan_photo_no_qr">Não encontrei um código QR legível nessa fotografia. Tenta outra com o QR nítido.</string>
+    <string name="scan_photo_no_qr">Não encontrei um código QR nem os valores do talão nessa fotografia. Tenta outra com o talão nítido.</string>
     <string name="scan_photo_failed">Não consegui abrir a fotografia.</string>
     <string name="scan_odometer_photo_not_found">Não encontrei um conta-km plausível nessa fotografia. Tenta outra ou escreve à mão.</string>
 

@@ -39,10 +39,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     testOptions {
         unitTests.isReturnDefaultValues = true
+    }
+    sourceSets {
+        // Fotografias reais de talões e do painel (fora do controlo de versões), só para o APK de
+        // teste: SamplePhotoOcrDumpTest corre o ML Kit sobre elas. Sem a pasta, o teste é ignorado.
+        getByName("androidTest").assets.srcDir(rootProject.file("test-photos"))
     }
 }
 

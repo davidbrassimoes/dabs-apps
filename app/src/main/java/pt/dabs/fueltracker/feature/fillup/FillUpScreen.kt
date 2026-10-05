@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -44,10 +46,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pt.dabs.fueltracker.BuildConfig
 import pt.dabs.fueltracker.R
 import pt.dabs.fueltracker.core.domain.Severity
 import pt.dabs.fueltracker.core.domain.ValidationIssue
@@ -123,6 +127,7 @@ fun FillUpScreen(
         onVolumeChange = viewModel::onVolumeChange,
         onPriceChange = viewModel::onPriceChange,
         onTotalChange = viewModel::onTotalChange,
+        onDiscountChange = viewModel::onDiscountChange,
         onFullTankChange = viewModel::onFullTankChange,
         onStationNameChange = viewModel::onStationNameChange,
         onNotesChange = viewModel::onNotesChange,
@@ -146,12 +151,14 @@ fun FillUpContent(
     onVolumeChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
     onTotalChange: (String) -> Unit,
+    onDiscountChange: (String) -> Unit,
     onFullTankChange: (Boolean) -> Unit,
     onStationNameChange: (String) -> Unit,
     onNotesChange: (String) -> Unit,
     onSave: () -> Unit,
     onConfirmWarnings: () -> Unit,
     onDismissWarnings: () -> Unit,
+    showOcrDebug: Boolean = BuildConfig.DEBUG,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -187,7 +194,7 @@ fun FillUpContent(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ReceiptCard(receipt = state.receipt, ocrOutcome = state.ocrOutcome, onScanReceipt = onScanReceipt)
+            ReceiptCard(state = state, onScanReceipt = onScanReceipt)
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
@@ -238,15 +245,33 @@ fun FillUpContent(
                 )
             }
 
-            OutlinedTextField(
-                value = state.totalText,
-                onValueChange = onTotalChange,
-                label = { Text(stringResource(R.string.fillup_total)) },
-                suffix = { Text("€") },
-                isError = state.showErrors && errors.any { it is ValidationIssue.MissingTotal },
-                keyboardOptions = decimalKeyboard,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.discountText,
+                    onValueChange = onDiscountChange,
+                    label = { Text(stringResource(R.string.fillup_discount)) },
+                    prefix = { Text("−") },
+                    suffix = { Text("€") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.InvalidDiscount },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedTextField(
+                    value = state.totalText,
+                    onValueChange = onTotalChange,
+                    label = { Text(stringResource(R.string.fillup_total)) },
+                    suffix = { Text("€") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingTotal },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Text(
+                text = stringResource(R.string.fillup_discount_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -280,6 +305,8 @@ fun FillUpContent(
             Button(onClick = onSave, enabled = !state.isLoading && !state.isSaving, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.action_save))
             }
+
+            if (showOcrDebug) state.ocrDebug?.let { OcrDebugSection(it) }
             Spacer(Modifier.height(24.dp))
         }
     }
@@ -358,10 +385,14 @@ fun FillUpContent(
 }
 
 @Composable
-private fun ReceiptCard(receipt: ScannedReceipt?, ocrOutcome: OcrOutcome?, onScanReceipt: () -> Unit) {
+private fun ReceiptCard(state: FillUpUiState, onScanReceipt: () -> Unit) {
+    val receipt = state.receipt
+    val ocrOutcome = state.ocrOutcome
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (receipt == null) {
+            if (receipt == null && state.receiptTextOnly) {
+                Text(stringResource(R.string.fillup_receipt_without_qr), style = MaterialTheme.typography.titleSmall)
+            } else if (receipt == null) {
                 Text(stringResource(R.string.fillup_receipt_none), style = MaterialTheme.typography.bodyMedium)
             } else {
                 Text(stringResource(R.string.fillup_receipt_read), style = MaterialTheme.typography.titleSmall)
@@ -378,23 +409,56 @@ private fun ReceiptCard(receipt: ScannedReceipt?, ocrOutcome: OcrOutcome?, onSca
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                ocrOutcome?.let { outcome ->
-                    Text(
-                        text = stringResource(
-                            when (outcome) {
-                                OcrOutcome.VOLUME_AND_PRICE -> R.string.fillup_ocr_both
-                                OcrOutcome.VOLUME_ONLY -> R.string.fillup_ocr_volume_only
-                                OcrOutcome.PRICE_ONLY -> R.string.fillup_ocr_price_only
-                                OcrOutcome.NOTHING -> R.string.fillup_ocr_nothing
-                            }
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (outcome == OcrOutcome.NOTHING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-                    )
-                }
+            }
+            ocrOutcome?.let { outcome ->
+                Text(
+                    text = stringResource(
+                        when (outcome) {
+                            OcrOutcome.VOLUME_AND_PRICE -> R.string.fillup_ocr_both
+                            OcrOutcome.VOLUME_ONLY -> R.string.fillup_ocr_volume_only
+                            OcrOutcome.PRICE_ONLY -> R.string.fillup_ocr_price_only
+                            OcrOutcome.NOTHING -> R.string.fillup_ocr_nothing
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (outcome == OcrOutcome.NOTHING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                )
+            }
+            state.ocrDiscountCents?.let { discount ->
+                Text(
+                    text = stringResource(R.string.fillup_ocr_discount, PtFormat.euros(discount)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
             OutlinedButton(onClick = onScanReceipt, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(if (receipt == null) R.string.fillup_scan_receipt else R.string.fillup_scan_receipt_again))
+                Text(stringResource(if (receipt == null && !state.receiptTextOnly) R.string.fillup_scan_receipt else R.string.fillup_scan_receipt_again))
+            }
+        }
+    }
+}
+
+/** Só em builds de debug: o QR e as linhas de texto tal como chegaram da câmara, selecionáveis. */
+@Composable
+private fun OcrDebugSection(debug: OcrDebug) {
+    var expanded by remember { mutableStateOf(false) }
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(stringResource(R.string.fillup_ocr_debug_title))
+            }
+            if (expanded) {
+                SelectionContainer {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        debug.qrRaw?.let { Text(stringResource(R.string.fillup_ocr_debug_qr, it), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall) }
+                        if (debug.rows.isEmpty()) {
+                            Text(stringResource(R.string.fillup_ocr_debug_none), style = MaterialTheme.typography.bodySmall)
+                        }
+                        debug.rows.forEachIndexed { index, row ->
+                            Text("${(index + 1).toString().padStart(2, '0')}  $row", fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
             }
         }
     }

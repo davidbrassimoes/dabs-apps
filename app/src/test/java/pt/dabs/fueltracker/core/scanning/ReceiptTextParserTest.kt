@@ -7,15 +7,80 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * As amostras em `src/test/resources/receipts` são textos sintéticos com os layouts habituais
- * dos talões portugueses (linha única, tabela, linhas separadas, ruído de OCR). Devem ser
- * substituídas ou complementadas por talões reais anonimizados à medida que forem aparecendo.
+ * As amostras em `src/test/resources/receipts` são textos com os layouts habituais dos talões
+ * portugueses. As `real_*` são o texto que o ML Kit devolveu para fotografias reais (já fundido
+ * por linha com [OcrRows]), anonimizado; as restantes são sintéticas.
  */
 class ReceiptTextParserTest {
 
     private fun sample(name: String): List<String> {
         val stream = checkNotNull(javaClass.classLoader?.getResourceAsStream("receipts/$name.txt")) { "sample $name missing" }
         return stream.bufferedReader(Charsets.UTF_8).readLines()
+    }
+
+    @Test
+    fun `real Repsol receipt with immediate discount is confirmed by total plus discount`() {
+        // E 42,630 Litros a 2,299 e/Ltr 98,01 € · Desconto Imediato -2,13 · Total 95,88 (= O do QR)
+        val result = ReceiptTextParser.parse(sample("real_repsol_desconto_imediato"), totalCents = 9_588)
+        assertEquals(42_630, result.volumeMl)
+        assertEquals(229_900, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.OCR, result.volumeSource)
+        assertEquals(AmountSource.OCR, result.priceSource)
+        assertEquals(true, result.consistentWithTotal)
+        assertEquals(213L, result.discountCents)
+        assertEquals(9_588L, result.printedTotalCents)
+    }
+
+    @Test
+    fun `real Repsol receipt without qr uses the printed total`() {
+        val result = ReceiptTextParser.parse(sample("real_repsol_desconto_imediato"), totalCents = null)
+        assertEquals(42_630, result.volumeMl)
+        assertEquals(229_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+        assertEquals(213L, result.discountCents)
+        assertEquals(9_588L, result.printedTotalCents)
+    }
+
+    @Test
+    fun `qr total before discount is also accepted`() {
+        // Se um posto codificar no QR o total antes do desconto, o par continua confirmado.
+        val result = ReceiptTextParser.parse(sample("real_repsol_desconto_imediato"), totalCents = 9_801)
+        assertEquals(42_630, result.volumeMl)
+        assertEquals(229_900, result.pricePerLiterMilliCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `tax tables never provide the price`() {
+        // ISP: taxa × quantidade = valor tem o mesmo padrão da linha do combustível.
+        val rows = listOf("Tipo ISP Taxa Qt Total", "ISP 0 0,583 €/Lt 42,63 24,85 €")
+        val result = ReceiptTextParser.parse(rows, totalCents = 9_588)
+        assertNull(result.pricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `per litre discount uses the discount amount, not the rate`() {
+        val result = ReceiptTextParser.parse(sample("galp_desconto_por_litro"), totalCents = 6_800)
+        assertEquals(40_000, result.volumeMl)
+        assertEquals(180_000, result.pricePerLiterMilliCents)
+        assertEquals(400L, result.discountCents)
+        assertEquals(true, result.consistentWithTotal)
+    }
+
+    @Test
+    fun `only liters with a discount derives the price from the gross amount`() {
+        val rows = listOf("GASOLINA 95", "LITROS 40,00", "DESCONTO -4,00", "TOTAL 68,00")
+        val result = ReceiptTextParser.parse(rows, totalCents = 6_800)
+        assertEquals(40_000, result.volumeMl)
+        assertEquals(180_000, result.pricePerLiterMilliCents)
+        assertEquals(AmountSource.DERIVED, result.priceSource)
+    }
+
+    @Test
+    fun `euro sign read as e still marks a price`() {
+        val result = ReceiptTextParser.parse(listOf("GASOLINA 95", "40,12 L 1,749 e/Ltr"), totalCents = null)
+        assertEquals(40_120, result.volumeMl)
+        assertEquals(174_900, result.pricePerLiterMilliCents)
     }
 
     @Test

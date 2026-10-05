@@ -20,7 +20,7 @@ object FillUpCsv {
     val BOM: String = 0xFEFF.toChar().toString()
 
     val HEADER: List<String> = listOf(
-        "id", "data_hora", "odometro_km", "litros", "preco_litro", "total_eur", "deposito_cheio",
+        "id", "data_hora", "odometro_km", "litros", "preco_litro", "total_eur", "desconto_eur", "deposito_cheio",
         "nif_posto", "nome_posto", "atcud", "fatura_com_nif", "notas", "criado_em",
     )
 
@@ -43,6 +43,7 @@ object FillUpCsv {
                 NumberInput.formatScaled(fillUp.volumeMl.toLong(), 3),
                 NumberInput.formatScaled(fillUp.pricePerLiterMilliCents.toLong(), 5),
                 NumberInput.formatScaled(fillUp.totalCents, 2),
+                NumberInput.formatScaled(fillUp.discountCents, 2),
                 if (fillUp.isFullTank) "1" else "0",
                 fillUp.stationNif.orEmpty(),
                 fillUp.stationName.orEmpty(),
@@ -77,6 +78,11 @@ object FillUpCsv {
                 val volume = NumberInput.parseLitersToMl(field("litros").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("litros")
                 val price = NumberInput.parsePricePerLiterToMilliCents(field("preco_litro").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("preco_litro")
                 val total = NumberInput.parseEurosToCents(field("total_eur").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("total_eur")
+                // Coluna opcional (ficheiros anteriores à v2 não a têm): vazio = sem desconto.
+                val discount = field("desconto_eur").let { text ->
+                    if (text.isNullOrBlank()) 0L
+                    else NumberInput.parseEurosToCents(text)?.takeIf { it >= 0 } ?: throw CsvFieldException("desconto_eur")
+                }
                 val fullTank = parseBoolean(field("deposito_cheio")) ?: true
                 fillUps += FillUp(
                     id = FillUp.NEW_ID,
@@ -85,6 +91,7 @@ object FillUpCsv {
                     volumeMl = volume,
                     pricePerLiterMilliCents = price,
                     totalCents = total,
+                    discountCents = discount,
                     isFullTank = fullTank,
                     stationNif = field("nif_posto")?.ifBlank { null },
                     stationName = field("nome_posto")?.ifBlank { null },
