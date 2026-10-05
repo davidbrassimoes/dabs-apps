@@ -21,10 +21,13 @@ import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.hasErrors
 import pt.dabs.fueltracker.core.domain.hasWarnings
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import pt.dabs.fueltracker.core.scanning.AmountSource
 import pt.dabs.fueltracker.core.scanning.AtQrCode
 import pt.dabs.fueltracker.core.scanning.AtQrCodeParser
 import pt.dabs.fueltracker.core.scanning.AtQrParseResult
+import pt.dabs.fueltracker.core.scanning.ReceiptProductParser
 import pt.dabs.fueltracker.core.scanning.ReceiptAmounts
 import pt.dabs.fueltracker.core.scanning.ReceiptStationParser
 import pt.dabs.fueltracker.core.scanning.ReceiptTextParser
@@ -67,7 +70,12 @@ data class FillUpUiState(
     /** Descontos do talão; vazio = sem desconto. */
     val discountText: String = "",
     val isFullTank: Boolean = true,
+    /** Local do posto em texto livre (a marca fica em [brand]). */
     val stationName: String = "",
+    val brand: FuelBrand? = null,
+    val fuelType: FuelType? = null,
+    /** Aditivado; null se desconhecido. */
+    val fuelPremium: Boolean? = null,
     val notes: String = "",
     /** Odómetro do abastecimento anterior (por data), para sugestão. */
     val previousOdometerKm: Int? = null,
@@ -157,12 +165,17 @@ class FillUpViewModel(
                         discountText = if (loaded.discountCents > 0) NumberInput.formatScaled(loaded.discountCents, 2) else "",
                         isFullTank = loaded.isFullTank,
                         stationName = loaded.stationName.orEmpty(),
+                        brand = loaded.brand,
+                        fuelType = loaded.fuelType,
+                        fuelPremium = loaded.fuelPremium,
                         notes = loaded.notes.orEmpty(),
                         receipt = loaded.toStoredReceipt(),
                     )
                 }
             } else {
-                _uiState.update { it.copy(isLoading = false) }
+                // Novo abastecimento: propõe o combustível da última vez (o utilizador põe quase sempre o mesmo).
+                val last = ConsumptionCalculator.sortChronologically(existing).lastOrNull { it.fuelType != null }
+                _uiState.update { it.copy(isLoading = false, fuelType = last?.fuelType, fuelPremium = last?.fuelPremium) }
             }
             revalidate()
         }
@@ -174,6 +187,9 @@ class FillUpViewModel(
     fun onTripChange(text: String) = edit { copy(tripText = text) }
     fun onFullTankChange(full: Boolean) = edit { copy(isFullTank = full) }
     fun onStationNameChange(text: String) = edit { copy(stationName = text) }
+    fun onBrandChange(brand: FuelBrand?) = edit { copy(brand = brand) }
+    fun onFuelTypeChange(type: FuelType?) = edit { copy(fuelType = type) }
+    fun onFuelPremiumChange(premium: Boolean?) = edit { copy(fuelPremium = premium) }
     fun onNotesChange(text: String) = edit { copy(notes = text) }
 
     fun onVolumeChange(text: String) = onAmountChange(AmountField.VOLUME, text)
@@ -202,7 +218,7 @@ class FillUpViewModel(
         _uiState.update { it.copy(ocrDebug = OcrDebug(qrRaw?.takeIf { raw -> raw.isNotBlank() }, ocrRows)) }
         if (qrRaw.isNullOrBlank()) {
             applyTextOnlyReceipt(ocrRows)
-            suggestStationName(stationNif = null, ocrRows)
+            suggestStationAndFuel(stationNif = null, ocrRows)
             return
         }
         when (val result = AtQrCodeParser.parse(qrRaw)) {
@@ -210,7 +226,7 @@ class FillUpViewModel(
             is AtQrParseResult.Success -> {
                 applyReceipt(result.code)
                 applyOcr(ReceiptTextParser.parse(ocrRows, result.code.totalCents))
-                suggestStationName(result.code.issuerNif, ocrRows)
+                suggestStationAndFuel(result.code.issuerNif, ocrRows)
             }
         }
     }
@@ -219,14 +235,24 @@ class FillUpViewModel(
      * Preenche o posto se estiver vazio: primeiro o nome que o utilizador já deu a este NIF noutro
      * abastecimento (o mais recente), senão a marca e o local lidos no talão.
      */
-    private fun suggestStationName(stationNif: String?, ocrRows: List<String>) {
-        if (_uiState.value.stationName.isNotBlank()) return
+    private fun suggestStationAndFuel(stationNif: String?, ocrRows: List<String>) {
+        // O mesmo posto (NIF) já registado: reutiliza a marca e o local que o utilizador lhe deu.
         val known = stationNif?.let { nif ->
-            existing.filter { it.id != fillUpId && it.stationNif == nif && !it.stationName.isNullOrBlank() }
-                .maxByOrNull { it.dateTime }?.stationName
+            existing.filter { it.id != fillUpId && it.stationNif == nif && (it.brand != null || !it.stationName.isNullOrBlank()) }
+                .maxByOrNull { it.dateTime }
         }
-        val suggestion = known ?: ReceiptStationParser.suggestName(ocrRows) ?: return
-        _uiState.update { it.copy(stationName = suggestion) }
+        val fromText = ReceiptStationParser.suggest(ocrRows)
+        val product = ReceiptProductParser.suggest(ocrRows)
+        _uiState.update { state ->
+            state.copy(
+                // Nunca substitui o que o utilizador já escolheu ou escreveu.
+                brand = state.brand ?: known?.brand ?: fromText?.brand,
+                stationName = state.stationName.ifBlank { known?.stationName ?: fromText?.place.orEmpty() },
+                // O talão manda no combustível (por defeito vinha o da última vez).
+                fuelType = product.type ?: state.fuelType,
+                fuelPremium = product.premium ?: state.fuelPremium,
+            )
+        }
     }
 
     /** Talão sem QR legível: o total impresso faz as vezes do total do QR. */
@@ -486,6 +512,9 @@ class FillUpViewModel(
                 isFullTank = state.isFullTank,
                 stationNif = receipt?.issuerNif,
                 stationName = state.stationName.trim().ifEmpty { null },
+                brand = state.brand,
+                fuelType = state.fuelType,
+                fuelPremium = state.fuelPremium,
                 // O ATCUD é único na base de dados: um talão repetido guarda-se sem a ligação ao ATCUD.
                 atcud = receipt?.atcud?.takeUnless { atcudAlreadyUsed },
                 buyerNifPresent = receipt?.buyerNifPresent,

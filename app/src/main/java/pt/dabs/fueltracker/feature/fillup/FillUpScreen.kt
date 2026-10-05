@@ -23,6 +23,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +67,8 @@ import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.ui.components.ValidationIssueText
 import pt.dabs.fueltracker.core.ui.components.message
 import pt.dabs.fueltracker.core.ui.format.PtFormat
+import pt.dabs.fueltracker.core.ui.format.label
+import pt.dabs.fueltracker.core.ui.format.shortLabel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -132,6 +143,9 @@ fun FillUpScreen(
         onDiscountChange = viewModel::onDiscountChange,
         onFullTankChange = viewModel::onFullTankChange,
         onStationNameChange = viewModel::onStationNameChange,
+        onBrandChange = viewModel::onBrandChange,
+        onFuelTypeChange = viewModel::onFuelTypeChange,
+        onFuelPremiumChange = viewModel::onFuelPremiumChange,
         onNotesChange = viewModel::onNotesChange,
         onSave = viewModel::onSaveClick,
         onConfirmWarnings = viewModel::onConfirmWarnings,
@@ -157,6 +171,9 @@ fun FillUpContent(
     onDiscountChange: (String) -> Unit,
     onFullTankChange: (Boolean) -> Unit,
     onStationNameChange: (String) -> Unit,
+    onBrandChange: (FuelBrand?) -> Unit,
+    onFuelTypeChange: (FuelType?) -> Unit,
+    onFuelPremiumChange: (Boolean?) -> Unit,
     onNotesChange: (String) -> Unit,
     onSave: () -> Unit,
     onConfirmWarnings: () -> Unit,
@@ -299,13 +316,18 @@ fun FillUpContent(
                 Switch(checked = state.isFullTank, onCheckedChange = onFullTankChange)
             }
 
-            OutlinedTextField(
-                value = state.stationName,
-                onValueChange = onStationNameChange,
-                label = { Text(stringResource(R.string.fillup_station)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            FuelSection(state = state, onFuelTypeChange = onFuelTypeChange, onFuelPremiumChange = onFuelPremiumChange)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BrandField(brand = state.brand, onBrandChange = onBrandChange, modifier = Modifier.weight(1f))
+                OutlinedTextField(
+                    value = state.stationName,
+                    onValueChange = onStationNameChange,
+                    label = { Text(stringResource(R.string.fillup_station)) },
+                    singleLine = true,
+                    modifier = Modifier.weight(1.3f),
+                )
+            }
 
             OutlinedTextField(
                 value = state.notes,
@@ -482,3 +504,67 @@ private fun OcrDebugSection(debug: OcrDebug) {
 
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", PtFormat.locale)
 private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", PtFormat.locale)
+
+/** Tipo de combustível (95, 98, gasóleo, GPL) e se é simples ou aditivado; tocar de novo desmarca. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FuelSection(
+    state: FillUpUiState,
+    onFuelTypeChange: (FuelType?) -> Unit,
+    onFuelPremiumChange: (Boolean?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.fillup_fuel_type), style = MaterialTheme.typography.bodyLarge)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            FuelType.entries.forEachIndexed { index, type ->
+                SegmentedButton(
+                    selected = state.fuelType == type,
+                    onClick = { onFuelTypeChange(if (state.fuelType == type) null else type) },
+                    shape = SegmentedButtonDefaults.itemShape(index, FuelType.entries.size),
+                    label = { Text(type.shortLabel(), maxLines = 1) },
+                )
+            }
+        }
+        val premiumOptions = listOf(false to R.string.fillup_fuel_simple, true to R.string.fillup_fuel_premium)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            premiumOptions.forEachIndexed { index, (premium, label) ->
+                SegmentedButton(
+                    selected = state.fuelPremium == premium,
+                    onClick = { onFuelPremiumChange(if (state.fuelPremium == premium) null else premium) },
+                    shape = SegmentedButtonDefaults.itemShape(index, premiumOptions.size),
+                    label = { Text(stringResource(label)) },
+                )
+            }
+        }
+    }
+}
+
+/** Marca do posto, da lista fixa; "—" deixa-a por indicar. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BrandField(brand: FuelBrand?, onBrandChange: (FuelBrand?) -> Unit, modifier: Modifier = Modifier) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
+        OutlinedTextField(
+            value = brand?.label() ?: stringResource(R.string.fillup_brand_none),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.fillup_brand)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            singleLine = true,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.fillup_brand_none)) },
+                onClick = { onBrandChange(null); expanded = false },
+            )
+            FuelBrand.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label()) },
+                    onClick = { onBrandChange(option); expanded = false },
+                )
+            }
+        }
+    }
+}

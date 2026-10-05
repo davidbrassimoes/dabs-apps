@@ -17,4 +17,13 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
-val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+/** v4: marca do posto (lista fixa, por código) e combustível (tipo e aditivado); null nos registos antigos. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE fill_ups ADD COLUMN brand TEXT")
+        db.execSQL("ALTER TABLE fill_ups ADD COLUMN fuel_type TEXT")
+        db.execSQL("ALTER TABLE fill_ups ADD COLUMN fuel_premium INTEGER")
+    }
+}
+
+val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)

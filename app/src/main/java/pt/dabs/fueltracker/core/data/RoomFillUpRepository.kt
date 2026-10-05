@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.map
 import pt.dabs.fueltracker.core.database.FillUpDao
 import pt.dabs.fueltracker.core.database.FillUpEntity
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -49,6 +51,9 @@ internal fun FillUpEntity.toDomain() = FillUp(
     isFullTank = isFullTank,
     stationNif = stationNif,
     stationName = stationName,
+    brand = FuelBrand.fromCode(brand),
+    fuelType = FuelType.fromCode(fuelType),
+    fuelPremium = fuelPremium,
     atcud = atcud,
     buyerNifPresent = buyerNifPresent,
     notes = notes,
@@ -67,6 +72,9 @@ internal fun FillUp.toEntity() = FillUpEntity(
     isFullTank = isFullTank,
     stationNif = stationNif,
     stationName = stationName,
+    brand = brand?.code,
+    fuelType = fuelType?.code,
+    fuelPremium = fuelPremium,
     atcud = atcud,
     buyerNifPresent = buyerNifPresent,
     notes = notes,

@@ -12,6 +12,8 @@ import pt.dabs.fueltracker.core.domain.ConsumptionCalculator
 import pt.dabs.fueltracker.core.domain.model.ConsumptionCycle
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import pt.dabs.fueltracker.core.domain.model.PeriodSummary
+import pt.dabs.fueltracker.core.domain.model.BrandSummary
+import pt.dabs.fueltracker.core.domain.model.FuelSummary
 import pt.dabs.fueltracker.core.domain.model.StationSummary
 import java.time.Clock
 import javax.inject.Inject
@@ -29,6 +31,8 @@ data class StatsUiState(
     /** Anos com dados, do mais recente para o mais antigo. */
     val years: List<PeriodSummary> = emptyList(),
     val stations: List<StationSummary> = emptyList(),
+    val brands: List<BrandSummary> = emptyList(),
+    val fuels: List<FuelSummary> = emptyList(),
     /** Ciclos com consumo acima do habitual, do mais recente para o mais antigo. */
     val anomalies: List<AnomalyItem> = emptyList(),
     val overallAverageMlPer100Km: Int? = null,
@@ -64,6 +68,8 @@ class StatsViewModel @Inject constructor(
             months = ConsumptionCalculator.monthlySummaries(sorted, clock.zone).takeLast(MONTHS_SHOWN),
             years = ConsumptionCalculator.yearlySummaries(sorted, clock.zone).asReversed(),
             stations = ConsumptionCalculator.stationSummaries(sorted),
+            brands = ConsumptionCalculator.brandSummaries(sorted),
+            fuels = ConsumptionCalculator.fuelSummaries(sorted),
             anomalies = anomalies,
             overallAverageMlPer100Km = ConsumptionCalculator.weightedAverageMlPer100Km(cycles),
         )

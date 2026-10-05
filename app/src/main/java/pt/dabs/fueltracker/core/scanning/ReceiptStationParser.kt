@@ -1,41 +1,19 @@
 package pt.dabs.fueltracker.core.scanning
 
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
 import java.text.Normalizer
 import java.util.Locale
 
 /**
- * Sugere o nome do posto a partir do texto OCR de um talão: a marca (Galp, Repsol, BP…) e, se
- * estiver na mesma linha, o local ("E1146 - A.S. REPSOL LOURES B-SENTIDO N/S" →
- * "Repsol Loures B-Sentido N/S").
+ * Identifica o posto a partir do texto OCR de um talão: a marca, da lista fixa [FuelBrand], e o
+ * local, se estiver na mesma linha ("E1146 - A.S. REPSOL LOURES B-SENTIDO N/S" → Repsol,
+ * "Loures B-Sentido N/S").
  *
  * A primeira linha do talão é muitas vezes a empresa que explora o posto (ex.: "GESPOST … LDA"),
  * não a marca; linhas de empresa, morada e contactos só servem se não houver outra com a marca.
  * É uma sugestão: o utilizador confirma ou corrige.
  */
 object ReceiptStationParser {
-
-    /** Marca → expressão sobre o texto em maiúsculas sem acentos. A ordem resolve empates. */
-    private val BRANDS: List<Pair<String, Regex>> = listOf(
-        "Galp" to Regex("""\bGALP\b|\bPETROGAL\b"""),
-        "Repsol" to Regex("""\bREPSOL\b"""),
-        "BP" to Regex("""\bBP\b"""),
-        "Prio" to Regex("""\bPRIO\b"""),
-        "Moeve" to Regex("""\bMOEVE\b"""),
-        "Cepsa" to Regex("""\bCEPSA\b"""),
-        "Intermarché" to Regex("""\bINTERMARCHE\b|\bITMP\b"""),
-        "E.Leclerc" to Regex("""\bE\.?\s?LECLERC\b|\bLECLERC\b"""),
-        "Auchan" to Regex("""\bAUCHAN\b|\bJUMBO\b"""),
-        "Continente" to Regex("""\bCONTINENTE\b"""),
-        "Pingo Doce" to Regex("""\bPINGO DOCE\b"""),
-        "Alves Bandeira" to Regex("""\bALVES BANDEIRA\b"""),
-        "OZ Energia" to Regex("""\bOZ ENERGIA\b"""),
-        "Petroprix" to Regex("""\bPETROPRIX\b"""),
-        "Plenergy" to Regex("""\bPLENERGY\b"""),
-        "Q8" to Regex("""\bQ8\b"""),
-        "Shell" to Regex("""\bSHELL\b"""),
-        "TotalEnergies" to Regex("""\bTOTAL ?ENERGIES\b"""),
-        "Ecomarché" to Regex("""\bECOMARCHE\b"""),
-    )
 
     /** Linhas que são empresa, morada ou contactos, não a identificação do posto. */
     private val COMPANY_OR_ADDRESS = Regex("""\bLDA\b|\bS\.?\s?A\.?$|\bS\.?A\.?\b|UNIPESSOAL|\bNIF\b|CONTRIBUINTE|CAP\.? ?SOC|C\.?R\.?C|\bTEL\b|\bTLF\b|\bFAX\b|\bAV\.?\b|\bAVENIDA\b|\bRUA\b|\bESTRADA\b|\bKM\b|\d{4}-\d{3}|WWW\.|@""")
@@ -46,18 +24,21 @@ object ReceiptStationParser {
         "ABASTECIMENTO", "COMBUSTIVEIS", "BOMBA", "BOMBAS", "-", "–", "/",
     )
 
-    fun suggestName(rows: List<String>): String? {
-        var bestBrand: String? = null
+    /** Marca e local lidos do talão; [place] pode ser vazio (só a marca). */
+    data class StationSuggestion(val brand: FuelBrand, val place: String)
+
+    fun suggest(rows: List<String>): StationSuggestion? {
+        var bestBrand: FuelBrand? = null
         var bestPlace = ""
         var bestRank = Int.MAX_VALUE
+        val brands = FuelBrand.entries.filter { it.aliases != null }
         for (row in rows) {
             // Palavras originais (com acentos, para o nome) e normalizadas (para comparar).
             val words = row.trim().split(Regex("""\s+""")).filter { it.isNotEmpty() }
             val normalizedWords = words.map { normalize(it) }
             val line = normalizedWords.joinToString(" ")
-            for ((index, entry) in BRANDS.withIndex()) {
-                val (brand, regex) = entry
-                val match = regex.find(line) ?: continue
+            for ((index, brand) in brands.withIndex()) {
+                val match = brand.aliases!!.find(line) ?: continue
                 // Linhas próprias do posto primeiro; empresa/morada só como último recurso (só a marca).
                 val ownLine = !COMPANY_OR_ADDRESS.containsMatchIn(line)
                 val rank = (if (ownLine) 0 else 1_000) + index
@@ -68,8 +49,7 @@ object ReceiptStationParser {
                 }
             }
         }
-        val brand = bestBrand ?: return null
-        return if (bestPlace.isEmpty()) brand else "$brand $bestPlace"
+        return bestBrand?.let { StationSuggestion(it, bestPlace) }
     }
 
     /**

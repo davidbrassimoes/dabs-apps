@@ -52,6 +52,8 @@ import pt.dabs.fueltracker.R
 import pt.dabs.fueltracker.core.domain.model.DistanceSource
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import pt.dabs.fueltracker.core.ui.format.PtFormat
+import pt.dabs.fueltracker.core.ui.format.fuelLabel
+import pt.dabs.fueltracker.core.ui.format.label
 import java.time.ZoneId
 
 @Composable
@@ -218,9 +220,15 @@ private fun HistoryRow(item: HistoryItem, onClick: () -> Unit, onDeleteClick: ()
                         )
                     }
                 }
-                if (!fillUp.stationName.isNullOrBlank()) {
+                // "Repsol · Loures B-Sentido N/S · Gasolina 95 aditivada"
+                val details = listOfNotNull(
+                    fillUp.brand?.label(),
+                    fillUp.stationName?.takeIf { it.isNotBlank() },
+                    fuelLabel(fillUp.fuelType, fillUp.fuelPremium),
+                )
+                if (details.isNotEmpty()) {
                     Spacer(Modifier.height(2.dp))
-                    Text(fillUp.stationName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             IconButton(onClick = onDeleteClick) {

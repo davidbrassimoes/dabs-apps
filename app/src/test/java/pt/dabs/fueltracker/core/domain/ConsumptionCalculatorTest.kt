@@ -7,6 +7,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import pt.dabs.fueltracker.core.domain.model.DistanceSource
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import pt.dabs.fueltracker.core.domain.model.Period
 import java.time.LocalDate
 import java.time.YearMonth
@@ -267,6 +269,49 @@ class ConsumptionCalculatorTest {
     fun `predicted odometer without cycles is the last odometer, without data is null`() {
         assertEquals(10_000, ConsumptionCalculator.predictNextOdometerKm(listOf(fillUp(1, "2026-01-01", 10_000, 40_000))))
         assertNull(ConsumptionCalculator.predictNextOdometerKm(emptyList()))
+    }
+
+    // --- marca e combustível ----------------------------------------------------
+
+    private val mixedFuel = listOf(
+        fillUp(1, "2026-01-01", 10_000, 40_000).copy(brand = FuelBrand.GALP, fuelType = FuelType.GASOLINE_95, fuelPremium = false),
+        // ciclo 1: 36 L / 600 km = 6,0 — queimou a simples do abastecimento 1
+        fillUp(2, "2026-01-10", 10_600, 36_000, 190_000).copy(brand = FuelBrand.REPSOL, fuelType = FuelType.GASOLINE_95, fuelPremium = true),
+        // ciclo 2: 42 L / 600 km = 7,0 — queimou a aditivada do abastecimento 2
+        fillUp(3, "2026-01-20", 11_200, 42_000).copy(brand = FuelBrand.GALP, fuelType = FuelType.GASOLINE_95, fuelPremium = false),
+    )
+
+    @Test
+    fun `brand summaries group by brand, most used first`() {
+        val brands = ConsumptionCalculator.brandSummaries(mixedFuel + fillUp(4, "2026-01-30", 11_800, 40_000))
+        assertEquals(listOf(FuelBrand.GALP, FuelBrand.REPSOL), brands.map { it.brand })
+        assertEquals(2, brands[0].fillUpCount)
+        assertEquals(82_000L, brands[0].volumeMl)
+        assertEquals(190_000, brands[1].averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `fuel consumption is attributed to the fuel that started the cycle`() {
+        val fuels = ConsumptionCalculator.fuelSummaries(mixedFuel).associateBy { it.premium }
+        val simple = fuels.getValue(false)
+        val premium = fuels.getValue(true)
+        assertEquals(2, simple.fillUpCount)
+        assertEquals(1, simple.cycleCount)
+        assertEquals(6_000, simple.averageConsumptionMlPer100Km)
+        assertEquals(1, premium.fillUpCount)
+        assertEquals(1, premium.cycleCount)
+        assertEquals(7_000, premium.averageConsumptionMlPer100Km)
+        assertEquals(190_000, premium.averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `fuel never burned in a closed cycle has price but no consumption`() {
+        val only = ConsumptionCalculator.fuelSummaries(
+            listOf(fillUp(1, "2026-01-01", 10_000, 40_000).copy(fuelType = FuelType.DIESEL, fuelPremium = null))
+        ).single()
+        assertEquals(FuelType.DIESEL, only.type)
+        assertEquals(0, only.cycleCount)
+        assertNull(only.averageConsumptionMlPer100Km)
     }
 
     // --- anomalias --------------------------------------------------------------

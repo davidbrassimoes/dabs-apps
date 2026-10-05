@@ -40,6 +40,14 @@ data class FillUpEntity(
     val stationNif: String? = null,
     @ColumnInfo(name = "station_name")
     val stationName: String? = null,
+    /** Código de [pt.dabs.fueltracker.core.domain.model.FuelBrand]. */
+    @ColumnInfo(name = "brand")
+    val brand: String? = null,
+    /** Código de [pt.dabs.fueltracker.core.domain.model.FuelType]. */
+    @ColumnInfo(name = "fuel_type")
+    val fuelType: String? = null,
+    @ColumnInfo(name = "fuel_premium")
+    val fuelPremium: Boolean? = null,
     @ColumnInfo(name = "atcud")
     val atcud: String? = null,
     @ColumnInfo(name = "buyer_nif_present")

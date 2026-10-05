@@ -2,6 +2,8 @@ package pt.dabs.fueltracker.core.csv
 
 import pt.dabs.fueltracker.core.domain.NumberInput
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import java.time.Instant
 import java.time.format.DateTimeParseException
 
@@ -21,7 +23,7 @@ object FillUpCsv {
 
     val HEADER: List<String> = listOf(
         "id", "data_hora", "odometro_km", "parcial_km", "litros", "preco_litro", "total_eur", "desconto_eur", "deposito_cheio",
-        "nif_posto", "nome_posto", "atcud", "fatura_com_nif", "notas", "criado_em",
+        "nif_posto", "nome_posto", "marca", "combustivel", "aditivado", "atcud", "fatura_com_nif", "notas", "criado_em",
     )
 
     data class RowError(val line: Int, val reason: String)
@@ -48,6 +50,9 @@ object FillUpCsv {
                 if (fillUp.isFullTank) "1" else "0",
                 fillUp.stationNif.orEmpty(),
                 fillUp.stationName.orEmpty(),
+                fillUp.brand?.code.orEmpty(),
+                fillUp.fuelType?.code.orEmpty(),
+                fillUp.fuelPremium?.let { if (it) "1" else "0" }.orEmpty(),
                 fillUp.atcud.orEmpty(),
                 fillUp.buyerNifPresent?.let { if (it) "1" else "0" }.orEmpty(),
                 fillUp.notes.orEmpty(),
@@ -102,6 +107,10 @@ object FillUpCsv {
                     isFullTank = fullTank,
                     stationNif = field("nif_posto")?.ifBlank { null },
                     stationName = field("nome_posto")?.ifBlank { null },
+                    // Colunas opcionais (v4); códigos desconhecidos ficam vazios em vez de falhar a linha.
+                    brand = FuelBrand.fromCode(field("marca")?.ifBlank { null }),
+                    fuelType = FuelType.fromCode(field("combustivel")?.ifBlank { null }),
+                    fuelPremium = parseBoolean(field("aditivado")),
                     atcud = field("atcud")?.ifBlank { null },
                     buyerNifPresent = parseBoolean(field("fatura_com_nif")),
                     notes = field("notas")?.ifBlank { null },

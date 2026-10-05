@@ -3,6 +3,8 @@ package pt.dabs.fueltracker.core.domain
 import pt.dabs.fueltracker.core.domain.model.ConsumptionCycle
 import pt.dabs.fueltracker.core.domain.model.DistanceSource
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.BrandSummary
+import pt.dabs.fueltracker.core.domain.model.FuelSummary
 import pt.dabs.fueltracker.core.domain.model.Period
 import pt.dabs.fueltracker.core.domain.model.PeriodSummary
 import pt.dabs.fueltracker.core.domain.model.StationSummary
@@ -216,6 +218,7 @@ object ConsumptionCalculator {
                     name = sorted.lastOrNull { !it.stationName.isNullOrBlank() }?.stationName?.trim()
                         ?: sorted.last().stationNif.orEmpty(),
                     stationNif = sorted.lastOrNull { !it.stationNif.isNullOrBlank() }?.stationNif,
+                    brand = sorted.lastOrNull { it.brand != null }?.brand,
                     fillUpCount = inStation.size,
                     volumeMl = volume,
                     totalCents = total,
@@ -224,6 +227,58 @@ object ConsumptionCalculator {
                 )
             }
             .sortedWith(compareByDescending<StationSummary> { it.fillUpCount }.thenByDescending { it.lastDateTime })
+
+    /** Agregados por marca (só abastecimentos com marca), do mais frequente para o menos. */
+    fun brandSummaries(fillUps: List<FillUp>): List<BrandSummary> =
+        fillUps.filter { it.brand != null }
+            .groupBy { it.brand!! }
+            .map { (brand, inBrand) ->
+                val volume = inBrand.sumOf { it.volumeMl.toLong() }
+                val total = inBrand.sumOf { it.totalCents }
+                BrandSummary(
+                    brand = brand,
+                    fillUpCount = inBrand.size,
+                    volumeMl = volume,
+                    totalCents = total,
+                    averagePricePerLiterMilliCents = if (volume > 0) FuelMath.averagePricePerLiterMilliCents(total, volume) else null,
+                )
+            }
+            .sortedWith(compareByDescending<BrandSummary> { it.fillUpCount }.thenByDescending { it.volumeMl })
+
+    /**
+     * Agregados por combustível (tipo e aditivado). O preço médio conta os abastecimentos com esse
+     * combustível. O consumo conta os ciclos **começados** por ele: o combustível queimado num ciclo
+     * é o que se meteu no cheio anterior, não o que fecha o ciclo. Ciclos sem cheio anterior
+     * registado (medidos só pelo parcial) não contam para o consumo.
+     */
+    fun fuelSummaries(fillUps: List<FillUp>): List<FuelSummary> {
+        val sorted = sortChronologically(fillUps)
+        val fullTanks = sorted.filter { it.isFullTank }
+        val fullIndex = fullTanks.withIndex().associate { (index, fillUp) -> fillUp.id to index }
+        val cyclesByFuel = computeCycles(sorted).mapNotNull { cycle ->
+            val closing = fullIndex[cycle.fillUpId] ?: return@mapNotNull null
+            val start = fullTanks.getOrNull(closing - 1) ?: return@mapNotNull null
+            if (start.fuelType == null) return@mapNotNull null
+            (start.fuelType to start.fuelPremium) to cycle
+        }.groupBy({ it.first }, { it.second })
+
+        return sorted.filter { it.fuelType != null }
+            .groupBy { it.fuelType!! to it.fuelPremium }
+            .map { (key, withFuel) ->
+                val volume = withFuel.sumOf { it.volumeMl.toLong() }
+                val total = withFuel.sumOf { it.totalCents }
+                val cycles = cyclesByFuel[key].orEmpty()
+                FuelSummary(
+                    type = key.first,
+                    premium = key.second,
+                    fillUpCount = withFuel.size,
+                    averagePricePerLiterMilliCents = if (volume > 0) FuelMath.averagePricePerLiterMilliCents(total, volume) else null,
+                    cycleCount = cycles.size,
+                    averageConsumptionMlPer100Km = weightedAverageMlPer100Km(cycles),
+                )
+            }
+            .sortedWith(compareByDescending<FuelSummary> { it.fillUpCount }.thenBy { it.type.ordinal })
+    }
 
     private fun summarise(period: Period, fillUps: List<FillUp>, cycles: List<ConsumptionCycle>): PeriodSummary {
         val volumeMl = fillUps.sumOf { it.volumeMl.toLong() }

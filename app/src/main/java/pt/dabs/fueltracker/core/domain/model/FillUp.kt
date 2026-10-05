@@ -23,6 +23,11 @@ data class FillUp(
     val isFullTank: Boolean = true,
     val stationNif: String? = null,
     val stationName: String? = null,
+    /** Marca do posto; null se desconhecida. O local fica em [stationName] (texto livre). */
+    val brand: FuelBrand? = null,
+    val fuelType: FuelType? = null,
+    /** Combustível aditivado; null se desconhecido. */
+    val fuelPremium: Boolean? = null,
     val atcud: String? = null,
     val buyerNifPresent: Boolean? = null,
     val notes: String? = null,

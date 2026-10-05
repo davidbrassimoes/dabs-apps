@@ -35,7 +35,10 @@ O utilizador **atesta sempre**, por isso cada abastecimento fecha um ciclo cheio
 | discountCents | Long | descontos do talão em cêntimos (positivos, default 0); `litros × preço/litro = total + desconto` |
 | isFullTank | Boolean | default true |
 | stationNif | String? | do QR code |
-| stationName | String? | opcional, editável; sugerido ao ler o talão: o nome já dado a esse NIF noutro abastecimento, senão a marca e o local lidos no texto (ex.: "Repsol Loures B-Sentido N/S") |
+| stationName | String? | local do posto em texto livre (ex.: "Loures B-Sentido N/S"); sugerido ao ler o talão: o já dado a esse NIF noutro abastecimento, senão o lido no texto |
+| brand | FuelBrand? | marca, de uma lista fixa guardada por código estável (GALP, REPSOL, MOEVE…, OTHER); sugerida como o local. Não se deduz do NIF: o NIF do QR é o da empresa que explora o posto, não o da marca |
+| fuelType | FuelType? | Gasolina 95, Gasolina 98, Gasóleo, GPL; lido do talão, senão o da última vez |
+| fuelPremium | Boolean? | aditivado (ex.: "EFI 95 PREM", Ultimate, G-Force, V-Power); null se o talão não disser |
 | atcud | String? | do QR code; **único** quando presente (evita duplicados) |
 | buyerNifPresent | Boolean? | o QR indica se a fatura tem NIF do comprador (só registado; a app não guarda o NIF do utilizador nem avisa) |
 | notes | String? | |
@@ -96,7 +99,7 @@ Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia e
 1. **Início**: último consumo, média recente, este mês (km, €, litros), autonomia estimada, botão grande "Abastecer".
 2. **Novo abastecimento** (fluxo): scan talão → scan painel → ecrã de confirmação com todos os campos editáveis e avisos de validação → guardar.
 3. **Histórico**: lista de abastecimentos com consumo de cada ciclo; editar e apagar (com undo).
-4. **Estatísticas**: gráficos de L/100 km ao longo do tempo, € e km por mês, preço/litro; resumo por ano; por posto.
+4. **Estatísticas**: gráficos de L/100 km ao longo do tempo, € e km por mês, preço/litro; resumo por ano; por posto; por marca; por combustível (preço médio e consumo médio, atribuindo cada ciclo ao combustível do abastecimento que o começou, que é o que se queimou).
 5. **Definições**: export/import CSV. (O NIF do utilizador e a capacidade do depósito foram retirados: o NIF não compensa no IRS quando as despesas gerais familiares já chegam ao limite, e a app não pode pô-lo numa fatura já emitida.)
 
 ## Fases

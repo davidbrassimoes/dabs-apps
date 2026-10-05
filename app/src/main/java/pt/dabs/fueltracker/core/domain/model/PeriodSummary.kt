@@ -7,6 +7,7 @@ data class StationSummary(
     val key: String,
     val name: String,
     val stationNif: String?,
+    val brand: FuelBrand?,
     val fillUpCount: Int,
     val volumeMl: Long,
     val totalCents: Long,
@@ -40,4 +41,26 @@ data class PeriodSummary(
     val costMilliCentsPerKm: Long?,
     /** null quando não há litros no período. */
     val averagePricePerLiterMilliCents: Int?,
+)
+
+/** Agregado por marca. */
+data class BrandSummary(
+    val brand: FuelBrand,
+    val fillUpCount: Int,
+    val volumeMl: Long,
+    val totalCents: Long,
+    val averagePricePerLiterMilliCents: Int?,
+)
+
+/**
+ * Agregado por combustível ([type] e [premium], null = aditivado desconhecido). O consumo médio é
+ * dos [cycleCount] ciclos começados com este combustível; null sem ciclos.
+ */
+data class FuelSummary(
+    val type: FuelType,
+    val premium: Boolean?,
+    val fillUpCount: Int,
+    val averagePricePerLiterMilliCents: Int?,
+    val cycleCount: Int,
+    val averageConsumptionMlPer100Km: Int?,
 )

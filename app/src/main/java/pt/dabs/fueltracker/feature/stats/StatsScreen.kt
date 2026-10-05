@@ -37,6 +37,8 @@ import pt.dabs.fueltracker.R
 import pt.dabs.fueltracker.core.domain.model.Period
 import pt.dabs.fueltracker.core.ui.components.StatRow
 import pt.dabs.fueltracker.core.ui.format.PtFormat
+import pt.dabs.fueltracker.core.ui.format.fuelLabel
+import pt.dabs.fueltracker.core.ui.format.label
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -84,6 +86,8 @@ fun StatsContent(state: StatsUiState, onBack: () -> Unit) {
                 MonthlyChartsCard(state)
                 PriceChartCard(state)
                 YearsCard(state)
+                if (state.fuels.isNotEmpty()) FuelsCard(state)
+                if (state.brands.isNotEmpty()) BrandsCard(state)
                 if (state.stations.isNotEmpty()) StationsCard(state)
                 if (state.anomalies.isNotEmpty()) AnomaliesCard(state)
                 Spacer(Modifier.height(16.dp))
@@ -171,7 +175,7 @@ private fun StationsCard(state: StatsUiState) {
         state.stations.forEachIndexed { index, station ->
             if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(station.name, style = MaterialTheme.typography.titleSmall)
+                Text(listOfNotNull(station.brand?.label(), station.name.ifBlank { null }).joinToString(" · "), style = MaterialTheme.typography.titleSmall)
                 Text(
                     pluralStringResource(R.plurals.stats_station_count, station.fillUpCount, station.fillUpCount),
                     style = MaterialTheme.typography.bodySmall,
@@ -200,6 +204,53 @@ private fun AnomaliesCard(state: StatsUiState) {
                     color = MaterialTheme.colorScheme.tertiary,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun BrandsCard(state: StatsUiState) {
+    val dash = stringResource(R.string.no_value)
+    ChartCard(title = stringResource(R.string.stats_brands_title)) {
+        state.brands.forEachIndexed { index, brand ->
+            if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(brand.brand.label(), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    pluralStringResource(R.plurals.stats_station_count, brand.fillUpCount, brand.fillUpCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            StatRow(stringResource(R.string.label_volume), PtFormat.liters(brand.volumeMl))
+            StatRow(stringResource(R.string.label_spent), PtFormat.euros(brand.totalCents))
+            StatRow(stringResource(R.string.label_average_price), brand.averagePricePerLiterMilliCents?.let { PtFormat.pricePerLiter(it) } ?: dash)
+        }
+    }
+}
+
+/** Preço e consumo por combustível; o consumo conta os ciclos começados com ele. */
+@Composable
+private fun FuelsCard(state: StatsUiState) {
+    val dash = stringResource(R.string.no_value)
+    ChartCard(title = stringResource(R.string.stats_fuels_title), subtitle = stringResource(R.string.stats_fuels_subtitle)) {
+        state.fuels.forEachIndexed { index, fuel ->
+            if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(fuelLabel(fuel.type, fuel.premium).orEmpty(), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    pluralStringResource(R.plurals.stats_station_count, fuel.fillUpCount, fuel.fillUpCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            StatRow(stringResource(R.string.label_average_price), fuel.averagePricePerLiterMilliCents?.let { PtFormat.pricePerLiter(it) } ?: dash)
+            StatRow(
+                stringResource(R.string.label_average_consumption),
+                fuel.averageConsumptionMlPer100Km?.let {
+                    pluralStringResource(R.plurals.stats_fuel_consumption, fuel.cycleCount, PtFormat.consumption(it), fuel.cycleCount)
+                } ?: dash,
+            )
         }
     }
 }

@@ -14,6 +14,8 @@ import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.at
 import pt.dabs.fueltracker.core.domain.fillUp
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 import pt.dabs.fueltracker.feature.FakeFillUpRepository
 import pt.dabs.fueltracker.feature.MainDispatcherRule
 import java.time.Clock
@@ -232,26 +234,56 @@ class FillUpViewModelTest {
     }
 
     @Test
-    fun `station name is suggested from the receipt text`() = runTest {
+    fun `brand, place and fuel are suggested from the receipt text`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
         viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
-        assertEquals("Repsol Loures B-Sentido N/S", viewModel.uiState.value.stationName)
+        val state = viewModel.uiState.value
+        assertEquals(FuelBrand.REPSOL, state.brand)
+        assertEquals("Loures B-Sentido N/S", state.stationName)
+        // "EFI 95 PREM": Efitec 95 Premium
+        assertEquals(FuelType.GASOLINE_95, state.fuelType)
+        assertEquals(true, state.fuelPremium)
     }
 
     @Test
-    fun `a name already given to the station nif wins over the receipt text`() = runTest {
-        val named = existing + fillUp(3, "2026-02-10", 11_200, 40_000).copy(stationNif = "503769959", stationName = "Repsol A8 Loures")
+    fun `brand and place already given to the station nif win over the receipt text`() = runTest {
+        val named = existing + fillUp(3, "2026-02-10", 11_200, 40_000)
+            .copy(stationNif = "503769959", brand = FuelBrand.REPSOL, stationName = "A8 Loures")
         val viewModel = newViewModel(FakeFillUpRepository(named))
         viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
-        assertEquals("Repsol A8 Loures", viewModel.uiState.value.stationName)
+        assertEquals(FuelBrand.REPSOL, viewModel.uiState.value.brand)
+        assertEquals("A8 Loures", viewModel.uiState.value.stationName)
     }
 
     @Test
-    fun `a station name typed by the user is never replaced`() = runTest {
+    fun `station details chosen by the user are never replaced`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onBrandChange(FuelBrand.OTHER)
         viewModel.onStationNameChange("Bombas da vila")
         viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        assertEquals(FuelBrand.OTHER, viewModel.uiState.value.brand)
         assertEquals("Bombas da vila", viewModel.uiState.value.stationName)
+    }
+
+    @Test
+    fun `a new fill up proposes the fuel used last time, and saves what is chosen`() = runTest {
+        val repository = FakeFillUpRepository(
+            existing + fillUp(3, "2026-02-10", 11_200, 40_000).copy(fuelType = FuelType.GASOLINE_95, fuelPremium = false)
+        )
+        val viewModel = newViewModel(repository)
+        assertEquals(FuelType.GASOLINE_95, viewModel.uiState.value.fuelType)
+        assertEquals(false, viewModel.uiState.value.fuelPremium)
+
+        viewModel.onFuelPremiumChange(true)
+        viewModel.onBrandChange(FuelBrand.GALP)
+        viewModel.onOdometerChange("11800")
+        viewModel.onVolumeChange("40")
+        viewModel.onPriceChange("1,749")
+        viewModel.onSaveClick()
+        val saved = repository.current.last()
+        assertEquals(FuelBrand.GALP, saved.brand)
+        assertEquals(FuelType.GASOLINE_95, saved.fuelType)
+        assertEquals(true, saved.fuelPremium)
     }
 
     @Test

@@ -8,12 +8,15 @@ import org.junit.Test
 import pt.dabs.fueltracker.core.domain.at
 import pt.dabs.fueltracker.core.domain.fillUp
 import pt.dabs.fueltracker.core.domain.model.FillUp
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
 
 class FillUpCsvTest {
 
     private val sample = listOf(
         fillUp(1, "2026-01-05", 10_000, 40_120, 174_900).copy(
             totalCents = 6_804, discountCents = 213, tripTenthsKm = 6_020,
+            brand = FuelBrand.GALP, fuelType = FuelType.GASOLINE_95, fuelPremium = false,
             stationNif = "500697256", stationName = "Galp A1", atcud = "JFK2H8QX-4471", buyerNifPresent = false,
             notes = "cheio; \"primeiro\" talão\ncom duas linhas",
         ),
@@ -26,7 +29,7 @@ class FillUpCsvTest {
         val lines = csv.removePrefix("﻿").split("\r\n")
         assertEquals(FillUpCsv.HEADER.joinToString(";"), lines[0])
         assertTrue(csv.startsWith("﻿"))
-        assertTrue(lines[1].startsWith("1;" + at("2026-01-05") + ";10000;602,0;40,120;1,74900;68,04;2,13;1;500697256;Galp A1;JFK2H8QX-4471;0;\"cheio; \"\"primeiro\"\" talão"))
+        assertTrue(lines[1].startsWith("1;" + at("2026-01-05") + ";10000;602,0;40,120;1,74900;68,04;2,13;1;500697256;Galp A1;GALP;GASOLINA_95;0;JFK2H8QX-4471;0;\"cheio; \"\"primeiro\"\" talão"))
         assertTrue(csv.contains("2;" + at("2026-01-25") + ";10600;;39,000;1,69900;66,26;0,00;0;;;;;;"))
     }
 
