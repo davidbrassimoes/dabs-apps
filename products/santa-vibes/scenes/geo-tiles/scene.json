@@ -1,0 +1,40 @@
+{
+  "format": 3,
+  "id": "geo-tiles",
+  "name": "Mosaico",
+  "description": "Grelha de círculos e quadrados suaves que crescem, encolhem e trocam de cor cada um ao seu ritmo, sobre um fundo que roda devagar. Albers em câmara lenta.",
+  "tags": ["geométrico", "grelha", "bauhaus", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#1f1d2b", "#3d3a5c", "#e4a33a", "#d94f3d", "#f2e9d8"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.1 },
+    { "id": "grid", "label": "Grelha", "type": "float", "min": 1.0, "max": 8.0, "default": 3.0, "drift": 0.15 },
+    { "id": "soft", "label": "Suavidade", "type": "float", "min": 0.01, "max": 0.3, "default": 0.08, "drift": 0.1 },
+    { "id": "opacity", "label": "Opacidade", "type": "float", "min": 0.2, "max": 1.0, "default": 0.9, "drift": 0.0 },
+    { "id": "rotate", "label": "Rotação", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.0 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "albers",
+      "name": "Albers",
+      "params": { "grid": 2, "soft": 0.04, "opacity": 1, "rotate": 0.1 },
+      "palette": ["#3a2a1e", "#6b4a2a", "#d8a03a", "#e8703a", "#f6e6c8"]
+    },
+    {
+      "id": "memphis",
+      "name": "Memphis",
+      "params": { "grid": 5, "soft": 0.05, "rotate": 0.6 },
+      "palette": ["#1a1a2e", "#2e3a6e", "#ff6f61", "#4fc3c8", "#ffd84a"]
+    },
+    {
+      "id": "nevoeiro",
+      "name": "Nevoeiro",
+      "params": { "speed": 0.2, "grid": 3, "soft": 0.25, "opacity": 0.5 },
+      "palette": ["#1e2430", "#3a4558", "#7a8aa8", "#b8c4d8", "#eef2f8"]
+    }
+  ]
+}

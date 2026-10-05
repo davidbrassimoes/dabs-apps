@@ -1,0 +1,147 @@
+# Formato de cena (v3)
+
+Uma cena vive em `scenes/<id>/` e tem dois ficheiros:
+
+```
+scenes/<id>/
+  scene.frag   corpo do fragment shader (GLSL ES 3.00, sem #version)
+  scene.json   metadados e esquema de parâmetros
+```
+
+`<id>` é kebab-case e igual ao campo `id` do JSON.
+
+## Composição do shader
+
+O host (tv-app e authoring, com o mesmo algoritmo) monta o shader final assim:
+
+1. `shared/glsl/header.glsl` — `#version 300 es`, precisão, uniforms do contrato, `out vec4 fragColor;`
+2. Uma linha por parâmetro declarado: `uniform float p_<id>;` (ou `vec3` para `color`)
+3. O corpo de `scene.frag`, com as diretivas `#include "<caminho>"` substituídas pelo conteúdo de `shared/glsl/<caminho>` (cada ficheiro incluído no máximo uma vez).
+
+### Regras do pré-processador
+
+Precisas para que a `tv-app` e o `authoring` produzam **exatamente o mesmo texto** (a implementação de referência é `authoring/src/compose.ts`; os casos em `authoring/test/fixtures/compose-cases.json` são o contrato que os testes de ambos devem cumprir):
+
+- Uma linha é uma diretiva de inclusão se, e só se, corresponder a `^\s*#include\s+"([^"]+)"\s*$` (aspas duplas; nada depois, nem comentário).
+- O caminho é relativo a `shared/glsl/`. Os ficheiros incluídos podem conter `#include`, resolvidos recursivamente com as mesmas regras.
+- Cada ficheiro é incluído **uma vez** em todo o shader; uma segunda inclusão é substituída por uma única linha de comentário `// #include "<caminho>" (already included)`.
+- Um ficheiro em falta é substituído por `#error include not found: "<caminho>"`, para o erro aparecer no compilador na posição certa.
+- `\r\n` é normalizado para `\n`; o resultado termina com uma única quebra de linha.
+- O host guarda, para cada linha composta, o ficheiro e a linha de origem, e usa-os para mapear os erros do compilador de volta aos ficheiros do autor.
+
+`scene.frag` define `void main()` e escreve em `fragColor` (RGB *display-referred*, 0..1, sem conversão sRGB em lado nenhum; alfa ignorado). O passe de saída trata o valor como já pronto para o ecrã.
+
+## Uniforms do contrato
+
+Definidos em `shared/glsl/header.glsl`. As cenas **só** podem depender destes e dos seus parâmetros.
+
+| Uniform | Tipo | Significado |
+|---|---|---|
+| `uTime` | `float` | segundos desde o início da cena |
+| `uResolution` | `vec2` | resolução do alvo de render da cena (já com `renderScale`) |
+| `uBands` | `vec4` | `low`, `mid`, `high`, `energy` (rápidos) |
+| `uMood` | `vec4` | `moodEnergy`, `moodBrightness`, `centroid`, `reservado` |
+| `uBeat` | `vec4` | `beat` (envelope), `beatPhase`, `bpm`, `onset` (1 no frame do onset) |
+| `uPalette[5]` | `vec3[5]` | paleta atual (da imagem, de um preset ou da cena) |
+| `uImage` | `sampler2D` | imagem atual (se `image` ≠ `none`); origem em baixo à esquerda, como `gl_FragCoord`. Para manter o aspeto, amostrar com `imageCoverUV(uv)` de `lib/image.glsl` |
+| `uImageInfo` | `vec4` | `hasImage` (0/1), `aspect`, `mix de transição` (0..1), `reservado` |
+| `uPrev` | `sampler2D` | frame anterior da própria cena (se `feedback: true`) |
+| `uNoise` | `sampler2D` | rede de ruído 256×256 gerada pelo host (ver abaixo); usada por `vnoise`/`fbm` de `lib/noise.glsl` |
+
+Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhida — a cena não precisa de saber se há fonte ativa. Com reatividade 0, os sinais continuam a mexer suavemente (LFOs).
+
+### `uNoise` (desde a v3)
+
+Textura de um canal (`R8`), 256×256, filtro `LINEAR`, `REPEAT` nos dois eixos, sem mipmaps. Byte `i` (por linhas; a linha 0 é a primeira enviada, ou seja, `v = 0`) = os 8 bits de cima do estado do **xorshift32** com semente `0x9E3779B9`, depois de `i + 1` passos (`x ^= x << 13; x ^= x >>> 17; x ^= x << 5`, 32 bits sem sinal). Todos os hosts têm de gerar os mesmos bytes: `authoring/test/fixtures/noise-lattice.json` (primeiros e últimos bytes, soma e FNV-1a) é a verificação partilhada.
+
+`vnoise` faz uma única leitura bilinear em `(floor(p) + smoothstep(fract(p)) + 0.5) / 256`, o que dá ruído de valor suave sem calcular hashes. Na GE9215 da box isto tornou as cenas com ruído cerca de 2,2× mais rápidas (medido no passo 0.5). O padrão repete-se de 256 em 256 unidades de ruído, uma escala muito maior do que a usada pelas cenas.
+
+## `scene.json`
+
+```json
+{
+  "format": 3,
+  "id": "nebula",
+  "name": "Nebulosa",
+  "description": "Domain warping de ruído; cores da paleta.",
+  "tags": ["orgânico", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "optional",
+  "defaultPalette": ["#0b1026", "#2a1b5e", "#7a3b8f", "#e07a5f", "#f2cc8f"],
+  "params": [
+    {
+      "id": "speed",
+      "label": "Velocidade",
+      "type": "float",
+      "min": 0.0,
+      "max": 1.0,
+      "default": 0.25,
+      "drift": 0.15
+    }
+  ],
+  "presets": [
+    {
+      "id": "dusk",
+      "name": "Crepúsculo",
+      "params": { "speed": 0.15 },
+      "palette": ["#1a1030", "#3d1e5c", "#8a3b7a", "#e0806a", "#f5d0a0"]
+    }
+  ]
+}
+```
+
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| `format` | sim | versão deste formato (`3`; os hosts aceitam também `1` e `2`) |
+| `id`, `name` | sim | identificador e nome visível |
+| `description`, `tags` | não | para a página de controlo e playlists. **Convenção:** a primeira tag é o **estilo** (`ambient`, `psicadélico clássico`, `psicadélico tech`, `glitch`, `geométrico`); a autoria e a página de controlo agrupam as cenas por ela |
+| `fps` | não | limite de fps desta cena (defeito: o do perfil) |
+| `renderScale` | não | escala interna sugerida (defeito: a do perfil) |
+| `feedback` | não | `true` → o host fornece `uPrev` (ping-pong) |
+| `image` | não | `none` (defeito), `optional`, `required` |
+| `defaultPalette` | não | 5 cores hex usadas quando não há imagem nem preset |
+| `params` | sim | lista de parâmetros (pode ser vazia) |
+| `presets` | não | pontos de partida com nome (ver abaixo); exige `format: 2` |
+
+### Parâmetros
+
+| Campo | Descrição |
+|---|---|
+| `id` | nome; vira o uniform `p_<id>` |
+| `label` | texto na UI |
+| `type` | `float`, `int` (enviado como float), `bool` (0/1), `color` (`vec3`, valor em hex) |
+| `min`, `max`, `default` | intervalo e valor por defeito (`color`: só `default`) |
+| `step` | opcional; granularidade na UI |
+| `drift` | 0..1 — largura total (pico a pico) do vaguear lento, como fração do intervalo (0 = fixo). Não se aplica a `bool`/`color`. Algoritmo em `ARQUITETURA.md` (Drift de parâmetros). |
+| `group` | opcional; agrupa sliders na UI |
+
+### Presets
+
+Um preset é uma variação da cena escrita pelo autor: alguns valores de parâmetros e, opcionalmente, outra paleta. Escolhê-lo equivale a repor os parâmetros por defeito e aplicar por cima os que o preset indica. O drift continua a funcionar à volta desses valores.
+
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| `id` | sim | kebab-case, único dentro da cena |
+| `name` | sim | nome visível |
+| `params` | não | objeto `{ "<id do parâmetro>": valor }`, só com os que mudam; cada valor tem de respeitar o tipo e o intervalo (`min`..`max`) do parâmetro; `bool` em `true`/`false`, `color` em `#rrggbb` |
+| `palette` | não | 5 cores `#rrggbb`; sem ela usa-se a `defaultPalette` |
+
+O valor por defeito da cena (sem preset) é sempre uma escolha válida, por isso não é preciso repeti-lo como preset. As paletas dos presets também servem de conjunto para a variação de paleta no host (passo 0.6). Não confundir com os presets do utilizador (passo 3.3), que são guardados na box e incluem cena, valores e fonte de imagem.
+
+## Boas práticas
+
+- **Pensar no projetor**: luminosidade média, cor saturada, formas grandes; evitar depender de pretos profundos e de detalhe fino.
+- **Reatividade lenta por defeito**: usar `uMood` para mudanças de carácter e `uBeat.x` com moderação (respirar, não piscar). Expor um parâmetro tipo `pulse` para o utilizador dosear.
+- **Custo**: preferir poucas oitavas de ruído; evitar loops longos por pixel; cenas `feedback` funcionam bem a `renderScale` baixa.
+- **Sem banding**: o passe de saída faz dithering; não é preciso repetir na cena.
+- Nada de estado global fora de `uPrev`; a cena deve poder recomeçar a qualquer momento.
+
+## Versões
+
+| Versão | Alterações |
+|---|---|
+| 1 | Versão inicial. |
+| 2 | Campo opcional `presets` (2026-10-05). |
+| 3 | Uniform `uNoise` (rede de ruído gerada pelo host); `vnoise` passa a ler a textura (2026-10-05). |

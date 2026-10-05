@@ -1,0 +1,40 @@
+{
+  "format": 3,
+  "id": "color-field",
+  "name": "Campo de Cor",
+  "description": "Faixas de cor suaves e lentas, à maneira de Rothko. Minimal e ótimo para projetor.",
+  "tags": ["ambient", "minimal", "lento", "campo de cor"],
+  "fps": 30,
+  "renderScale": 0.35,
+  "feedback": false,
+  "image": "optional",
+  "defaultPalette": ["#2b0f1e", "#6b1d2f", "#b23a3a", "#e07b39", "#f3c27a"],
+  "params": [
+    { "id": "speed",     "label": "Velocidade",     "type": "float", "min": 0.0, "max": 1.0, "default": 0.2,  "drift": 0.1 },
+    { "id": "bands",     "label": "Faixas",         "type": "int",   "min": 2,   "max": 5,   "default": 3,    "drift": 0.0 },
+    { "id": "softness",  "label": "Suavidade",      "type": "float", "min": 0.05,"max": 0.95,"default": 0.6,  "drift": 0.2 },
+    { "id": "wobble",    "label": "Ondulação",      "type": "float", "min": 0.0, "max": 1.0, "default": 0.4,  "drift": 0.3 },
+    { "id": "pulse",     "label": "Respirar (beat)","type": "float", "min": 0.0, "max": 1.0, "default": 0.3,  "drift": 0.0, "group": "Reatividade" },
+    { "id": "vignette",  "label": "Vinheta",        "type": "float", "min": 0.0, "max": 2.0, "default": 0.8,  "drift": 0.0 }
+  ],
+  "presets": [
+    {
+      "id": "azul-profundo",
+      "name": "Azul profundo",
+      "params": { "bands": 2, "softness": 0.7, "wobble": 0.3 },
+      "palette": ["#141a33", "#26346a", "#3d5aa0", "#7a8fc8", "#c9d3ee"]
+    },
+    {
+      "id": "laranja-rosa",
+      "name": "Laranja e rosa",
+      "params": { "bands": 3, "softness": 0.5 },
+      "palette": ["#3a1420", "#b03050", "#e8603a", "#f7a04a", "#fde2a8"]
+    },
+    {
+      "id": "musgo",
+      "name": "Musgo",
+      "params": { "speed": 0.15, "bands": 4, "softness": 0.65, "wobble": 0.5 },
+      "palette": ["#1a2318", "#3a4a2a", "#6f7d3a", "#b8a65a", "#ece0b0"]
+    }
+  ]
+}

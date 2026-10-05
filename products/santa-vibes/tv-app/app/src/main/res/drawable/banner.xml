@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 320x180 TV launcher banner: a soft gradient in the halo palette (placeholder). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="320dp" android:height="180dp" />
+            <gradient android:angle="45" android:startColor="#1b1430" android:centerColor="#7b5ea7" android:endColor="#f29e7e" />
+        </shape>
+    </item>
+    <item android:gravity="center" android:width="96dp" android:height="96dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="48dp" android:startColor="#ffe3b3" android:endColor="#00ffe3b3" />
+        </shape>
+    </item>
+</layer-list>

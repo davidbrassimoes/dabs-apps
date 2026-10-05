@@ -1,0 +1,40 @@
+{
+  "format": 3,
+  "id": "plasma",
+  "name": "Plasma",
+  "description": "Interferência de ondas lentas em néon, com posterização suave e linhas de nível a brilhar. Psicadélico de ecrã, não de tinta.",
+  "tags": ["psicadélico tech", "néon", "digital", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#050816", "#1b1f5e", "#00c2d1", "#ff2e97", "#f9f871"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.15 },
+    { "id": "scale", "label": "Escala", "type": "float", "min": 0.5, "max": 5.0, "default": 1.6, "drift": 0.2 },
+    { "id": "levels", "label": "Níveis", "type": "float", "min": 2.0, "max": 16.0, "default": 6.0, "step": 1.0, "drift": 0.0 },
+    { "id": "digital", "label": "Posterização", "type": "float", "min": 0.0, "max": 1.0, "default": 0.6, "drift": 0.2 },
+    { "id": "lines", "label": "Linhas de nível", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "synthwave",
+      "name": "Synthwave",
+      "params": { "levels": 8, "digital": 0.7, "lines": 0.6 },
+      "palette": ["#0a0420", "#3a0a6a", "#ff2a8a", "#ff9a3a", "#ffe86a"]
+    },
+    {
+      "id": "aquario",
+      "name": "Aquário",
+      "params": { "speed": 0.15, "scale": 2.2, "levels": 10, "digital": 0.3, "lines": 0.25 },
+      "palette": ["#041018", "#0a3a5a", "#1a9ab0", "#6ae0c8", "#e0fff0"]
+    },
+    {
+      "id": "acido",
+      "name": "Ácido",
+      "params": { "scale": 2.4, "levels": 4, "digital": 0.9, "lines": 0.7 },
+      "palette": ["#0a1004", "#2a5a0a", "#a0e01e", "#ff3ac8", "#fff8a0"]
+    }
+  ]
+}

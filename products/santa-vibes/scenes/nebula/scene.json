@@ -1,0 +1,39 @@
+{
+  "format": 3,
+  "id": "nebula",
+  "name": "Nebulosa",
+  "description": "Ruído com domain warping: tinta na água, nebulosas. Pode usar uma imagem como textura deslocada.",
+  "tags": ["ambient", "orgânico", "lento", "híbrido"],
+  "fps": 30,
+  "renderScale": 0.33,
+  "feedback": false,
+  "image": "optional",
+  "defaultPalette": ["#070b1f", "#1f1a4d", "#5b2a86", "#c0587e", "#f6b88f"],
+  "params": [
+    { "id": "speed",    "label": "Velocidade",       "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.15 },
+    { "id": "scale",    "label": "Escala",           "type": "float", "min": 0.5, "max": 6.0, "default": 2.5,  "drift": 0.2 },
+    { "id": "warp",     "label": "Distorção",        "type": "float", "min": 0.0, "max": 6.0, "default": 3.0,  "drift": 0.25 },
+    { "id": "imageMix", "label": "Mistura de imagem","type": "float", "min": 0.0, "max": 1.0, "default": 0.5,  "drift": 0.1, "group": "Imagem" },
+    { "id": "pulse",    "label": "Respirar (beat)",  "type": "float", "min": 0.0, "max": 1.0, "default": 0.3,  "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "carina",
+      "name": "Carina",
+      "params": { "scale": 2, "warp": 3.5 },
+      "palette": ["#040c14", "#0e2a3a", "#2a7a7a", "#d8a050", "#fff0c8"]
+    },
+    {
+      "id": "fumo",
+      "name": "Fumo",
+      "params": { "speed": 0.15, "scale": 1.5, "warp": 2 },
+      "palette": ["#1e2028", "#3e4452", "#6e7a90", "#b4bccc", "#f2f3f6"]
+    },
+    {
+      "id": "pilares",
+      "name": "Pilares",
+      "params": { "scale": 3, "warp": 4.5 },
+      "palette": ["#0a0604", "#3a1e10", "#8a4a2a", "#d89a5a", "#f8e0b0"]
+    }
+  ]
+}

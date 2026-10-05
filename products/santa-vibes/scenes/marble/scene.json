@@ -1,0 +1,40 @@
+{
+  "format": 3,
+  "id": "marble",
+  "name": "Mármore",
+  "description": "Veios de mármore iridescente, como película de óleo ou papel marmoreado, a fluir devagar. Domain warping de riscas.",
+  "tags": ["psicadélico clássico", "mármore", "iridescente", "orgânico", "lento"],
+  "fps": 30,
+  "renderScale": 0.4,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#101b2d", "#1e4d6b", "#3fa7a0", "#d9a066", "#f7e1c3"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.15 },
+    { "id": "scale", "label": "Escala", "type": "float", "min": 0.5, "max": 5.0, "default": 1.8, "drift": 0.2 },
+    { "id": "warp", "label": "Distorção", "type": "float", "min": 0.0, "max": 6.0, "default": 3.0, "drift": 0.25 },
+    { "id": "veins", "label": "Veios", "type": "float", "min": 0.0, "max": 8.0, "default": 3.0, "drift": 0.2 },
+    { "id": "contrast", "label": "Contraste dos veios", "type": "float", "min": 0.5, "max": 8.0, "default": 2.5, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "ebru",
+      "name": "Papel marmoreado",
+      "params": { "warp": 4, "veins": 5, "contrast": 3 },
+      "palette": ["#1a1424", "#4a2a5a", "#c05a6a", "#e8b05a", "#f8ecd8"]
+    },
+    {
+      "id": "opala",
+      "name": "Opala",
+      "params": { "scale": 1.2, "warp": 2.5, "veins": 2, "contrast": 1.5 },
+      "palette": ["#1e2a3a", "#4a7a9a", "#a8d0d8", "#e8c8e0", "#fff8f0"]
+    },
+    {
+      "id": "malaquite",
+      "name": "Malaquite",
+      "params": { "scale": 2.5, "veins": 6, "contrast": 5 },
+      "palette": ["#04140e", "#0a3a28", "#1a7a50", "#4fc08a", "#c8f0d8"]
+    }
+  ]
+}
