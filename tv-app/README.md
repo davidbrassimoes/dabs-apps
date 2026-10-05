@@ -50,7 +50,27 @@ Consequência: `renderScale` é relativo à surface real. Com esta TV, 0.5 signi
 
 ## Medições na box
 
-| Cena | renderScale | fps alvo | frame time médio | frame time p95 | Notas |
-|---|---|---|---|---|---|
-| _a preencher no passo 0.5_ | | | | | |
+Primeira passagem, 2026-10-05: build debug, perfil `tv`, surface 1920×1080, sinais sintéticos, uma janela de 10 s por cena (logcat `stats`). "Intervalo" é o tempo entre frames; a CPU fica sempre entre 1 e 3 ms, por isso o que limita é a GPU.
+
+| Cena | Render | Limite | fps | Intervalo médio | p95 | Estado |
+|---|---|---|---|---|---|---|
+| breath | 480×270 | 24 | 23,9 | 41,9 ms | 50,2 ms | ok |
+| color-field | 672×378 | 30 | 30,0 | 33,4 ms | 33,6 ms | ok |
+| halo | 672×378 | 24 | 24,0 | 41,6 ms | 50,2 ms | ok |
+| bars | 960×540 | 30 | 29,8 | 33,6 ms | 33,7 ms | ok |
+| geo-tiles | 960×540 | 30 | 30,0 | 33,3 ms | 34,0 ms | ok |
+| plasma | 960×540 | 30 | 29,8 | 33,5 ms | 33,8 ms | ok |
+| spiral-melt | 960×540 | 30 | 18,8 | 53,2 ms | 55,2 ms | **lenta** |
+| glitch-drift | 960×540 | 30 | 16,1 | 62,1 ms | 63,9 ms | **lenta** |
+| liquid-light | 960×540 | 30 | 15,2 | 65,9 ms | 66,4 ms | **lenta** |
+| marble | 960×540 | 30 | 13,9 | 72,1 ms | 76,2 ms | **lenta** |
+| veils | 960×540 | 30 | 13,8 | 72,2 ms | 74,6 ms | **lenta** |
+| ink-bloom | 960×540 | 30 | 13,6 | 73,6 ms | 75,3 ms | **lenta** (feedback) |
+| flow-particles | 960×540 | 30 | 13,2 | 75,5 ms | 76,3 ms | **lenta** (feedback) |
+| aurora | 960×540 | 30 | 12,5 | 80,1 ms | 82,4 ms | **lenta** |
+| nebula | 960×540 | 30 | 9,4 | 106,4 ms | 110,1 ms | **lenta** |
+
+**Alocações** (60 s parado na `aurora`, overlay escondido): em 6 janelas, 4 a 0 B/s e 2 com um único bloco TLAB de 32 KB, compatível com a linha de log formatada na thread de UI de 10 em 10 s. O loop de render fica abaixo da resolução do contador (< ~60 B/frame).
+
+**Conclusão provisória:** a GE9215 é bastante mais fraca do que o PC sugere (no PC estas cenas gastam 0,2–0,7 ms de GPU). Faltam: medir sem limite de fps para separar o custo do passe de saída a 1080p do custo da cena, medir cada cena a várias `renderScale` e decidir entre escala por cena, otimização dos shaders e escala dinâmica (0.5).
 

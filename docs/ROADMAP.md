@@ -20,13 +20,13 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - [x] Presets por cena (2026-10-05): formato de cena v2 com `presets` opcional (`FORMATO-CENA.md`); seletor de preset, editor de paleta e "Copiar como preset" no authoring; 2–3 presets em cada uma das 15 cenas; `smoke.mjs --presets` captura todos.
   - [x] Defeitos vistos nas capturas, corrigidos (2026-10-05) e validados no Chrome: costura do `spiral-melt` (descontinuidade do `atan` → número inteiro de pares de braços, com cross-fade); `flow-particles` quase preto e dependente da resolução (emissão em unidades normalizadas, fade para fundo da paleta; igual a `renderScale` 0.25 e 1.0); `nebula` escura (piso de brilho) e a esticar a imagem (`imageCoverUV` em `shared/glsl/lib/image.glsl`).
   - Por fazer: `flow-particles` avança e desvanece por frame (não por segundo), por isso depende do limite de fps — aceitável com fps fixo, rever se o contrato ganhar `uDeltaTime`. `color-field` declara `image: optional` mas não lê `uImage`.
-- [~] **0.4 Renderer nativo mínimo (`tv-app/`)** — Kotlin + GLES 3.0 (2026-10-05: implementado e instalado na box; falta validar no ecrã):
+- [x] **0.4 Renderer nativo mínimo (`tv-app/`)** (2026-10-05; validado na box: as 15 cenas compilam no driver PowerVR e coincidem com a autoria; RGBA16F; zero alocações no loop de render; ver `tv-app/README.md`) — Kotlin + GLES 3.0:
   - Activity em ecrã inteiro, carrega cenas de `assets/` (cópia gerada pelo Gradle a partir de `scenes/` e `shared/`),
   - FBO à escala interna + `OutputPass`, limite de fps, feedback ping-pong,
   - troca de cena com o comando (D-pad esquerda/direita),
   - overlay de diagnóstico,
   - **zero alocações por frame**.
-- [ ] **0.5 Medição na box** — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
+- [~] **0.5 Medição na box** (primeira passagem em `tv-app/README.md`: 6 cenas a ≥ limite, 9 entre 9 e 19 fps a 960×540) — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
 - [~] **0.6 Drift e transições** (authoring feito em 2026-10-05: drift determinista com casos partilhados, variação de paleta em OKLab, crossfade entre cenas; falta a tv-app, depois do 0.4) — drift de parâmetros e crossfade entre cenas (no authoring e na tv-app). Incluir **variação de paleta** no host (pedido do dono, 2026-10-05): cada cena pode ter várias paletas em `scene.json` e o host roda entre elas devagar, ou deriva o matiz; as cenas continuam a ler só `uPalette`.
 
 **Critérios de aceitação:**
