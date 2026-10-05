@@ -41,6 +41,14 @@
     <string name="stats_anomalies_subtitle">Ciclos mais de 20%% acima da média dos anteriores</string>
     <string name="stats_anomaly_values">%1$s (média anterior %2$s)</string>
 
+    <!-- Widget -->
+    <string name="widget_label">Fuel Tracker</string>
+    <string name="widget_description">Último consumo, média recente e atalho para abastecer</string>
+    <string name="widget_last_consumption">Último consumo</string>
+    <string name="widget_recent_average">Média recente</string>
+    <string name="widget_typical_distance">~%1$s por depósito</string>
+    <string name="widget_empty">Sem ciclos ainda</string>
+
     <!-- Mostrar NIF -->
     <string name="nif_show">Mostrar NIF</string>
     <string name="nif_label">NIF</string>

@@ -1,6 +1,7 @@
 package pt.dabs.fueltracker.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
@@ -16,9 +17,21 @@ import pt.dabs.fueltracker.feature.scan.ScanOdometerScreen
 import pt.dabs.fueltracker.feature.scan.ScanReceiptScreen
 import pt.dabs.fueltracker.feature.settings.SettingsScreen
 
+/**
+ * @param newFillUpRequests contador de pedidos externos (widget) de novo abastecimento;
+ * cada incremento abre o fluxo rápido uma vez.
+ */
 @Composable
-fun FuelTrackerNavHost() {
+fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
     val navController = rememberNavController()
+    LaunchedEffect(newFillUpRequests) {
+        if (newFillUpRequests > 0) {
+            navController.navigate(FillUpRoute(startWithScan = true)) {
+                popUpTo(HomeRoute)
+                launchSingleTop = true
+            }
+        }
+    }
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(

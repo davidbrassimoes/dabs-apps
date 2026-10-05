@@ -12,6 +12,7 @@ import javax.inject.Singleton
 @Singleton
 class RoomFillUpRepository @Inject constructor(
     private val dao: FillUpDao,
+    private val widgetRefresher: WidgetRefresher,
 ) : FillUpRepository {
 
     override fun observeAll(): Flow<List<FillUp>> =
@@ -19,11 +20,18 @@ class RoomFillUpRepository @Inject constructor(
 
     override suspend fun getById(id: Long): FillUp? = dao.getById(id)?.toDomain()
 
-    override suspend fun insert(fillUp: FillUp): Long = dao.insert(fillUp.toEntity())
+    override suspend fun insert(fillUp: FillUp): Long =
+        dao.insert(fillUp.toEntity()).also { widgetRefresher.refresh() }
 
-    override suspend fun update(fillUp: FillUp) = dao.update(fillUp.toEntity())
+    override suspend fun update(fillUp: FillUp) {
+        dao.update(fillUp.toEntity())
+        widgetRefresher.refresh()
+    }
 
-    override suspend fun delete(fillUp: FillUp) = dao.delete(fillUp.toEntity())
+    override suspend fun delete(fillUp: FillUp) {
+        dao.delete(fillUp.toEntity())
+        widgetRefresher.refresh()
+    }
 
     override suspend fun isAtcudUsed(atcud: String, excludeId: Long): Boolean =
         dao.existsAtcud(atcud, excludeId)

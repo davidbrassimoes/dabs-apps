@@ -79,6 +79,10 @@ dependencies {
 
     // Gráficos (módulo base; o tema Material 3 é fornecido pela app para evitar o M3 multiplataforma)
     implementation(libs.vico.compose)
+
+    // Widget do ecrã inicial
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)
