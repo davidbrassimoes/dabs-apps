@@ -107,16 +107,23 @@ fun ScanOdometerScreen(
     val stillScanner = remember { StillImageScanner(context.applicationContext) }
     var analyzingPhoto by remember { mutableStateOf(false) }
     var photoError by remember { mutableStateOf<Int?>(null) }
+    // Total lido mas implausível (menor ou igual ao anterior): explica-se e deixa-se usar na mesma.
+    var rejected by remember { mutableStateOf<SevenSegmentReader.PanelReading?>(null) }
     val currentOnResult by rememberUpdatedState(onResult)
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             analyzingPhoto = true
             photoError = null
+            rejected = null
             try {
                 val reading = stillScanner.readPanel(uri, lastOdometerKm)
                 val total = reading.totalKm
-                if (total != null) currentOnResult(total, reading.tripTenthsKm) else photoError = R.string.scan_odometer_photo_not_found
+                when {
+                    total != null -> currentOnResult(total, reading.tripTenthsKm)
+                    reading.implausibleTotalKm != null -> rejected = reading
+                    else -> photoError = R.string.scan_odometer_photo_not_found
+                }
             } catch (e: Exception) {
                 photoError = R.string.scan_photo_failed
             } finally {
@@ -141,7 +148,12 @@ fun ScanOdometerScreen(
             if (permissionGranted) {
                 OdometerCameraPreview(
                     lastOdometerKm = lastOdometerKm,
-                    onProgress = { value, fraction, reading -> candidate = value; progress = fraction; if (reading?.tripTenthsKm != null) panel = reading },
+                    onProgress = { value, fraction, reading ->
+                        candidate = value
+                        progress = fraction
+                        if (reading?.tripTenthsKm != null) panel = reading
+                        if (reading?.implausibleTotalKm != null) rejected = reading else if (value != null) rejected = null
+                    },
                     onResult = onResult,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -168,20 +180,35 @@ fun ScanOdometerScreen(
                 tonalElevation = 3.dp,
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    val rejectedKm = rejected?.implausibleTotalKm?.takeIf { candidate == null && !analyzingPhoto && photoError == null }
                     Text(
                         text = when {
                             analyzingPhoto -> stringResource(R.string.scan_photo_analyzing)
                             photoError != null -> stringResource(photoError!!)
                             candidate != null -> stringResource(R.string.scan_odometer_reading, PtFormat.km(candidate!!))
+                            rejectedKm != null -> lastOdometerKm
+                                ?.let { stringResource(R.string.scan_odometer_not_after_previous, PtFormat.km(rejectedKm), PtFormat.km(it)) }
+                                ?: stringResource(R.string.scan_odometer_implausible, PtFormat.km(rejectedKm))
                             else -> stringResource(R.string.scan_odometer_hint)
                         },
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (photoError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                        color = when {
+                            photoError != null -> MaterialTheme.colorScheme.error
+                            candidate == null && rejectedKm != null -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.onSurface
+                        },
                     )
                     if (candidate != null) {
                         Spacer(Modifier.height(8.dp))
                         LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                    }
+                    if (rejectedKm != null) {
+                        // O formulário continua a validar (e a mostrar o erro) se o valor ficar.
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { onResult(rejectedKm, rejected?.tripTenthsKm) }, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.scan_odometer_use_anyway, PtFormat.km(rejectedKm)))
+                        }
                     }
                     panel?.tripTenthsKm?.let { tenths ->
                         // O parcial é posto a zeros a cada abastecimento: deve ser a distância desde o anterior.

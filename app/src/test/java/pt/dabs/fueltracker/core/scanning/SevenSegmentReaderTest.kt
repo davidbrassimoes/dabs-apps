@@ -62,6 +62,15 @@ class SevenSegmentReaderTest {
         assertEquals(false, forgotReset.consistentWithTrip)
     }
 
+    @Test
+    fun `same photo again after saving it reports the reading as not plausible instead of nothing`() {
+        // O abastecimento desta foto já está guardado a 162 259 km: lê-se, mas não é maior.
+        val panel = SevenSegmentReader.readPanel(resource("real_corsa_painel.jpg"), lastOdometerKm = 162_259)
+        assertEquals(null, panel.totalKm)
+        assertEquals(162_259, panel.implausibleTotalKm)
+        assertEquals(6_020, panel.tripTenthsKm)
+    }
+
     // --- escolha entre os números lidos ----------------------------------------------------
 
     private fun number(digits: String, votes: Int, decimal: Boolean = false) =

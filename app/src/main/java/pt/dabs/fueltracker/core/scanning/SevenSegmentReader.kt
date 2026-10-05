@@ -50,6 +50,8 @@ object SevenSegmentReader {
         val tripTenthsKm: Int?,
         /** true/false quando há odómetro anterior e parcial: total ≈ anterior + parcial (±[TRIP_TOLERANCE_KM]). */
         val consistentWithTrip: Boolean?,
+        /** Total lido mas rejeitado por não ser plausível face ao odómetro anterior (só quando [totalKm] é null). */
+        val implausibleTotalKm: Int? = null,
     ) {
         companion object {
             val EMPTY = PanelReading(null, null, null)
@@ -85,19 +87,26 @@ object SevenSegmentReader {
     internal fun choosePanel(numbers: List<SegmentNumber>, lastOdometerKm: Int?, maxDistanceKm: Int): PanelReading {
         val trip = numbers.filter { it.hasDecimal && it.digits.length in 2..6 }.maxByOrNull { it.votes }
         val tripTenths = trip?.digits?.toIntOrNull()
-        val totals = odometerVotes(numbers)
-            .filter { (value, _) -> OdometerReader.pickPlausible(listOf(value), lastOdometerKm, maxDistanceKm) != null }
+        val read = odometerVotes(numbers)
             .filter { (value, _) -> value.toString() != trip?.digits && (tripTenths == null || value * 10L > tripTenths) }
-        if (totals.isEmpty()) return PanelReading(null, tripTenths, null)
+        val totals = read.filter { (value, _) -> OdometerReader.pickPlausible(listOf(value), lastOdometerKm, maxDistanceKm) != null }
+        if (totals.isEmpty()) {
+            // Leu-se um total, mas não é plausível (ex.: fotografia antiga, menor ou igual ao anterior):
+            // devolve-o à parte para o ecrã explicar em vez de dizer que não leu nada.
+            return PanelReading(null, tripTenths, null, implausibleTotalKm = largestWellVoted(read))
+        }
 
         val expectedTenths = if (lastOdometerKm != null && tripTenths != null) lastOdometerKm * 10L + tripTenths else null
         fun consistent(value: Int) = expectedTenths != null && abs(value * 10L - expectedTenths) <= TRIP_TOLERANCE_KM * 10L
         val matching = totals.filter { consistent(it.first) }.maxByOrNull { it.second }
-        val total = matching?.first ?: run {
-            val bestVotes = totals.maxOf { it.second }
-            totals.filter { it.second * 2 >= bestVotes }.maxOf { it.first }
-        }
+        val total = matching?.first ?: largestWellVoted(totals)!!
         return PanelReading(total, tripTenths, if (expectedTenths == null) null else consistent(total))
+    }
+
+    /** O maior valor entre os lidos com pelo menos metade dos votos do mais votado. */
+    private fun largestWellVoted(values: List<Pair<Int, Int>>): Int? {
+        val bestVotes = values.maxOfOrNull { it.second } ?: return null
+        return values.filter { it.second * 2 >= bestVotes }.maxOf { it.first }
     }
 
     private fun odometerVotes(numbers: List<SegmentNumber>): List<Pair<Int, Int>> =

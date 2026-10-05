@@ -61,7 +61,8 @@ class StillImageScanner(private val context: Context) {
         val panel = withContext(Dispatchers.Default) {
             decodeLuma(uri)?.let { SevenSegmentReader.readPanel(it, lastOdometerKm) }
         } ?: SevenSegmentReader.PanelReading.EMPTY
-        if (panel.totalKm != null) return panel
+        // Um total lido mas implausível não é substituído por um palpite do OCR: o ecrã explica-o.
+        if (panel.totalKm != null || panel.implausibleTotalKm != null) return panel
         return panel.copy(totalKm = OdometerReader.read(recognizeRows(uri), lastOdometerKm), consistentWithTrip = null)
     }
 

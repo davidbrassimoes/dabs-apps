@@ -136,6 +136,9 @@
     <string name="scan_photo_no_qr">Não encontrei um código QR nem os valores do talão nessa fotografia. Tenta outra com o talão nítido.</string>
     <string name="scan_photo_failed">Não consegui abrir a fotografia.</string>
     <string name="scan_odometer_photo_not_found">Não encontrei um conta-km plausível nessa fotografia. Tenta outra ou escreve à mão.</string>
+    <string name="scan_odometer_not_after_previous">Li %1$s, mas o conta-km tem de ser maior do que o do abastecimento anterior (%2$s). É uma fotografia antiga?</string>
+    <string name="scan_odometer_implausible">Li %1$s, que não parece um conta-km plausível.</string>
+    <string name="scan_odometer_use_anyway">Usar %1$s mesmo assim</string>
 
     <!-- Leitura do conta-km -->
     <string name="scan_odometer_title">Ler conta-km</string>
