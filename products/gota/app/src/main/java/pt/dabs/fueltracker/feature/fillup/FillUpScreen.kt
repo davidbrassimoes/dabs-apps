@@ -1,0 +1,570 @@
+package pt.dabs.fueltracker.feature.fillup
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pt.dabs.fueltracker.BuildConfig
+import pt.dabs.fueltracker.R
+import pt.dabs.fueltracker.core.domain.Severity
+import pt.dabs.fueltracker.core.domain.ValidationIssue
+import pt.dabs.fueltracker.core.ui.components.ValidationIssueText
+import pt.dabs.fueltracker.core.ui.components.message
+import pt.dabs.fueltracker.core.ui.format.PtFormat
+import pt.dabs.fueltracker.core.ui.format.label
+import pt.dabs.fueltracker.core.ui.format.shortLabel
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+@Composable
+fun FillUpScreen(
+    onDone: () -> Unit,
+    onScanReceipt: () -> Unit,
+    onScanOdometer: (lastOdometerKm: Int?, predictedKm: Int?) -> Unit,
+    scannedQr: String?,
+    scannedText: String?,
+    onScannedQrConsumed: () -> Unit,
+    scannedOdometer: Int?,
+    scannedTrip: Int?,
+    odometerManual: Boolean,
+    onScannedOdometerConsumed: () -> Unit,
+    viewModel: FillUpViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(state.saved) {
+        if (state.saved) onDone()
+    }
+
+    LaunchedEffect(scannedQr) {
+        if (scannedQr != null) {
+            val rows = scannedText?.lines()?.filter { it.isNotBlank() }.orEmpty()
+            viewModel.onReceiptScanned(scannedQr, rows)
+            onScannedQrConsumed()
+        }
+    }
+
+    LaunchedEffect(scannedOdometer, odometerManual) {
+        if (scannedOdometer != null) {
+            viewModel.onOdometerScanned(scannedOdometer, scannedTrip)
+            onScannedOdometerConsumed()
+        } else if (odometerManual) {
+            viewModel.onOdometerManualRequested()
+            onScannedOdometerConsumed()
+        }
+    }
+
+    // Fluxo rápido: talão → conta-km → confirmação. Cada passo dispara uma única vez.
+    LaunchedEffect(state.pendingReceiptScan, state.isLoading) {
+        if (state.pendingReceiptScan && !state.isLoading) {
+            viewModel.onReceiptScanStarted()
+            onScanReceipt()
+        }
+    }
+    LaunchedEffect(state.pendingOdometerScan) {
+        if (state.pendingOdometerScan) {
+            viewModel.onOdometerScanStarted()
+            onScanOdometer(state.previousOdometerKm, state.predictedOdometerKm)
+        }
+    }
+
+    FillUpContent(
+        state = state,
+        onBack = onDone,
+        onScanReceipt = onScanReceipt,
+        onScanOdometer = { onScanOdometer(state.previousOdometerKm, state.predictedOdometerKm) },
+        onDismissScanError = viewModel::onDismissScanError,
+        onDateChange = viewModel::onDateChange,
+        onTimeChange = viewModel::onTimeChange,
+        onOdometerChange = viewModel::onOdometerChange,
+        onTripChange = viewModel::onTripChange,
+        onVolumeChange = viewModel::onVolumeChange,
+        onPriceChange = viewModel::onPriceChange,
+        onTotalChange = viewModel::onTotalChange,
+        onDiscountChange = viewModel::onDiscountChange,
+        onFullTankChange = viewModel::onFullTankChange,
+        onStationNameChange = viewModel::onStationNameChange,
+        onBrandChange = viewModel::onBrandChange,
+        onFuelTypeChange = viewModel::onFuelTypeChange,
+        onFuelPremiumChange = viewModel::onFuelPremiumChange,
+        onNotesChange = viewModel::onNotesChange,
+        onSave = viewModel::onSaveClick,
+        onConfirmWarnings = viewModel::onConfirmWarnings,
+        onDismissWarnings = viewModel::onDismissWarnings,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FillUpContent(
+    state: FillUpUiState,
+    onBack: () -> Unit,
+    onScanReceipt: () -> Unit,
+    onScanOdometer: () -> Unit,
+    onDismissScanError: () -> Unit,
+    onDateChange: (LocalDate) -> Unit,
+    onTimeChange: (LocalTime) -> Unit,
+    onOdometerChange: (String) -> Unit,
+    onTripChange: (String) -> Unit,
+    onVolumeChange: (String) -> Unit,
+    onPriceChange: (String) -> Unit,
+    onTotalChange: (String) -> Unit,
+    onDiscountChange: (String) -> Unit,
+    onFullTankChange: (Boolean) -> Unit,
+    onStationNameChange: (String) -> Unit,
+    onBrandChange: (FuelBrand?) -> Unit,
+    onFuelTypeChange: (FuelType?) -> Unit,
+    onFuelPremiumChange: (Boolean?) -> Unit,
+    onNotesChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onConfirmWarnings: () -> Unit,
+    onDismissWarnings: () -> Unit,
+    showOcrDebug: Boolean = BuildConfig.DEBUG,
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val errors = state.issues.filter { it.severity == Severity.ERROR }
+    val warnings = state.issues.filter { it.severity == Severity.WARNING }
+    val decimalKeyboard = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    val numberKeyboard = KeyboardOptions(keyboardType = KeyboardType.Number)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(if (state.isEdit) R.string.fillup_title_edit else R.string.fillup_title_new)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onSave, enabled = !state.isLoading && !state.isSaving) {
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.action_save))
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ReceiptCard(state = state, onScanReceipt = onScanReceipt)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
+                    Text(state.date.format(dateFormatter))
+                }
+                OutlinedButton(onClick = { showTimePicker = true }, modifier = Modifier.weight(1f)) {
+                    Text(state.time.format(timeFormatter))
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.odometerText,
+                    onValueChange = onOdometerChange,
+                    label = { Text(stringResource(R.string.fillup_odometer)) },
+                    suffix = { Text("km") },
+                    supportingText = {
+                        state.previousOdometerKm?.let { Text(stringResource(R.string.fillup_previous_odometer, PtFormat.km(it))) }
+                    },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingOdometer || it is ValidationIssue.OdometerNotAfterPrevious || it is ValidationIssue.OdometerNotBeforeNext },
+                    keyboardOptions = numberKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1.3f),
+                )
+                OutlinedTextField(
+                    value = state.tripText,
+                    onValueChange = onTripChange,
+                    label = { Text(stringResource(R.string.fillup_trip)) },
+                    suffix = { Text("km") },
+                    supportingText = { Text(stringResource(R.string.fillup_trip_hint)) },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.InvalidTrip },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            OutlinedButton(onClick = onScanOdometer, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.fillup_scan_odometer))
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.volumeText,
+                    onValueChange = onVolumeChange,
+                    label = { Text(stringResource(R.string.fillup_volume)) },
+                    suffix = { Text("L") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingVolume },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedTextField(
+                    value = state.priceText,
+                    onValueChange = onPriceChange,
+                    label = { Text(stringResource(R.string.fillup_price)) },
+                    suffix = { Text("€/L") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingPrice },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.discountText,
+                    onValueChange = onDiscountChange,
+                    label = { Text(stringResource(R.string.fillup_discount)) },
+                    prefix = { Text("−") },
+                    suffix = { Text("€") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.InvalidDiscount },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedTextField(
+                    value = state.totalText,
+                    onValueChange = onTotalChange,
+                    label = { Text(stringResource(R.string.fillup_total)) },
+                    suffix = { Text("€") },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingTotal },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Text(
+                text = stringResource(R.string.fillup_discount_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.fillup_full_tank), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.fillup_full_tank_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(Modifier.width(8.dp))
+                Switch(checked = state.isFullTank, onCheckedChange = onFullTankChange)
+            }
+
+            FuelSection(state = state, onFuelTypeChange = onFuelTypeChange, onFuelPremiumChange = onFuelPremiumChange)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BrandField(brand = state.brand, onBrandChange = onBrandChange, modifier = Modifier.weight(1f))
+                OutlinedTextField(
+                    value = state.stationName,
+                    onValueChange = onStationNameChange,
+                    label = { Text(stringResource(R.string.fillup_station)) },
+                    singleLine = true,
+                    modifier = Modifier.weight(1.3f),
+                )
+            }
+
+            OutlinedTextField(
+                value = state.notes,
+                onValueChange = onNotesChange,
+                label = { Text(stringResource(R.string.fillup_notes)) },
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            if (state.showErrors) errors.forEach { ValidationIssueText(it) }
+            warnings.forEach { ValidationIssueText(it) }
+
+            Button(onClick = onSave, enabled = !state.isLoading && !state.isSaving, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.action_save))
+            }
+
+            if (showOcrDebug) state.ocrDebug?.let { OcrDebugSection(it) }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+
+    if (showDatePicker) {
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = state.date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        onDateChange(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
+                    }
+                    showDatePicker = false
+                }) { Text(stringResource(R.string.action_ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val pickerState = rememberTimePickerState(initialHour = state.time.hour, initialMinute = state.time.minute, is24Hour = true)
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTimeChange(LocalTime.of(pickerState.hour, pickerState.minute))
+                    showTimePicker = false
+                }) { Text(stringResource(R.string.action_ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
+            text = { TimePicker(state = pickerState) },
+        )
+    }
+
+    if (state.scanFailed) {
+        AlertDialog(
+            onDismissRequest = onDismissScanError,
+            title = { Text(stringResource(R.string.scan_failed_title)) },
+            text = { Text(stringResource(R.string.scan_failed_body)) },
+            confirmButton = {
+                TextButton(onClick = { onDismissScanError(); onScanReceipt() }) { Text(stringResource(R.string.scan_retry)) }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissScanError) { Text(stringResource(R.string.action_ok)) }
+            },
+        )
+    }
+
+    if (state.askWarningConfirmation) {
+        AlertDialog(
+            onDismissRequest = onDismissWarnings,
+            title = { Text(stringResource(R.string.fillup_warnings_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    warnings.forEach { Text("• " + it.message()) }
+                    Text(stringResource(R.string.fillup_warnings_question))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirmWarnings) { Text(stringResource(R.string.fillup_save_anyway)) }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissWarnings) { Text(stringResource(R.string.action_review)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun ReceiptCard(state: FillUpUiState, onScanReceipt: () -> Unit) {
+    val receipt = state.receipt
+    val ocrOutcome = state.ocrOutcome
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (receipt == null && state.receiptTextOnly) {
+                Text(stringResource(R.string.fillup_receipt_without_qr), style = MaterialTheme.typography.titleSmall)
+            } else if (receipt == null) {
+                Text(stringResource(R.string.fillup_receipt_none), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(stringResource(R.string.fillup_receipt_read), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = listOfNotNull(
+                        receipt.documentId,
+                        receipt.documentDate.format(dateFormatter),
+                        PtFormat.euros(receipt.totalCents),
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.fillup_receipt_station_nif, receipt.issuerNif),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            ocrOutcome?.let { outcome ->
+                Text(
+                    text = stringResource(
+                        when (outcome) {
+                            OcrOutcome.VOLUME_AND_PRICE -> R.string.fillup_ocr_both
+                            OcrOutcome.VOLUME_ONLY -> R.string.fillup_ocr_volume_only
+                            OcrOutcome.PRICE_ONLY -> R.string.fillup_ocr_price_only
+                            OcrOutcome.NOTHING -> R.string.fillup_ocr_nothing
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (outcome == OcrOutcome.NOTHING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                )
+            }
+            state.ocrDiscountCents?.let { discount ->
+                Text(
+                    text = stringResource(R.string.fillup_ocr_discount, PtFormat.euros(discount)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            OutlinedButton(onClick = onScanReceipt, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(if (receipt == null && !state.receiptTextOnly) R.string.fillup_scan_receipt else R.string.fillup_scan_receipt_again))
+            }
+        }
+    }
+}
+
+/** Só em builds de debug: o QR e as linhas de texto tal como chegaram da câmara, selecionáveis. */
+@Composable
+private fun OcrDebugSection(debug: OcrDebug) {
+    var expanded by remember { mutableStateOf(false) }
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(stringResource(R.string.fillup_ocr_debug_title))
+            }
+            if (expanded) {
+                SelectionContainer {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        debug.qrRaw?.let { Text(stringResource(R.string.fillup_ocr_debug_qr, it), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall) }
+                        if (debug.rows.isEmpty()) {
+                            Text(stringResource(R.string.fillup_ocr_debug_none), style = MaterialTheme.typography.bodySmall)
+                        }
+                        debug.rows.forEachIndexed { index, row ->
+                            Text("${(index + 1).toString().padStart(2, '0')}  $row", fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", PtFormat.locale)
+private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", PtFormat.locale)
+
+/** Tipo de combustível (95, 98, gasóleo, GPL) e se é simples ou aditivado; tocar de novo desmarca. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FuelSection(
+    state: FillUpUiState,
+    onFuelTypeChange: (FuelType?) -> Unit,
+    onFuelPremiumChange: (Boolean?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.fillup_fuel_type), style = MaterialTheme.typography.bodyLarge)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            FuelType.entries.forEachIndexed { index, type ->
+                SegmentedButton(
+                    selected = state.fuelType == type,
+                    onClick = { onFuelTypeChange(if (state.fuelType == type) null else type) },
+                    shape = SegmentedButtonDefaults.itemShape(index, FuelType.entries.size),
+                    label = { Text(type.shortLabel(), maxLines = 1) },
+                )
+            }
+        }
+        val premiumOptions = listOf(false to R.string.fillup_fuel_simple, true to R.string.fillup_fuel_premium)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            premiumOptions.forEachIndexed { index, (premium, label) ->
+                SegmentedButton(
+                    selected = state.fuelPremium == premium,
+                    onClick = { onFuelPremiumChange(if (state.fuelPremium == premium) null else premium) },
+                    shape = SegmentedButtonDefaults.itemShape(index, premiumOptions.size),
+                    label = { Text(stringResource(label)) },
+                )
+            }
+        }
+    }
+}
+
+/** Marca do posto, da lista fixa; "—" deixa-a por indicar. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BrandField(brand: FuelBrand?, onBrandChange: (FuelBrand?) -> Unit, modifier: Modifier = Modifier) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
+        OutlinedTextField(
+            value = brand?.label() ?: stringResource(R.string.fillup_brand_none),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.fillup_brand)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            singleLine = true,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.fillup_brand_none)) },
+                onClick = { onBrandChange(null); expanded = false },
+            )
+            FuelBrand.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label()) },
+                    onClick = { onBrandChange(option); expanded = false },
+                )
+            }
+        }
+    }
+}

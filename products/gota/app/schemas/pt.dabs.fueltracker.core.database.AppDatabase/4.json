@@ -1,0 +1,155 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "43816d44c6b9332d10117f4efca30d67",
+    "entities": [
+      {
+        "tableName": "fill_ups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date_time` INTEGER NOT NULL, `odometer_km` INTEGER NOT NULL, `volume_ml` INTEGER NOT NULL, `price_per_liter_milli_cents` INTEGER NOT NULL, `total_cents` INTEGER NOT NULL, `discount_cents` INTEGER NOT NULL DEFAULT 0, `trip_tenths_km` INTEGER, `is_full_tank` INTEGER NOT NULL DEFAULT 1, `station_nif` TEXT, `station_name` TEXT, `brand` TEXT, `fuel_type` TEXT, `fuel_premium` INTEGER, `atcud` TEXT, `buyer_nif_present` INTEGER, `notes` TEXT, `created_at` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateTimeEpochMillis",
+            "columnName": "date_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "odometerKm",
+            "columnName": "odometer_km",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "volumeMl",
+            "columnName": "volume_ml",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pricePerLiterMilliCents",
+            "columnName": "price_per_liter_milli_cents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalCents",
+            "columnName": "total_cents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discountCents",
+            "columnName": "discount_cents",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "tripTenthsKm",
+            "columnName": "trip_tenths_km",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isFullTank",
+            "columnName": "is_full_tank",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "stationNif",
+            "columnName": "station_nif",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stationName",
+            "columnName": "station_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "brand",
+            "columnName": "brand",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fuelType",
+            "columnName": "fuel_type",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fuelPremium",
+            "columnName": "fuel_premium",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "atcud",
+            "columnName": "atcud",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "buyerNifPresent",
+            "columnName": "buyer_nif_present",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fill_ups_date_time",
+            "unique": false,
+            "columnNames": [
+              "date_time"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fill_ups_date_time` ON `${TABLE_NAME}` (`date_time`)"
+          },
+          {
+            "name": "index_fill_ups_odometer_km",
+            "unique": false,
+            "columnNames": [
+              "odometer_km"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fill_ups_odometer_km` ON `${TABLE_NAME}` (`odometer_km`)"
+          },
+          {
+            "name": "index_fill_ups_atcud",
+            "unique": true,
+            "columnNames": [
+              "atcud"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_fill_ups_atcud` ON `${TABLE_NAME}` (`atcud`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '43816d44c6b9332d10117f4efca30d67')"
+    ]
+  }
+}

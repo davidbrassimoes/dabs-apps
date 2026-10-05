@@ -1,0 +1,194 @@
+<resources>
+    <string name="app_name">Fuel Tracker</string>
+    <string name="no_value">—</string>
+
+    <!-- Ações -->
+    <string name="action_back">Voltar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_ok">OK</string>
+    <string name="action_delete">Apagar</string>
+    <string name="action_undo">Anular</string>
+    <string name="action_review">Rever</string>
+
+    <!-- Rótulos partilhados -->
+    <string name="label_distance">Distância</string>
+    <string name="label_spent">Gasto</string>
+    <string name="label_volume">Litros</string>
+    <string name="label_average_consumption">Consumo médio</string>
+    <string name="label_cost_per_km">Custo por km</string>
+    <string name="label_average_price">Preço médio</string>
+    <string name="label_date">Data</string>
+    <string name="label_odometer">Conta-km</string>
+    <string name="label_fill_ups">Abastecimentos</string>
+
+    <!-- Estatísticas -->
+    <string name="stats_title">Estatísticas</string>
+    <string name="stats_empty">As estatísticas aparecem a partir do segundo depósito cheio.</string>
+    <string name="stats_consumption_title">Consumo por ciclo</string>
+    <string name="stats_consumption_subtitle">Média global: %1$s</string>
+    <string name="stats_monthly_spend_title">Gasto por mês</string>
+    <string name="stats_monthly_km_title">Quilómetros por mês</string>
+    <string name="stats_monthly_km_subtitle">Ciclos fechados no mês</string>
+    <string name="stats_price_title">Preço por litro</string>
+    <string name="stats_years_title">Resumo por ano</string>
+    <string name="stats_stations_title">Por posto</string>
+    <string name="stats_brands_title">Por marca</string>
+    <string name="stats_fuels_title">Por combustível</string>
+    <string name="stats_fuels_subtitle">O consumo de cada ciclo conta para o combustível metido no abastecimento que o começou</string>
+    <plurals name="stats_fuel_consumption">
+        <item quantity="one">%1$s (%2$d ciclo)</item>
+        <item quantity="other">%1$s (%2$d ciclos)</item>
+    </plurals>
+    <plurals name="stats_station_count">
+        <item quantity="one">%1$d abastecimento</item>
+        <item quantity="other">%1$d abastecimentos</item>
+    </plurals>
+    <string name="stats_anomalies_title">Consumos acima do habitual</string>
+    <string name="stats_anomalies_subtitle">Ciclos mais de 20%% acima da média dos anteriores</string>
+    <string name="stats_anomaly_values">%1$s (média anterior %2$s)</string>
+
+    <!-- Widget -->
+    <string name="widget_label">Fuel Tracker</string>
+    <string name="widget_description">Último consumo, média recente e atalho para abastecer</string>
+    <string name="widget_last_consumption">Último consumo</string>
+    <string name="widget_recent_average">Média recente</string>
+    <string name="widget_typical_distance">~%1$s por depósito</string>
+    <string name="widget_empty">Sem ciclos ainda</string>
+
+
+    <!-- Início -->
+    <string name="home_add_fill_up">Abastecer</string>
+    <string name="home_open_history">Histórico</string>
+    <string name="home_empty_title">Ainda não há abastecimentos</string>
+    <string name="home_empty_body">Regista o primeiro abastecimento com o botão Abastecer. O consumo aparece a partir do segundo depósito cheio.</string>
+    <string name="home_last_consumption">Último consumo</string>
+    <string name="home_recent_average">Média recente</string>
+    <string name="home_overall_average">Global: %1$s</string>
+    <string name="home_typical_distance">Distância habitual por depósito</string>
+    <string name="home_range_from_cycles">Média dos últimos ciclos cheio-a-cheio</string>
+    <string name="home_this_month">Este mês</string>
+    <string name="home_last_fill_up">Último abastecimento</string>
+
+    <!-- Novo abastecimento -->
+    <string name="fillup_title_new">Novo abastecimento</string>
+    <string name="fillup_title_edit">Editar abastecimento</string>
+    <string name="fillup_odometer">Conta-km total</string>
+    <string name="fillup_previous_odometer">Anterior: %1$s</string>
+    <string name="fillup_trip">Conta-km parcial</string>
+    <string name="fillup_trip_hint">Antes de o pôr a zeros</string>
+    <string name="fillup_volume">Litros</string>
+    <string name="fillup_price">Preço por litro</string>
+    <string name="fillup_total">Total pago</string>
+    <string name="fillup_discount">Desconto</string>
+    <string name="fillup_discount_hint">Descontos do talão; litros × preço = total + desconto</string>
+    <string name="fillup_ocr_discount">Desconto de %1$s lido do talão.</string>
+    <string name="fillup_receipt_without_qr">Talão lido sem QR</string>
+    <string name="fillup_ocr_debug_title">Texto lido (debug)</string>
+    <string name="fillup_ocr_debug_qr">QR: %1$s</string>
+    <string name="fillup_ocr_debug_none">Sem texto reconhecido.</string>
+    <string name="fillup_full_tank">Depósito cheio</string>
+    <string name="fillup_full_tank_hint">Atestar fecha um ciclo de consumo</string>
+    <string name="fillup_station">Local do posto</string>
+    <string name="fillup_brand">Marca</string>
+    <string name="fillup_brand_none">—</string>
+    <string name="fillup_fuel_type">Combustível</string>
+    <string name="fillup_fuel_premium">Aditivado</string>
+    <string name="fillup_fuel_simple">Simples</string>
+    <string name="brand_other">Outra</string>
+    <string name="fuel_95">Gasolina 95</string>
+    <string name="fuel_98">Gasolina 98</string>
+    <string name="fuel_95_short">95</string>
+    <string name="fuel_98_short">98</string>
+    <string name="fuel_diesel">Gasóleo</string>
+    <string name="fuel_lpg">GPL</string>
+    <string name="fuel_premium_f">aditivada</string>
+    <string name="fuel_premium_m">aditivado</string>
+    <string name="fuel_simple_f">simples</string>
+    <string name="fuel_simple_m">simples</string>
+    <string name="fillup_notes">Notas (opcional)</string>
+    <string name="fillup_receipt_none">Lê o QR do talão para preencher a data, o total e o posto.</string>
+    <string name="fillup_receipt_read">Talão lido</string>
+    <string name="fillup_receipt_station_nif">NIF do posto: %1$s</string>
+    <string name="fillup_scan_receipt">Ler talão (QR)</string>
+    <string name="fillup_scan_receipt_again">Ler outro talão</string>
+    <string name="fillup_ocr_both">Litros e preço lidos do talão. Confirma antes de guardar.</string>
+    <string name="fillup_ocr_volume_only">Litros lidos do talão; o preço foi calculado a partir do total.</string>
+    <string name="fillup_ocr_price_only">Preço lido do talão; os litros foram calculados a partir do total.</string>
+    <string name="fillup_ocr_nothing">Não consegui ler os litros nem o preço. Preenche à mão ou lê o talão de novo com mais luz.</string>
+    <string name="fillup_warnings_title">Confirmar valores</string>
+    <string name="fillup_warnings_question">Queres guardar mesmo assim?</string>
+    <string name="fillup_save_anyway">Guardar mesmo assim</string>
+
+    <!-- Validações -->
+    <string name="validation_missing_odometer">Indica o conta-km</string>
+    <string name="validation_missing_volume">Indica os litros</string>
+    <string name="validation_missing_price">Indica o preço por litro</string>
+    <string name="validation_missing_total">Indica o total pago</string>
+    <string name="validation_invalid_discount">Desconto inválido</string>
+    <string name="validation_invalid_trip">Conta-km parcial inválido</string>
+    <string name="validation_trip_shorter">O conta-km parcial (%1$s) é menor do que a distância pelo conta-km (%2$s). Faltou registar um abastecimento? O consumo deste ciclo usa o parcial.</string>
+    <string name="validation_trip_longer">O conta-km parcial (%1$s) é maior do que a distância pelo conta-km (%2$s). Não foi posto a zeros no abastecimento anterior? O consumo deste ciclo usa o conta-km.</string>
+    <string name="validation_odometer_not_after_previous">O conta-km tem de ser maior do que o do abastecimento anterior (%1$s)</string>
+    <string name="validation_odometer_not_before_next">O conta-km tem de ser menor do que o do abastecimento seguinte (%1$s)</string>
+    <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
+    <string name="validation_total_mismatch">Litros × preço − desconto dá %1$s, diferente do total indicado</string>
+    <string name="validation_duplicate_atcud">Este talão já foi registado. Se guardares, fica sem a ligação ao ATCUD</string>
+
+    <!-- Leitura do QR -->
+    <string name="scan_title">Ler talão</string>
+    <string name="scan_hint">Enquadra o talão inteiro, com o código QR e a linha dos litros visíveis. A leitura é automática.</string>
+    <string name="scan_reading_text">QR lido. A ler os litros e o preço, mantém o talão quieto…</string>
+    <string name="scan_permission_denied">Sem acesso à câmara não é possível ler o talão. Podes continuar a preencher à mão.</string>
+    <string name="scan_permission_retry">Permitir câmara</string>
+    <string name="scan_failed_title">Não é um QR de fatura</string>
+    <string name="scan_failed_body">O código lido não tem o formato das faturas portuguesas (campos A, B, F, H, O). Tenta o QR impresso no talão.</string>
+    <string name="scan_retry">Tentar de novo</string>
+    <string name="scan_pick_photo">Escolher foto</string>
+    <string name="scan_photo_only_hint">Sem câmara podes escolher uma fotografia do talão já tirada.</string>
+    <string name="scan_photo_analyzing">A analisar a fotografia…</string>
+    <string name="scan_photo_no_qr">Não encontrei um código QR nem os valores do talão nessa fotografia. Tenta outra com o talão nítido.</string>
+    <string name="scan_photo_failed">Não consegui abrir a fotografia.</string>
+    <string name="scan_odometer_photo_not_found">Não encontrei um conta-km plausível nessa fotografia. Tenta outra ou escreve à mão.</string>
+    <string name="scan_odometer_not_after_previous">Li %1$s, mas o conta-km tem de ser maior do que o do abastecimento anterior (%2$s). É uma fotografia antiga?</string>
+    <string name="scan_odometer_implausible">Li %1$s, que não parece um conta-km plausível.</string>
+    <string name="scan_odometer_use_anyway">Usar %1$s mesmo assim</string>
+
+    <!-- Leitura do conta-km -->
+    <string name="scan_odometer_title">Ler conta-km</string>
+    <string name="scan_odometer_hint">Enquadra o visor do conta-km dentro da moldura (parcial em cima, total em baixo) e mantém o telemóvel quieto.</string>
+    <string name="scan_odometer_reading">A ler: %1$s</string>
+    <string name="scan_odometer_trip">Parcial: %1$s</string>
+    <string name="scan_odometer_trip_ok">Parcial: %1$s · bate com o abastecimento anterior</string>
+    <string name="scan_odometer_trip_mismatch">Parcial: %1$s · não bate com o abastecimento anterior. Puseste-o a zeros da última vez?</string>
+    <string name="scan_odometer_last">Anterior: %1$s</string>
+    <string name="scan_odometer_predicted">Previsto: ~%1$s</string>
+    <string name="scan_odometer_manual">Escrever à mão</string>
+    <string name="fillup_scan_odometer">Ler conta-km com a câmara</string>
+
+    <!-- Definições -->
+    <string name="settings_title">Definições</string>
+    <string name="settings_data_title">Dados</string>
+    <string name="settings_data_body">O CSV usa ponto e vírgula e vírgula decimal, abre no Excel. A importação junta aos registos existentes e ignora talões repetidos.</string>
+    <string name="settings_export">Exportar CSV</string>
+    <string name="settings_import">Importar CSV</string>
+    <plurals name="settings_exported">
+        <item quantity="one">Exportado %1$d abastecimento</item>
+        <item quantity="other">Exportados %1$d abastecimentos</item>
+    </plurals>
+    <string name="settings_imported">Novos: %1$d · Repetidos ignorados: %2$d · Linhas inválidas: %3$d</string>
+    <string name="settings_import_header_invalid">Ficheiro não reconhecido: %1$s</string>
+    <string name="settings_transfer_failed">Não foi possível aceder ao ficheiro</string>
+
+    <!-- Histórico -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Sem abastecimentos registados</string>
+    <string name="history_partial">Parcial</string>
+    <string name="history_cycle">%1$s · %2$s · %3$s</string>
+    <string name="history_anomaly">Consumo acima do habitual</string>
+    <string name="history_trip_distance">Distância pelo conta-km parcial</string>
+    <string name="history_trip_mismatch">Conta-km parcial e total não batem: vê os avisos ao editar</string>
+    <string name="history_deleted">Abastecimento apagado</string>
+    <string name="history_delete_title">Apagar abastecimento?</string>
+    <string name="history_delete_body">Podes anular logo a seguir na mensagem que aparece em baixo.</string>
+</resources>

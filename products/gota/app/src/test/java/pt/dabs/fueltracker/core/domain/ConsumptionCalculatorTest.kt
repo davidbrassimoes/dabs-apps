@@ -1,0 +1,486 @@
+package pt.dabs.fueltracker.core.domain
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import pt.dabs.fueltracker.core.domain.model.DistanceSource
+import pt.dabs.fueltracker.core.domain.model.FuelBrand
+import pt.dabs.fueltracker.core.domain.model.FuelType
+import pt.dabs.fueltracker.core.domain.model.Period
+import java.time.LocalDate
+import java.time.YearMonth
+
+class ConsumptionCalculatorTest {
+
+    // --- ciclos -----------------------------------------------------------------
+
+    @Test
+    fun `no fill ups means no cycles`() {
+        assertTrue(ConsumptionCalculator.computeCycles(emptyList()).isEmpty())
+    }
+
+    // --- parcial (posto a zeros a cada abastecimento) ------------------------------
+
+    @Test
+    fun `first fill up with the trip meter already has a cycle`() {
+        // Talão real: 42,63 L, parcial 602,0 km → 7,08 L/100 km sem precisar de registo anterior.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(fillUp(1, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_020))).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(161_657, cycle.startOdometerKm)
+        assertEquals(7_081, cycle.consumptionMlPer100Km)
+        assertEquals(DistanceSource.TRIP, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `trip that matches the odometer confirms the odometer distance`() {
+        val cycles = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_015), // 601,5 vs 602: dentro dos 2 km
+        ))
+        val cycle = cycles.single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `missed fill up record makes the trip the right distance`() {
+        // Faltou registar um abastecimento a meio: o total abrange 1 204 km, os litros só 602.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-01", 161_055, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_020),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.TRIP, cycle.distanceSource)
+        assertTrue(cycle.tripMismatch)
+        assertEquals(7_081, cycle.consumptionMlPer100Km)
+    }
+
+    @Test
+    fun `trip not reset falls back to the odometer`() {
+        // O parcial não foi posto a zeros: mostra 1 204 km para um ciclo de 602.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 12_040),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertTrue(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `trip is ignored when partial fill ups are inside the cycle`() {
+        // Com um abastecimento parcial pelo meio o parcial já foi posto a zeros nele: não mede o ciclo.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-09-20", 161_900, 10_000, isFullTank = false),
+            fillUp(3, "2026-10-04", 162_259, 32_630, tripTenthsKm = 3_590),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `zero trip is ignored`() {
+        assertTrue(ConsumptionCalculator.computeCycles(listOf(fillUp(1, "2026-10-04", 162_259, 42_630, tripTenthsKm = 0))).isEmpty())
+    }
+
+    @Test
+    fun `single fill up has no cycle`() {
+        val cycles = ConsumptionCalculator.computeCycles(listOf(fillUp(1, "2026-01-05", 10_000, 40_000)))
+        assertTrue(cycles.isEmpty())
+    }
+
+    @Test
+    fun `two full fill ups make one cycle`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-05", 10_000, 40_000),
+                fillUp(2, "2026-01-20", 10_600, 39_000, 174_900),
+            )
+        )
+        assertEquals(1, cycles.size)
+        val cycle = cycles.single()
+        assertEquals(2L, cycle.fillUpId)
+        assertEquals(10_000, cycle.startOdometerKm)
+        assertEquals(10_600, cycle.endOdometerKm)
+        assertEquals(600, cycle.distanceKm)
+        assertEquals(39_000, cycle.volumeMl)
+        assertEquals(6_500, cycle.consumptionMlPer100Km)
+        assertEquals(FuelMath.totalCents(39_000, 174_900), cycle.costCents)
+        assertEquals(FuelMath.costMilliCentsPerKm(cycle.costCents, 600), cycle.costMilliCentsPerKm)
+    }
+
+    @Test
+    fun `cycles are computed in date order regardless of input order`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(3, "2026-03-01", 12_000, 30_000),
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-02-01", 11_000, 35_000),
+            )
+        )
+        assertEquals(listOf(2L, 3L), cycles.map { it.fillUpId })
+        assertEquals(listOf(1_000, 1_000), cycles.map { it.distanceKm })
+        assertEquals(listOf(3_500, 3_000), cycles.map { it.consumptionMlPer100Km })
+    }
+
+    @Test
+    fun `partial fill ups add their volume to the next full cycle`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-01-10", 10_300, 15_000, isFullTank = false),
+                fillUp(3, "2026-01-15", 10_500, 10_000, isFullTank = false),
+                fillUp(4, "2026-01-25", 11_000, 30_000),
+            )
+        )
+        assertEquals(1, cycles.size)
+        val cycle = cycles.single()
+        assertEquals(4L, cycle.fillUpId)
+        assertEquals(1_000, cycle.distanceKm)
+        assertEquals(55_000, cycle.volumeMl)
+        assertEquals(5_500, cycle.consumptionMlPer100Km)
+    }
+
+    @Test
+    fun `leading partial fill ups before the first full one are dropped`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 20_000, isFullTank = false),
+                fillUp(2, "2026-01-05", 10_200, 40_000),
+                fillUp(3, "2026-01-20", 10_800, 36_000),
+            )
+        )
+        assertEquals(1, cycles.size)
+        assertEquals(36_000, cycles.single().volumeMl)
+        assertEquals(600, cycles.single().distanceKm)
+    }
+
+    @Test
+    fun `trailing partial fill up does not close a cycle`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-01-20", 10_600, 36_000),
+                fillUp(3, "2026-01-25", 10_900, 10_000, isFullTank = false),
+            )
+        )
+        assertEquals(listOf(2L), cycles.map { it.fillUpId })
+    }
+
+    @Test
+    fun `cycle with zero or negative distance is skipped but volume carries over`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-01-02", 10_000, 5_000),   // mesmo odómetro: ciclo inválido
+                fillUp(3, "2026-01-20", 10_500, 30_000),
+            )
+        )
+        assertEquals(listOf(3L), cycles.map { it.fillUpId })
+        assertEquals(35_000, cycles.single().volumeMl)
+        assertEquals(500, cycles.single().distanceKm)
+        assertEquals(7_000, cycles.single().consumptionMlPer100Km)
+    }
+
+    @Test
+    fun `same day fill ups are ordered by odometer`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_500, 30_000, time = "10:00"),
+                fillUp(2, "2026-01-01", 10_000, 40_000, time = "10:00"),
+            )
+        )
+        assertEquals(1, cycles.size)
+        assertEquals(1L, cycles.single().fillUpId)
+        assertEquals(500, cycles.single().distanceKm)
+    }
+
+    // --- médias -----------------------------------------------------------------
+
+    @Test
+    fun `weighted average is total liters over total km, not mean of means`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-01-10", 10_100, 10_000),  // 10 L/100 km em 100 km
+                fillUp(3, "2026-01-20", 11_100, 50_000),  // 5 L/100 km em 1000 km
+            )
+        )
+        // média de médias seria 7,5; ponderada é 60 L / 1100 km = 5,4545
+        assertEquals(5_455, ConsumptionCalculator.weightedAverageMlPer100Km(cycles))
+    }
+
+    @Test
+    fun `recent average uses only the last n cycles`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 10_500, 50_000),  // 10 L/100
+            fillUp(3, "2026-01-20", 11_000, 30_000),  // 6
+            fillUp(4, "2026-01-30", 11_500, 30_000),  // 6
+        )
+        val cycles = ConsumptionCalculator.computeCycles(fillUps)
+        assertEquals(6_000, ConsumptionCalculator.recentAverageMlPer100Km(cycles, lastN = 2))
+        assertEquals(7_333, ConsumptionCalculator.recentAverageMlPer100Km(cycles, lastN = 3))
+        assertEquals(7_333, ConsumptionCalculator.recentAverageMlPer100Km(cycles, lastN = 10))
+    }
+
+    @Test
+    fun `averages are null without cycles`() {
+        assertNull(ConsumptionCalculator.weightedAverageMlPer100Km(emptyList()))
+        assertNull(ConsumptionCalculator.recentAverageMlPer100Km(emptyList()))
+    }
+
+    // --- autonomia --------------------------------------------------------------
+
+    @Test
+    fun `typical distance per tank is the average of the last cycles`() {
+        val cycles = ConsumptionCalculator.computeCycles(
+            listOf(
+                fillUp(1, "2026-01-01", 10_000, 40_000),
+                fillUp(2, "2026-01-10", 10_600, 39_000),
+                fillUp(3, "2026-01-20", 11_300, 39_000),
+            )
+        )
+        assertEquals(650, ConsumptionCalculator.typicalDistancePerTankKm(cycles))
+        assertEquals(700, ConsumptionCalculator.typicalDistancePerTankKm(cycles, lastN = 1))
+        assertNull(ConsumptionCalculator.typicalDistancePerTankKm(emptyList()))
+    }
+
+    @Test
+    fun `predicted odometer adds the average cycle distance to the last odometer`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 10_600, 39_000),
+            fillUp(3, "2026-01-20", 11_300, 39_000),
+        )
+        // média (600 + 700) / 2 = 650 → 11 300 + 650
+        assertEquals(11_950, ConsumptionCalculator.predictNextOdometerKm(fillUps))
+        assertEquals(12_000, ConsumptionCalculator.predictNextOdometerKm(fillUps, lastN = 1))
+    }
+
+    @Test
+    fun `predicted odometer without cycles is the last odometer, without data is null`() {
+        assertEquals(10_000, ConsumptionCalculator.predictNextOdometerKm(listOf(fillUp(1, "2026-01-01", 10_000, 40_000))))
+        assertNull(ConsumptionCalculator.predictNextOdometerKm(emptyList()))
+    }
+
+    // --- marca e combustível ----------------------------------------------------
+
+    private val mixedFuel = listOf(
+        fillUp(1, "2026-01-01", 10_000, 40_000).copy(brand = FuelBrand.GALP, fuelType = FuelType.GASOLINE_95, fuelPremium = false),
+        // ciclo 1: 36 L / 600 km = 6,0 — queimou a simples do abastecimento 1
+        fillUp(2, "2026-01-10", 10_600, 36_000, 190_000).copy(brand = FuelBrand.REPSOL, fuelType = FuelType.GASOLINE_95, fuelPremium = true),
+        // ciclo 2: 42 L / 600 km = 7,0 — queimou a aditivada do abastecimento 2
+        fillUp(3, "2026-01-20", 11_200, 42_000).copy(brand = FuelBrand.GALP, fuelType = FuelType.GASOLINE_95, fuelPremium = false),
+    )
+
+    @Test
+    fun `brand summaries group by brand, most used first`() {
+        val brands = ConsumptionCalculator.brandSummaries(mixedFuel + fillUp(4, "2026-01-30", 11_800, 40_000))
+        assertEquals(listOf(FuelBrand.GALP, FuelBrand.REPSOL), brands.map { it.brand })
+        assertEquals(2, brands[0].fillUpCount)
+        assertEquals(82_000L, brands[0].volumeMl)
+        assertEquals(190_000, brands[1].averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `fuel consumption is attributed to the fuel that started the cycle`() {
+        val fuels = ConsumptionCalculator.fuelSummaries(mixedFuel).associateBy { it.premium }
+        val simple = fuels.getValue(false)
+        val premium = fuels.getValue(true)
+        assertEquals(2, simple.fillUpCount)
+        assertEquals(1, simple.cycleCount)
+        assertEquals(6_000, simple.averageConsumptionMlPer100Km)
+        assertEquals(1, premium.fillUpCount)
+        assertEquals(1, premium.cycleCount)
+        assertEquals(7_000, premium.averageConsumptionMlPer100Km)
+        assertEquals(190_000, premium.averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `fuel never burned in a closed cycle has price but no consumption`() {
+        val only = ConsumptionCalculator.fuelSummaries(
+            listOf(fillUp(1, "2026-01-01", 10_000, 40_000).copy(fuelType = FuelType.DIESEL, fuelPremium = null))
+        ).single()
+        assertEquals(FuelType.DIESEL, only.type)
+        assertEquals(0, only.cycleCount)
+        assertNull(only.averageConsumptionMlPer100Km)
+    }
+
+    // --- anomalias --------------------------------------------------------------
+
+    @Test
+    fun `detects a cycle more than 20 percent above the moving average`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 10_500, 30_000),  // 6,0
+            fillUp(3, "2026-01-20", 11_000, 31_000),  // 6,2
+            fillUp(4, "2026-01-30", 11_500, 40_000),  // 8,0 → anomalia (média 6,1 × 1,2 = 7,32)
+            fillUp(5, "2026-02-10", 12_000, 32_000),  // 6,4 → normal (média de 6,0/6,2/8,0 = 6,73)
+        )
+        val cycles = ConsumptionCalculator.computeCycles(fillUps)
+        assertEquals(setOf(4L), ConsumptionCalculator.detectAnomalies(cycles))
+    }
+
+    @Test
+    fun `needs minimum history before flagging`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 10_500, 30_000),  // 6,0
+            fillUp(3, "2026-01-20", 11_000, 50_000),  // 10,0 mas só há um ciclo anterior
+        )
+        val cycles = ConsumptionCalculator.computeCycles(fillUps)
+        assertTrue(ConsumptionCalculator.detectAnomalies(cycles).isEmpty())
+        assertEquals(setOf(3L), ConsumptionCalculator.detectAnomalies(cycles, minHistory = 1))
+    }
+
+    @Test
+    fun `exactly at the threshold is not an anomaly`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 11_000, 50_000),  // 5,0
+            fillUp(3, "2026-01-20", 12_000, 50_000),  // 5,0
+            fillUp(4, "2026-01-30", 13_000, 60_000),  // 6,0 = exatamente +20 %
+        )
+        val cycles = ConsumptionCalculator.computeCycles(fillUps)
+        assertTrue(ConsumptionCalculator.detectAnomalies(cycles).isEmpty())
+    }
+
+    // --- agregados --------------------------------------------------------------
+
+    private val threeMonths = listOf(
+        fillUp(1, "2025-12-28", 10_000, 40_000, 170_000),            // dezembro: só abastece, sem ciclo
+        fillUp(2, "2026-01-10", 10_600, 36_000, 175_000),            // janeiro: ciclo 600 km / 36 L
+        fillUp(3, "2026-01-25", 11_100, 30_000, 180_000),            // janeiro: ciclo 500 km / 30 L
+        fillUp(4, "2026-02-14", 11_800, 42_000, 165_000),            // fevereiro: ciclo 700 km / 42 L
+    )
+
+    @Test
+    fun `monthly summaries only for months with fill ups, in order`() {
+        val months = ConsumptionCalculator.monthlySummaries(threeMonths, LISBON)
+        assertEquals(
+            listOf(YearMonth.of(2025, 12), YearMonth.of(2026, 1), YearMonth.of(2026, 2)),
+            months.map { (it.period as Period.Month).yearMonth }
+        )
+    }
+
+    @Test
+    fun `month without cycles has totals but null averages`() {
+        val december = ConsumptionCalculator.monthlySummaries(threeMonths, LISBON).first()
+        assertEquals(1, december.fillUpCount)
+        assertEquals(40_000L, december.volumeMl)
+        assertEquals(6_800L, december.totalCents)
+        assertEquals(0, december.distanceKm)
+        assertNull(december.averageConsumptionMlPer100Km)
+        assertNull(december.costMilliCentsPerKm)
+        assertEquals(170_000, december.averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `month aggregates are weighted across its cycles`() {
+        val january = ConsumptionCalculator.monthlySummaries(threeMonths, LISBON)[1]
+        assertEquals(2, january.fillUpCount)
+        assertEquals(66_000L, january.volumeMl)
+        assertEquals(1_100, january.distanceKm)
+        assertEquals(66_000L, january.cycleVolumeMl)
+        assertEquals(6_000, january.averageConsumptionMlPer100Km) // 66 L / 1100 km
+        val expectedCost = FuelMath.totalCents(36_000, 175_000) + FuelMath.totalCents(30_000, 180_000)
+        assertEquals(expectedCost, january.totalCents)
+        assertEquals(FuelMath.costMilliCentsPerKm(expectedCost, 1_100), january.costMilliCentsPerKm)
+        assertEquals(FuelMath.averagePricePerLiterMilliCents(expectedCost, 66_000), january.averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `yearly summaries cross the year boundary correctly`() {
+        val years = ConsumptionCalculator.yearlySummaries(threeMonths, LISBON)
+        assertEquals(listOf(2025, 2026), years.map { (it.period as Period.Year).year })
+        val y2025 = years[0]
+        assertEquals(1, y2025.fillUpCount)
+        assertEquals(0, y2025.distanceKm)
+        val y2026 = years[1]
+        assertEquals(3, y2026.fillUpCount)
+        assertEquals(1_800, y2026.distanceKm)
+        assertEquals(108_000L, y2026.cycleVolumeMl)
+        assertEquals(6_000, y2026.averageConsumptionMlPer100Km)
+    }
+
+    @Test
+    fun `month summary for a month without data is empty`() {
+        val summary = ConsumptionCalculator.monthSummary(threeMonths, LocalDate.of(2026, 5, 10), LISBON)
+        assertEquals(Period.Month(YearMonth.of(2026, 5)), summary.period)
+        assertEquals(0, summary.fillUpCount)
+        assertEquals(0L, summary.totalCents)
+        assertNull(summary.averageConsumptionMlPer100Km)
+        assertNull(summary.averagePricePerLiterMilliCents)
+    }
+
+    @Test
+    fun `month summary for the current month`() {
+        val summary = ConsumptionCalculator.monthSummary(threeMonths, LocalDate.of(2026, 2, 20), LISBON)
+        assertEquals(700, summary.distanceKm)
+        assertEquals(6_000, summary.averageConsumptionMlPer100Km)
+    }
+
+    @Test
+    fun `time zone decides the month of a late night fill up`() {
+        // 23:30 em Lisboa a 31 de janeiro é já 1 de fevereiro em Atenas.
+        val fillUps = listOf(
+            fillUp(1, "2026-01-31", 10_000, 40_000, time = "23:30"),
+        )
+        val lisbon = ConsumptionCalculator.monthlySummaries(fillUps, LISBON).single()
+        val athens = ConsumptionCalculator.monthlySummaries(fillUps, java.time.ZoneId.of("Europe/Athens")).single()
+        assertEquals(YearMonth.of(2026, 1), (lisbon.period as Period.Month).yearMonth)
+        assertEquals(YearMonth.of(2026, 2), (athens.period as Period.Month).yearMonth)
+    }
+
+    @Test
+    fun `station summaries group by nif, then by name, most visited first`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000, 170_000).copy(stationNif = "500697256", stationName = "Galp A1"),
+            fillUp(2, "2026-01-10", 10_600, 30_000, 180_000).copy(stationNif = "500697256", stationName = null),
+            fillUp(3, "2026-01-20", 11_100, 20_000, 160_000).copy(stationNif = null, stationName = "BP Centro"),
+            fillUp(4, "2026-01-25", 11_400, 10_000, 160_000).copy(stationNif = null, stationName = "bp centro "),
+            fillUp(5, "2026-01-30", 11_700, 10_000, 160_000), // sem posto: ignorado
+            fillUp(6, "2026-02-05", 12_000, 35_000, 175_000).copy(stationNif = "501234567", stationName = "Repsol"),
+        )
+        val stations = ConsumptionCalculator.stationSummaries(fillUps)
+        // Galp e BP empatam com 2 abastecimentos; a BP foi visitada mais recentemente.
+        assertEquals(listOf("bp centro", "500697256", "501234567"), stations.map { it.key })
+
+        val galp = stations[1]
+        assertEquals("Galp A1", galp.name)
+        assertEquals(2, galp.fillUpCount)
+        assertEquals(70_000L, galp.volumeMl)
+        assertEquals(6_800L + 5_400L, galp.totalCents)
+        assertEquals(FuelMath.averagePricePerLiterMilliCents(12_200, 70_000), galp.averagePricePerLiterMilliCents)
+        assertEquals(at("2026-01-10"), galp.lastDateTime)
+
+        val bp = stations[0]
+        assertEquals("bp centro", bp.name) // último nome escrito, sem espaços à volta
+        assertNull(bp.stationNif)
+        assertEquals(2, bp.fillUpCount)
+    }
+
+    @Test
+    fun `station summaries tie break by most recent`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000).copy(stationName = "A"),
+            fillUp(2, "2026-02-01", 10_600, 40_000).copy(stationName = "B"),
+        )
+        assertEquals(listOf("b", "a"), ConsumptionCalculator.stationSummaries(fillUps).map { it.key })
+        assertTrue(ConsumptionCalculator.stationSummaries(emptyList()).isEmpty())
+    }
+
+    @Test
+    fun `summaries of empty list are empty`() {
+        assertTrue(ConsumptionCalculator.monthlySummaries(emptyList(), LISBON).isEmpty())
+        assertTrue(ConsumptionCalculator.yearlySummaries(emptyList(), LISBON).isEmpty())
+    }
+}
