@@ -86,11 +86,6 @@ class FuelMathTest {
         assertEquals(166_667, FuelMath.averagePricePerLiterMilliCents(10_000, 60_000))
     }
 
-    @Test
-    fun `range for 45 liter tank at 6,5 L per 100 km`() {
-        assertEquals(692, FuelMath.rangeKm(45_000, 6_500))
-    }
-
     private fun assertEquals(expected: Long, actual: Long, tolerance: Long) {
         if (kotlin.math.abs(expected - actual) > tolerance) {
             throw AssertionError("expected $expected ± $tolerance but was $actual")

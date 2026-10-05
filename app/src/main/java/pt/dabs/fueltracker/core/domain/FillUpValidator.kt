@@ -49,10 +49,6 @@ sealed interface ValidationIssue {
         override val severity = Severity.WARNING
     }
 
-    data class VolumeExceedsTank(val tankCapacityMl: Int) : ValidationIssue {
-        override val severity = Severity.WARNING
-    }
-
     data object DuplicateAtcud : ValidationIssue { override val severity = Severity.WARNING }
 
     /** O talão foi emitido a "consumidor final", sem NIF. */
@@ -96,14 +92,12 @@ object FillUpValidator {
      * Valida um rascunho contra os abastecimentos já guardados.
      *
      * @param existing abastecimentos guardados; o que tem o mesmo id do rascunho (edição) é ignorado.
-     * @param tankCapacityMl capacidade do depósito, se configurada.
      * @param atcudAlreadyUsed true se o ATCUD do rascunho já existe noutro abastecimento.
      * @param userNif NIF do utilizador configurado nas Definições, se houver.
      */
     fun validate(
         draft: FillUpDraft,
         existing: List<FillUp>,
-        tankCapacityMl: Int? = null,
         atcudAlreadyUsed: Boolean = false,
         userNif: String? = null,
         options: ValidationOptions = ValidationOptions(),
@@ -149,10 +143,6 @@ object FillUpValidator {
             if (abs(expected - total) > options.totalToleranceCents) {
                 issues += ValidationIssue.TotalMismatch(expected)
             }
-        }
-
-        if (volume != null && tankCapacityMl != null && tankCapacityMl > 0 && volume > tankCapacityMl) {
-            issues += ValidationIssue.VolumeExceedsTank(tankCapacityMl)
         }
 
         if (odometer != null && volume != null && issues.none { it is ValidationIssue.OdometerNotAfterPrevious }) {

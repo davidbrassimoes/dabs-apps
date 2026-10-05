@@ -51,10 +51,4 @@ object FuelMath {
         require(volumeMl > 0) { "volumeMl must be > 0" }
         return roundDiv(totalCents * 1_000_000L, volumeMl).toInt()
     }
-
-    /** Autonomia em km para um volume e um consumo em ml/100 km. */
-    fun rangeKm(volumeMl: Long, consumptionMlPer100Km: Int): Int {
-        require(consumptionMlPer100Km > 0) { "consumption must be > 0" }
-        return roundDiv(volumeMl * 100, consumptionMlPer100Km.toLong()).toInt()
-    }
 }

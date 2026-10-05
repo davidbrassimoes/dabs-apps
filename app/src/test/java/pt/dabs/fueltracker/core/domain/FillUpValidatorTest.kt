@@ -195,15 +195,6 @@ class FillUpValidatorTest {
     }
 
     @Test
-    fun `tank capacity check only when configured`() {
-        assertFalse(FillUpValidator.validate(draft(volumeMl = 60_000, totalCents = FuelMath.totalCents(60_000, 175_000)), existing).any { it is ValidationIssue.VolumeExceedsTank })
-        val issues = FillUpValidator.validate(draft(volumeMl = 60_000, totalCents = FuelMath.totalCents(60_000, 175_000)), existing, tankCapacityMl = 45_000)
-        assertTrue(ValidationIssue.VolumeExceedsTank(45_000) in issues)
-        val exact = FillUpValidator.validate(draft(volumeMl = 45_000, totalCents = FuelMath.totalCents(45_000, 175_000)), existing, tankCapacityMl = 45_000)
-        assertFalse(exact.any { it is ValidationIssue.VolumeExceedsTank })
-    }
-
-    @Test
     fun `duplicate atcud is a warning only when flagged and present`() {
         assertTrue(ValidationIssue.DuplicateAtcud in FillUpValidator.validate(draft(atcud = "ABCD1234-5"), existing, atcudAlreadyUsed = true))
         assertFalse(ValidationIssue.DuplicateAtcud in FillUpValidator.validate(draft(atcud = "ABCD1234-5"), existing, atcudAlreadyUsed = false))

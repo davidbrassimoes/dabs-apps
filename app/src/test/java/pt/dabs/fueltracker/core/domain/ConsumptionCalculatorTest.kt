@@ -238,21 +238,7 @@ class ConsumptionCalculatorTest {
     // --- autonomia --------------------------------------------------------------
 
     @Test
-    fun `range uses tank capacity when known`() {
-        val cycles = ConsumptionCalculator.computeCycles(
-            listOf(
-                fillUp(1, "2026-01-01", 10_000, 40_000),
-                fillUp(2, "2026-01-10", 10_600, 39_000), // 6,5 L/100
-            )
-        )
-        val estimate = ConsumptionCalculator.estimateRangeKm(45_000, cycles)
-        assertNotNull(estimate)
-        assertEquals(692, estimate!!.km)
-        assertTrue(estimate.fromTankCapacity)
-    }
-
-    @Test
-    fun `range falls back to average cycle distance without capacity`() {
+    fun `typical distance per tank is the average of the last cycles`() {
         val cycles = ConsumptionCalculator.computeCycles(
             listOf(
                 fillUp(1, "2026-01-01", 10_000, 40_000),
@@ -260,16 +246,9 @@ class ConsumptionCalculatorTest {
                 fillUp(3, "2026-01-20", 11_300, 39_000),
             )
         )
-        val estimate = ConsumptionCalculator.estimateRangeKm(null, cycles)
-        assertNotNull(estimate)
-        assertEquals(650, estimate!!.km)
-        assertFalse(estimate.fromTankCapacity)
-    }
-
-    @Test
-    fun `range is null without cycles`() {
-        assertNull(ConsumptionCalculator.estimateRangeKm(45_000, emptyList()))
-        assertNull(ConsumptionCalculator.estimateRangeKm(null, emptyList()))
+        assertEquals(650, ConsumptionCalculator.typicalDistancePerTankKm(cycles))
+        assertEquals(700, ConsumptionCalculator.typicalDistancePerTankKm(cycles, lastN = 1))
+        assertNull(ConsumptionCalculator.typicalDistancePerTankKm(emptyList()))
     }
 
     @Test
@@ -288,31 +267,6 @@ class ConsumptionCalculatorTest {
     fun `predicted odometer without cycles is the last odometer, without data is null`() {
         assertEquals(10_000, ConsumptionCalculator.predictNextOdometerKm(listOf(fillUp(1, "2026-01-01", 10_000, 40_000))))
         assertNull(ConsumptionCalculator.predictNextOdometerKm(emptyList()))
-    }
-
-    @Test
-    fun `typical reserve is capacity minus average full fill up`() {
-        val fillUps = listOf(
-            fillUp(1, "2026-01-01", 10_000, 40_000),
-            fillUp(2, "2026-01-10", 10_600, 38_000),
-            fillUp(3, "2026-01-15", 10_800, 10_000, isFullTank = false), // ignorado
-            fillUp(4, "2026-01-20", 11_300, 39_000),
-        )
-        // média dos cheios = (40 + 38 + 39) / 3 = 39 L → 45 − 39 = 6 L
-        assertEquals(6_000, ConsumptionCalculator.typicalReserveMl(45_000, fillUps))
-        // só os 2 últimos cheios: (38 + 39) / 2 = 38,5 L → 6,5 L
-        assertEquals(6_500, ConsumptionCalculator.typicalReserveMl(45_000, fillUps, lastN = 2))
-    }
-
-    @Test
-    fun `typical reserve is null without capacity, data, or when capacity is too small`() {
-        val fillUps = listOf(fillUp(1, "2026-01-01", 10_000, 40_000))
-        assertNull(ConsumptionCalculator.typicalReserveMl(null, fillUps))
-        assertNull(ConsumptionCalculator.typicalReserveMl(0, fillUps))
-        assertNull(ConsumptionCalculator.typicalReserveMl(45_000, emptyList()))
-        assertNull(ConsumptionCalculator.typicalReserveMl(45_000, listOf(fillUp(1, "2026-01-01", 10_000, 20_000, isFullTank = false))))
-        assertNull(ConsumptionCalculator.typicalReserveMl(35_000, fillUps))
-        assertEquals(0, ConsumptionCalculator.typicalReserveMl(40_000, fillUps))
     }
 
     // --- anomalias --------------------------------------------------------------

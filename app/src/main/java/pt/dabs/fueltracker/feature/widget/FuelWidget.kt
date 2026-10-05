@@ -61,7 +61,7 @@ class FuelWidget : GlanceAppWidget() {
         val data = WidgetData(
             lastConsumptionMlPer100Km = cycles.lastOrNull()?.consumptionMlPer100Km,
             recentAverageMlPer100Km = ConsumptionCalculator.recentAverageMlPer100Km(cycles),
-            typicalDistanceKm = ConsumptionCalculator.estimateRangeKm(null, cycles)?.km,
+            typicalDistanceKm = ConsumptionCalculator.typicalDistancePerTankKm(cycles),
             fillUpCount = fillUps.size,
         )
         provideContent {

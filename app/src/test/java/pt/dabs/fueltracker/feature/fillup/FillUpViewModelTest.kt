@@ -376,18 +376,6 @@ class FillUpViewModelTest {
     }
 
     @Test
-    fun `tank capacity from settings produces a warning when exceeded`() = runTest {
-        val viewModel = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(tankCapacityMl = 45_000))
-        viewModel.onOdometerChange("11200")
-        viewModel.onVolumeChange("50")
-        viewModel.onPriceChange("1,749")
-        assertTrue(viewModel.uiState.value.issues.any { it is ValidationIssue.VolumeExceedsTank })
-        assertTrue(viewModel.uiState.value.canSave) // aviso, não erro
-        viewModel.onVolumeChange("44")
-        assertFalse(viewModel.uiState.value.issues.any { it is ValidationIssue.VolumeExceedsTank })
-    }
-
-    @Test
     fun `new fill up starts with now and previous odometer hint`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
         val state = viewModel.uiState.value

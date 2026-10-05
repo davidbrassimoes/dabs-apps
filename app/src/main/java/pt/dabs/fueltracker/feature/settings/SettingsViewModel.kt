@@ -17,17 +17,15 @@ import pt.dabs.fueltracker.core.data.DocumentStore
 import pt.dabs.fueltracker.core.data.FillUpRepository
 import pt.dabs.fueltracker.core.data.SettingsRepository
 import pt.dabs.fueltracker.core.domain.Nif
-import pt.dabs.fueltracker.core.domain.NumberInput
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
 
-enum class SettingsError { INVALID_NIF, INVALID_CAPACITY }
+enum class SettingsError { INVALID_NIF }
 
 data class SettingsUiState(
     val isLoading: Boolean = true,
     val nifText: String = "",
-    val tankCapacityText: String = "",
     val errors: Set<SettingsError> = emptySet(),
     val showErrors: Boolean = false,
     val saved: Boolean = false,
@@ -65,9 +63,6 @@ class SettingsViewModel @Inject constructor(
                 it.copy(
                     isLoading = false,
                     nifText = settings.nif.orEmpty(),
-                    tankCapacityText = settings.tankCapacityMl
-                        ?.let { ml -> NumberInput.formatScaled(ml.toLong(), 3, trimTrailingZeros = true) }
-                        .orEmpty(),
                 )
             }
             revalidate()
@@ -79,19 +74,10 @@ class SettingsViewModel @Inject constructor(
         revalidate()
     }
 
-    fun onTankCapacityChange(text: String) {
-        _uiState.update { it.copy(tankCapacityText = text, saved = false) }
-        revalidate()
-    }
-
     private fun revalidate() {
         val state = _uiState.value
         val errors = buildSet {
             if (state.nifText.isNotBlank() && !Nif.isValid(state.nifText)) add(SettingsError.INVALID_NIF)
-            if (state.tankCapacityText.isNotBlank()) {
-                val ml = NumberInput.parseLitersToMl(state.tankCapacityText)
-                if (ml == null || ml <= 0 || ml > MAX_TANK_ML) add(SettingsError.INVALID_CAPACITY)
-            }
         }
         _uiState.update { it.copy(errors = errors) }
     }
@@ -105,7 +91,6 @@ class SettingsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             repository.setNif(Nif.normalize(state.nifText))
-            repository.setTankCapacityMl(NumberInput.parseLitersToMl(state.tankCapacityText))
             _uiState.update { it.copy(saved = true, showErrors = false) }
         }
     }
@@ -148,10 +133,5 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(isTransferring = false) }
             }
         }
-    }
-
-    private companion object {
-        /** Limite generoso para apanhar erros de unidade (ex.: 4500 em vez de 45). */
-        const val MAX_TANK_ML = 200_000
     }
 }

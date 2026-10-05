@@ -78,7 +78,6 @@ fun SettingsScreen(
         snackbarHostState = snackbarHostState,
         onBack = onBack,
         onNifChange = viewModel::onNifChange,
-        onTankCapacityChange = viewModel::onTankCapacityChange,
         onSave = viewModel::onSaveClick,
         onExport = { exportLauncher.launch(viewModel.suggestedExportFileName()) },
         onImport = { importLauncher.launch(arrayOf(FillUpCsv.MIME_TYPE, "text/comma-separated-values", "text/plain", "application/octet-stream")) },
@@ -92,13 +91,11 @@ fun SettingsContent(
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit,
     onNifChange: (String) -> Unit,
-    onTankCapacityChange: (String) -> Unit,
     onSave: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
 ) {
     val nifError = state.showErrors && SettingsError.INVALID_NIF in state.errors
-    val capacityError = state.showErrors && SettingsError.INVALID_CAPACITY in state.errors
 
     Scaffold(
         topBar = {
@@ -133,26 +130,6 @@ fun SettingsContent(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-            )
-
-            OutlinedTextField(
-                value = state.tankCapacityText,
-                onValueChange = onTankCapacityChange,
-                label = { Text(stringResource(R.string.settings_tank_capacity)) },
-                suffix = { Text("L") },
-                supportingText = {
-                    Text(stringResource(if (capacityError) R.string.settings_tank_capacity_invalid else R.string.settings_tank_capacity_hint))
-                },
-                isError = capacityError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Text(
-                text = stringResource(R.string.settings_tank_capacity_explainer),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Button(onClick = onSave, enabled = !state.isLoading, modifier = Modifier.fillMaxWidth()) {

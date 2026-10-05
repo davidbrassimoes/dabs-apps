@@ -44,8 +44,6 @@ fun ValidationIssue.message(): String = when (this) {
         stringResource(R.string.validation_implausible_consumption, PtFormat.consumption(consumptionMlPer100Km))
     is ValidationIssue.TotalMismatch ->
         stringResource(R.string.validation_total_mismatch, PtFormat.euros(expectedTotalCents))
-    is ValidationIssue.VolumeExceedsTank ->
-        stringResource(R.string.validation_volume_exceeds_tank, PtFormat.liters(tankCapacityMl.toLong()))
     ValidationIssue.DuplicateAtcud -> stringResource(R.string.validation_duplicate_atcud)
     ValidationIssue.ReceiptWithoutNif -> stringResource(R.string.validation_receipt_without_nif)
     is ValidationIssue.ReceiptNifMismatch -> stringResource(R.string.validation_receipt_nif_mismatch, buyerNif)

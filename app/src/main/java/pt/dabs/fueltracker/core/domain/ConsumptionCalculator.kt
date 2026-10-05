@@ -119,28 +119,14 @@ object ConsumptionCalculator {
     ): Int? = weightedAverageMlPer100Km(cycles.takeLast(lastN))
 
     /**
-     * Autonomia estimada depois de atestar.
-     *
-     * Com capacidade do depósito e média recente conhecidas: capacidade / média.
-     * Sem capacidade: distância média dos últimos [lastN] ciclos (o que o carro costuma fazer por depósito).
-     * Devolve null quando não há dados suficientes.
+     * Distância habitual por depósito: média dos últimos [lastN] ciclos. Como o utilizador atesta
+     * sempre logo depois da reserva, é a autonomia útil (até à reserva); null sem ciclos.
      */
-    fun estimateRangeKm(
-        tankCapacityMl: Int?,
-        cycles: List<ConsumptionCycle>,
-        lastN: Int = DEFAULT_RECENT_CYCLES,
-    ): RangeEstimate? {
+    fun typicalDistancePerTankKm(cycles: List<ConsumptionCycle>, lastN: Int = DEFAULT_RECENT_CYCLES): Int? {
         val recent = cycles.takeLast(lastN)
-        val average = weightedAverageMlPer100Km(recent)
-        if (tankCapacityMl != null && tankCapacityMl > 0 && average != null && average > 0) {
-            return RangeEstimate(FuelMath.rangeKm(tankCapacityMl.toLong(), average), fromTankCapacity = true)
-        }
         if (recent.isEmpty()) return null
-        val averageDistance = FuelMath.roundDiv(recent.sumOf { it.distanceKm.toLong() }, recent.size.toLong())
-        return RangeEstimate(averageDistance.toInt(), fromTankCapacity = false)
+        return FuelMath.roundDiv(recent.sumOf { it.distanceKm.toLong() }, recent.size.toLong()).toInt()
     }
-
-    data class RangeEstimate(val km: Int, val fromTankCapacity: Boolean)
 
     /**
      * Odómetro previsto para o próximo abastecimento: o último odómetro mais a distância média
@@ -149,29 +135,8 @@ object ConsumptionCalculator {
     fun predictNextOdometerKm(fillUps: List<FillUp>, lastN: Int = DEFAULT_RECENT_CYCLES): Int? {
         val sorted = sortChronologically(fillUps)
         val last = sorted.lastOrNull() ?: return null
-        val recent = computeCycles(sorted).takeLast(lastN)
-        if (recent.isEmpty()) return last.odometerKm
-        val averageDistance = FuelMath.roundDiv(recent.sumOf { it.distanceKm.toLong() }, recent.size.toLong())
-        return last.odometerKm + averageDistance.toInt()
-    }
-
-    /**
-     * Litros que, em média, ainda estão no depósito quando o utilizador atesta:
-     * capacidade − média de litros dos últimos [lastN] abastecimentos cheios.
-     * Devolve null sem capacidade, sem abastecimentos cheios, ou se a média exceder a capacidade
-     * (sinal de capacidade mal configurada).
-     */
-    fun typicalReserveMl(
-        tankCapacityMl: Int?,
-        fillUps: List<FillUp>,
-        lastN: Int = DEFAULT_RECENT_CYCLES,
-    ): Int? {
-        if (tankCapacityMl == null || tankCapacityMl <= 0) return null
-        val recentFull = sortChronologically(fillUps).filter { it.isFullTank }.takeLast(lastN)
-        if (recentFull.isEmpty()) return null
-        val averageMl = FuelMath.roundDiv(recentFull.sumOf { it.volumeMl.toLong() }, recentFull.size.toLong())
-        val reserve = tankCapacityMl - averageMl
-        return if (reserve >= 0) reserve.toInt() else null
+        val averageDistance = typicalDistancePerTankKm(computeCycles(sorted), lastN) ?: return last.odometerKm
+        return last.odometerKm + averageDistance
     }
 
     /**

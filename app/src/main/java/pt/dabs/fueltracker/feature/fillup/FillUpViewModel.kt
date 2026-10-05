@@ -138,7 +138,6 @@ class FillUpViewModel(
     private val touched = LinkedHashSet<AmountField>()
     private var existing: List<FillUp> = emptyList()
     private var original: FillUp? = null
-    private var tankCapacityMl: Int? = null
     private var userNif: String? = null
     private var atcudAlreadyUsed = false
 
@@ -146,7 +145,6 @@ class FillUpViewModel(
         viewModelScope.launch {
             existing = repository.observeAll().first()
             val settings = settingsRepository.settings.first()
-            tankCapacityMl = settings.tankCapacityMl
             userNif = settings.nif
             val loaded = if (fillUpId != FillUp.NEW_ID) repository.getById(fillUpId) else null
             original = loaded
@@ -436,7 +434,6 @@ class FillUpViewModel(
         val issues = FillUpValidator.validate(
             draft = draft,
             existing = existing,
-            tankCapacityMl = tankCapacityMl,
             atcudAlreadyUsed = atcudAlreadyUsed,
             userNif = userNif,
         )

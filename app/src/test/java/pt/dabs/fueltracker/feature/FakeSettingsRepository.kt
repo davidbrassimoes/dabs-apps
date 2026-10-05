@@ -17,8 +17,4 @@ class FakeSettingsRepository(initial: UserSettings = UserSettings()) : SettingsR
     override suspend fun setNif(nif: String?) {
         state.update { it.copy(nif = nif?.takeIf { n -> n.isNotBlank() }) }
     }
-
-    override suspend fun setTankCapacityMl(capacityMl: Int?) {
-        state.update { it.copy(tankCapacityMl = capacityMl?.takeIf { ml -> ml > 0 }) }
-    }
 }

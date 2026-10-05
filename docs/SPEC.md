@@ -45,7 +45,6 @@ Valores monetários e volumes guardados como inteiros. Conversão e formatação
 
 ### Settings (DataStore)
 - NIF do utilizador (para mostrar no ecrã "Mostrar NIF" e comparar com o do QR)
-- Capacidade do depósito (opcional, para validação e estimativas)
 
 ## Cálculos
 Para cada abastecimento cheio *i* com abastecimento cheio anterior *i-1*:
@@ -55,7 +54,7 @@ Para cada abastecimento cheio *i* com abastecimento cheio anterior *i-1*:
 
 Agregados por mês e por ano:
 - km percorridos, litros, € gastos, média L/100 km (ponderada: litros totais / km totais × 100, **não** média das médias), €/km, preço médio por litro
-- Autonomia estimada desde o último atestar (usando a média recente)
+- Autonomia: km habituais por depósito (média dos últimos ciclos). O utilizador atesta sempre logo depois da reserva, por isso não se usa a capacidade do depósito (que deixou de existir nas Definições)
 - Deteção de anomalias: consumo de um ciclo muito acima da média móvel (ex: > 20%)
 
 Toda a lógica de cálculo em funções puras, testadas unitariamente.
@@ -65,7 +64,6 @@ Toda a lógica de cálculo em funções puras, testadas unitariamente.
 - Conta-km parcial ≈ odómetro − odómetro anterior (±2 km); aviso, não bloqueio
 - Distância desde o último abastecimento plausível face aos litros (ex: consumo entre 2 e 25 L/100 km); aviso, não bloqueio
 - `litros × preço/litro − desconto ≈ total` (tolerância de alguns cêntimos)
-- Litros ≤ capacidade do depósito (se configurada)
 - ATCUD duplicado → aviso "este talão já foi registado"
 
 ## Leitura do talão
@@ -103,7 +101,7 @@ Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia e
 3. **Histórico**: lista de abastecimentos com consumo de cada ciclo; editar e apagar (com undo).
 4. **Estatísticas**: gráficos de L/100 km ao longo do tempo, € e km por mês, preço/litro; resumo por ano; por posto.
 5. **Mostrar NIF**: ecrã de alto contraste com o NIF em grande, para mostrar ao funcionário.
-6. **Definições**: NIF, capacidade do depósito, export/import CSV, tema.
+6. **Definições**: NIF, export/import CSV, tema.
 
 ## Fases
 1. **Fundações**: dependências, arquitetura, Room, entrada manual, histórico, cálculos com testes, ecrã inicial.

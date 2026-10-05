@@ -154,12 +154,6 @@ private fun HomeStats(state: HomeUiState) {
         label = stringResource(R.string.home_typical_distance),
         value = state.typicalDistancePerTankKm?.let { PtFormat.km(it) } ?: dash,
         supporting = when {
-            state.typicalReserveMl != null && state.tankCapacityMl != null ->
-                stringResource(
-                    R.string.home_typical_reserve,
-                    PtFormat.liters(state.typicalReserveMl.toLong()),
-                    PtFormat.liters(state.tankCapacityMl.toLong()),
-                )
             state.typicalDistancePerTankKm != null -> stringResource(R.string.home_range_from_cycles)
             else -> null
         },

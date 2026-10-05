@@ -65,7 +65,6 @@
     <string name="home_overall_average">Global: %1$s</string>
     <string name="home_typical_distance">Distância habitual por depósito</string>
     <string name="home_range_from_cycles">Média dos últimos ciclos cheio-a-cheio</string>
-    <string name="home_typical_reserve">Costumas atestar com cerca de %1$s no depósito (capacidade %2$s)</string>
     <string name="home_this_month">Este mês</string>
     <string name="home_last_fill_up">Último abastecimento</string>
 
@@ -116,7 +115,6 @@
     <string name="validation_odometer_not_before_next">O conta-km tem de ser menor do que o do abastecimento seguinte (%1$s)</string>
     <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
     <string name="validation_total_mismatch">Litros × preço − desconto dá %1$s, diferente do total indicado</string>
-    <string name="validation_volume_exceeds_tank">Litros acima da capacidade do depósito (%1$s)</string>
     <string name="validation_duplicate_atcud">Este talão já foi registado. Se guardares, fica sem a ligação ao ATCUD</string>
     <string name="validation_receipt_without_nif">O talão foi emitido sem NIF (consumidor final)</string>
     <string name="validation_receipt_nif_mismatch">O talão tem o NIF %1$s, diferente do teu</string>
@@ -157,10 +155,6 @@
     <string name="settings_nif">O teu NIF</string>
     <string name="settings_nif_hint">Para mostrar no posto e comparar com o talão</string>
     <string name="settings_nif_invalid">NIF inválido: tem de ter 9 dígitos com dígito de controlo correto</string>
-    <string name="settings_tank_capacity">Capacidade do depósito</string>
-    <string name="settings_tank_capacity_hint">Opel Corsa D 1.2 gasolina: 45 L (confirma no manual)</string>
-    <string name="settings_tank_capacity_invalid">Indica a capacidade em litros, por exemplo 45</string>
-    <string name="settings_tank_capacity_explainer">A capacidade serve só para avisar quando os litros do talão a ultrapassam e para estimar a reserva com que costumas atestar. Os litros consumidos vêm sempre do talão.</string>
     <string name="settings_saved">Definições guardadas</string>
     <string name="settings_data_title">Dados</string>
     <string name="settings_data_body">O CSV usa ponto e vírgula e vírgula decimal, abre no Excel. A importação junta aos registos existentes e ignora talões repetidos.</string>
