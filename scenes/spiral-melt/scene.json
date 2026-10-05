@@ -5,7 +5,7 @@
   "description": "Anéis concêntricos e braços em espiral que derretem devagar, como um cartaz de 1967 a escorrer. Hipnótico mas lento.",
   "tags": ["psicadélico clássico", "espiral", "lento", "hipnótico"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.4,
   "feedback": false,
   "image": "none",
   "defaultPalette": ["#2b0a3d", "#8a1c7c", "#e8336d", "#ff9f1c", "#ffe66d"],

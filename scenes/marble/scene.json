@@ -5,7 +5,7 @@
   "description": "Veios de mármore iridescente, como película de óleo ou papel marmoreado, a fluir devagar. Domain warping de riscas.",
   "tags": ["psicadélico clássico", "mármore", "iridescente", "orgânico", "lento"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.4,
   "feedback": false,
   "image": "none",
   "defaultPalette": ["#101b2d", "#1e4d6b", "#3fa7a0", "#d9a066", "#f7e1c3"],

@@ -5,7 +5,7 @@
   "description": "Cortinas de luz que ondulam devagar, com pregas verticais e um horizonte que brilha. Formas grandes e saturadas.",
   "tags": ["ambient", "aurora", "lento", "atmosférico"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.33,
   "feedback": false,
   "image": "none",
   "defaultPalette": ["#02111b", "#0b3d4f", "#1fa88a", "#8de3b5", "#f2a6ff"],

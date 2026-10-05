@@ -5,7 +5,7 @@
   "description": "Ruído com domain warping: tinta na água, nebulosas. Pode usar uma imagem como textura deslocada.",
   "tags": ["ambient", "orgânico", "lento", "híbrido"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.33,
   "feedback": false,
   "image": "optional",
   "defaultPalette": ["#070b1f", "#1f1a4d", "#5b2a86", "#c0587e", "#f6b88f"],

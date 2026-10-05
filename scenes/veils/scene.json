@@ -5,7 +5,7 @@
   "description": "Véus de seda translúcidos sobrepostos, a ondular ao vento devagar. Camadas que se misturam por transparência.",
   "tags": ["ambient", "véus", "suave", "orgânico", "lento"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.33,
   "feedback": false,
   "image": "none",
   "defaultPalette": ["#1c1526", "#4b2a5e", "#9b4f96", "#e07a9a", "#ffd6c2"],

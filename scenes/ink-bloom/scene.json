@@ -5,7 +5,7 @@
   "description": "Gotas de tinta a cair em água: espalham-se, difundem-se e são levadas por correntes lentas. Feedback com difusão.",
   "tags": ["ambient", "tinta", "feedback", "orgânico", "lento"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.4,
   "feedback": true,
   "image": "none",
   "defaultPalette": ["#0d1b3d", "#24306e", "#b23a8c", "#ff6f91", "#ffc97a"],

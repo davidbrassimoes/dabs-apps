@@ -5,7 +5,7 @@
   "description": "Trilhos de luz levados por um campo de fluxo. Versão provisória por feedback.",
   "tags": ["psicadélico tech", "orgânico", "partículas", "feedback"],
   "fps": 30,
-  "renderScale": 0.5,
+  "renderScale": 0.33,
   "feedback": true,
   "image": "none",
   "defaultPalette": ["#04141c", "#0d3b4f", "#1f7a8c", "#7fc8a9", "#f4e9c9"],
