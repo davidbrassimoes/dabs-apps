@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "id": "glitch-drift",
+  "name": "Glitch Calmo",
+  "description": "Um gradiente ambiente que, de vez em quando, escorrega em fatias, separa os canais de cor e se quantiza em blocos, e volta a compor-se. Glitch como textura, não como susto.",
+  "tags": ["glitch", "digital", "ambient", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#0a0f1e", "#1d2b53", "#2f9c95", "#f26b5b", "#ffe8a3"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.15 },
+    { "id": "rate", "label": "Frequência", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.1 },
+    { "id": "amount", "label": "Intensidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.15 },
+    { "id": "slices", "label": "Fatias", "type": "float", "min": 4.0, "max": 40.0, "default": 14.0, "step": 1.0, "drift": 0.0 },
+    { "id": "pulse", "label": "Glitch no beat", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+  ]
+}

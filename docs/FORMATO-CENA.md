@@ -103,7 +103,7 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 |---|---|---|
 | `format` | sim | versão deste formato (`1`) |
 | `id`, `name` | sim | identificador e nome visível |
-| `description`, `tags` | não | para a página de controlo e playlists |
+| `description`, `tags` | não | para a página de controlo e playlists. **Convenção:** a primeira tag é o **estilo** (`ambient`, `psicadélico clássico`, `psicadélico tech`, `glitch`, `geométrico`); a autoria e a página de controlo agrupam as cenas por ela |
 | `fps` | não | limite de fps desta cena (defeito: o do perfil) |
 | `renderScale` | não | escala interna sugerida (defeito: a do perfil) |
 | `feedback` | não | `true` → o host fornece `uPrev` (ping-pong) |

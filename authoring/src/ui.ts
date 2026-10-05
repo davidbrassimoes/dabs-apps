@@ -128,6 +128,7 @@ export function colorInput(parent: HTMLElement, label: string, hex: string, onIn
 export interface Option {
   value: string;
   label: string;
+  group?: string; // optional <optgroup> label; options with the same group are listed together
 }
 
 export interface SelectHandle extends Handle<string> {
@@ -140,10 +141,22 @@ export function select(parent: HTMLElement, label: string, opts: Option[], value
   const sel = el('select');
   const fill = (list: Option[], v?: string) => {
     sel.replaceChildren();
+    const groups = new Map<string, HTMLElement>();
     for (const o of list) {
       const opt = el('option', undefined, o.label);
       opt.value = o.value;
-      sel.appendChild(opt);
+      if (o.group) {
+        let g = groups.get(o.group);
+        if (!g) {
+          g = el('optgroup');
+          (g as HTMLOptGroupElement).label = o.group;
+          groups.set(o.group, g);
+          sel.appendChild(g);
+        }
+        g.appendChild(opt);
+      } else {
+        sel.appendChild(opt);
+      }
     }
     if (v !== undefined) sel.value = v;
   };

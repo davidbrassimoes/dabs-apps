@@ -3,7 +3,7 @@
   "id": "aurora",
   "name": "Aurora",
   "description": "Cortinas de luz que ondulam devagar, com pregas verticais e um horizonte que brilha. Formas grandes e saturadas.",
-  "tags": ["aurora", "lento", "atmosférico"],
+  "tags": ["ambient", "aurora", "lento", "atmosférico"],
   "fps": 30,
   "renderScale": 0.5,
   "feedback": false,

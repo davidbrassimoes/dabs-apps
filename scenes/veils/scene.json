@@ -3,7 +3,7 @@
   "id": "veils",
   "name": "Véus",
   "description": "Véus de seda translúcidos sobrepostos, a ondular ao vento devagar. Camadas que se misturam por transparência.",
-  "tags": ["véus", "suave", "orgânico", "lento"],
+  "tags": ["ambient", "véus", "suave", "orgânico", "lento"],
   "fps": 30,
   "renderScale": 0.5,
   "feedback": false,

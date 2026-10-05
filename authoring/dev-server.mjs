@@ -11,7 +11,7 @@
 //   /dist/main.js     TypeScript bundle (built by esbuild)
 //   /scenes/...       read-only view of <repo>/scenes   (single source of truth)
 //   /shared/...       read-only view of <repo>/shared
-//   /api/scenes       JSON list of scene ids (folders in scenes/ containing scene.json)
+//   /api/scenes       JSON [{id, name, style}] for folders in scenes/ with a scene.json
 //   /api/profiles     JSON list of profile ids (shared/profiles/*.json)
 //   /events           Server-Sent Events: {type:"change", path} | {type:"bundle", errors}
 
@@ -156,18 +156,19 @@ async function sendFile(res, baseDir, relPath) {
   }
 }
 
+// Scenes: [{ id, name, style }] — style is, by convention, the first tag in scene.json.
 async function listScenes() {
-  const ids = [];
+  const scenes = [];
   for (const entry of await fsp.readdir(SCENES_DIR, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     try {
-      await fsp.access(path.join(SCENES_DIR, entry.name, 'scene.json'));
-      ids.push(entry.name);
+      const json = JSON.parse(await fsp.readFile(path.join(SCENES_DIR, entry.name, 'scene.json'), 'utf8'));
+      scenes.push({ id: entry.name, name: json.name ?? entry.name, style: json.tags?.[0] ?? '' });
     } catch {
-      /* folder without scene.json: ignore */
+      /* folder without a readable scene.json: ignore */
     }
   }
-  return ids.sort();
+  return scenes.sort((a, b) => a.style.localeCompare(b.style) || a.id.localeCompare(b.id));
 }
 
 async function listProfiles() {

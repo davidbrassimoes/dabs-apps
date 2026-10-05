@@ -3,7 +3,7 @@
   "id": "nebula",
   "name": "Nebulosa",
   "description": "Ruído com domain warping: tinta na água, nebulosas. Pode usar uma imagem como textura deslocada.",
-  "tags": ["orgânico", "lento", "híbrido"],
+  "tags": ["ambient", "orgânico", "lento", "híbrido"],
   "fps": 30,
   "renderScale": 0.5,
   "feedback": false,

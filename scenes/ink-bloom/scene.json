@@ -3,7 +3,7 @@
   "id": "ink-bloom",
   "name": "Tinta",
   "description": "Gotas de tinta a cair em água: espalham-se, difundem-se e são levadas por correntes lentas. Feedback com difusão.",
-  "tags": ["tinta", "feedback", "orgânico", "lento"],
+  "tags": ["ambient", "tinta", "feedback", "orgânico", "lento"],
   "fps": 30,
   "renderScale": 0.5,
   "feedback": true,

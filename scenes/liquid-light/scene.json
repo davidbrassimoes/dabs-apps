@@ -3,7 +3,7 @@
   "id": "liquid-light",
   "name": "Luz Líquida",
   "description": "Óleo e água num retroprojetor: bolhas que se fundem, rebordos de lente, cores que escorrem. Liquid light show dos anos 60.",
-  "tags": ["liquid light", "orgânico", "psicadélico", "lento"],
+  "tags": ["psicadélico clássico", "liquid light", "orgânico", "psicadélico", "lento"],
   "fps": 30,
   "renderScale": 0.5,
   "feedback": false,

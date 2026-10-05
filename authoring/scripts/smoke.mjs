@@ -141,7 +141,7 @@ try {
     return r.result.value;
   };
 
-  let scenes = await (await fetch(new URL('/api/scenes', URL_BASE))).json();
+  let scenes = (await (await fetch(new URL('/api/scenes', URL_BASE))).json()).map((s) => s.id);
   if (ONLY.length) scenes = scenes.filter((s) => ONLY.includes(s));
   console.log(`browser: ${BROWSER} (${USE_GPU ? 'GPU via ANGLE/D3D11' : 'SwiftShader, software'})`);
   console.log(`scenes: ${scenes.join(', ')}`);

@@ -191,10 +191,17 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   location.hash = id;
 }
 
+interface SceneEntry {
+  id: string;
+  name: string;
+  style: string;
+}
+
 async function refreshSceneList(): Promise<void> {
-  sceneIds = await fetchJson<string[]>('/api/scenes');
+  const entries = await fetchJson<SceneEntry[]>('/api/scenes');
+  sceneIds = entries.map((e) => e.id);
   sceneUi.select.setOptions(
-    sceneIds.map((s) => ({ value: s, label: s })),
+    entries.map((e) => ({ value: e.id, label: `${e.name} (${e.id})`, group: e.style || 'sem estilo' })),
     sceneId,
   );
 }
