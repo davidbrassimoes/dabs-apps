@@ -1,5 +1,7 @@
 // Thin WebGL2 helpers: context, program compilation, render targets, GPU timer.
 
+import { NOISE_SIZE, generateNoiseLattice } from './noise';
+
 export interface GLInfo {
   renderer: string;
   halfFloat: boolean; // can render to RGBA16F
@@ -126,6 +128,22 @@ export function destroyTarget(gl: WebGL2RenderingContext, t: Target): void {
 }
 
 /** 1x1 black texture used wherever a sampler has nothing meaningful to show. */
+/** The uNoise lattice: R8, REPEAT + LINEAR, no mipmaps (FORMATO-CENA v3). */
+export function createNoiseTexture(gl: WebGL2RenderingContext): WebGLTexture {
+  const tex = gl.createTexture();
+  if (!tex) throw new Error('createTexture failed');
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, NOISE_SIZE, NOISE_SIZE, 0, gl.RED, gl.UNSIGNED_BYTE, generateNoiseLattice());
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  return tex;
+}
+
 export function createBlackTexture(gl: WebGL2RenderingContext): WebGLTexture {
   const tex = gl.createTexture();
   if (!tex) throw new Error('createTexture failed');

@@ -1,5 +1,5 @@
 #version 300 es
-// Santa Vibes scene contract v1 — see docs/FORMATO-CENA.md
+// Santa Vibes scene contract v3 — see docs/FORMATO-CENA.md
 // Prepended by the host to every scene. Scene files must NOT contain #version.
 precision highp float;
 precision highp int;
@@ -17,5 +17,7 @@ uniform sampler2D uImage;     // current image (scene.json "image" != "none")
 uniform vec4  uImageInfo;     // hasImage, aspect, transitionMix, reserved
 
 uniform sampler2D uPrev;      // previous frame of this scene ("feedback": true)
+
+uniform sampler2D uNoise;     // 256x256 R8 random lattice, REPEAT + LINEAR (host-generated, v3)
 
 out vec4 fragColor;

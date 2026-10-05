@@ -34,6 +34,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val uImage: Int,
         val uImageInfo: Int,
         val uPrev: Int,
+        val uNoise: Int,
         val paramLoc: IntArray,
         val paramColor: BooleanArray,
         val paramOffset: IntArray,
@@ -70,6 +71,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var surfaceH = 0
     private var halfOk = false
     private var black = 0
+    private var noise = 0
     private var scene: ScenePass? = null
     private val targets = arrayOfNulls<Gl.Target>(2)
     private var targetCount = 0
@@ -111,6 +113,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         targetCount = 0
         halfOk = Gl.hasExtension("GL_EXT_color_buffer_half_float") || Gl.hasExtension("GL_EXT_color_buffer_float")
         black = Gl.blackTexture()
+        noise = Gl.noiseTexture()
         output = Gl.program(lib.outputFrag)
         fun u(n: String) = GLES30.glGetUniformLocation(output, n)
         oScene = u("uScene"); oScenePrev = u("uScenePrev"); oMix = u("uMix")
@@ -179,6 +182,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, src?.tex ?: black)
         GLES30.glUniform1i(pass.uPrev, 1)
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, noise)
+        GLES30.glUniform1i(pass.uNoise, 2)
         for (i in pass.paramLoc.indices) {
             val off = pass.paramOffset[i]
             if (pass.paramColor[i]) GLES30.glUniform3fv(pass.paramLoc[i], 1, values, off)
@@ -305,7 +311,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         scene = ScenePass(
             program, def.feedback,
             u("uTime"), u("uResolution"), u("uBands"), u("uMood"), u("uBeat"),
-            u("uPalette"), u("uImage"), u("uImageInfo"), u("uPrev"),
+            u("uPalette"), u("uImage"), u("uImageInfo"), u("uPrev"), u("uNoise"),
             loc, color, offset,
         )
         sceneIndex = index

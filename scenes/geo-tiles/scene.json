@@ -1,5 +1,5 @@
 {
-  "format": 2,
+  "format": 3,
   "id": "geo-tiles",
   "name": "Mosaico",
   "description": "Grelha de círculos e quadrados suaves que crescem, encolhem e trocam de cor cada um ao seu ritmo, sobre um fundo que roda devagar. Albers em câmara lenta.",

@@ -17,6 +17,7 @@ import {
   compileProgram,
   createBlackTexture,
   createImageTexture,
+  createNoiseTexture,
   createTarget,
   destroyTarget,
   type GLInfo,
@@ -63,6 +64,7 @@ interface SceneProgram {
   uImage: WebGLUniformLocation | null;
   uImageInfo: WebGLUniformLocation | null;
   uPrev: WebGLUniformLocation | null;
+  uNoise: WebGLUniformLocation | null;
   params: ParamUniform[];
 }
 
@@ -112,6 +114,7 @@ export class Renderer {
   private readonly palette = new Float32Array(15);
   private readonly imageInfo = new Float32Array([0, 1, 0, 0]);
   private readonly black: WebGLTexture;
+  private readonly noise: WebGLTexture;
   private image: WebGLTexture | null = null;
   private profile: Profile | null = null;
 
@@ -125,6 +128,7 @@ export class Renderer {
     private readonly canvas: HTMLCanvasElement,
   ) {
     this.black = createBlackTexture(gl);
+    this.noise = createNoiseTexture(gl);
     this.timer = new GpuTimer(gl, info.timer);
     this.applyCanvasSize();
   }
@@ -187,6 +191,7 @@ export class Renderer {
       uImage: u('uImage'),
       uImageInfo: u('uImageInfo'),
       uPrev: u('uPrev'),
+      uNoise: u('uNoise'),
       params,
     };
     const fresh = pending > 0 || !this.cur;
@@ -380,6 +385,9 @@ export class Renderer {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, src ? src.tex : this.black);
     if (scene.uPrev) gl.uniform1i(scene.uPrev, 1);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, this.noise);
+    if (scene.uNoise) gl.uniform1i(scene.uNoise, 2);
 
     if (full) {
       if (scene.uPalette) gl.uniform3fv(scene.uPalette, this.palette);

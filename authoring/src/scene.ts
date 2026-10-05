@@ -1,4 +1,4 @@
-// Scene / profile types and loaders. Mirrors docs/FORMATO-CENA.md (format 2).
+// Scene / profile types and loaders. Mirrors docs/FORMATO-CENA.md (format 3).
 
 export type ParamType = 'float' | 'int' | 'bool' | 'color';
 
@@ -37,8 +37,8 @@ export interface Preset {
   palette?: string[];
 }
 
-/** Scene format versions this loader accepts; presets need format 2. */
-export const SCENE_FORMATS = [1, 2];
+/** Scene format versions this loader accepts; presets need format 2+, uNoise is provided from 3. */
+export const SCENE_FORMATS = [1, 2, 3];
 
 export interface Profile {
   format: number;

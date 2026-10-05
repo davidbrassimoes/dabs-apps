@@ -13,16 +13,13 @@ vec2 hash22(vec2 p) {
     return fract((p3.xx + p3.yz) * p3.zy);
 }
 
-// Smooth value noise, range ~[0, 1].
+// Smooth value noise, range ~[0, 1]: one bilinear fetch from the host lattice with
+// smoothstep-remapped coordinates (Inigo Quilez) instead of four hashes.
 float vnoise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
     vec2 u = f * f * (3.0 - 2.0 * f);
-    float a = hash12(i);
-    float b = hash12(i + vec2(1.0, 0.0));
-    float c = hash12(i + vec2(0.0, 1.0));
-    float d = hash12(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    return textureLod(uNoise, (i + u + 0.5) / 256.0, 0.0).r;
 }
 
 // Fractal Brownian motion. Keep octaves low (3-5) for performance.

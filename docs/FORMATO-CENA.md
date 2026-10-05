@@ -1,4 +1,4 @@
-# Formato de cena (v2)
+# Formato de cena (v3)
 
 Uma cena vive em `scenes/<id>/` e tem dois ficheiros:
 
@@ -46,14 +46,21 @@ Definidos em `shared/glsl/header.glsl`. As cenas **só** podem depender destes e
 | `uImage` | `sampler2D` | imagem atual (se `image` ≠ `none`); origem em baixo à esquerda, como `gl_FragCoord`. Para manter o aspeto, amostrar com `imageCoverUV(uv)` de `lib/image.glsl` |
 | `uImageInfo` | `vec4` | `hasImage` (0/1), `aspect`, `mix de transição` (0..1), `reservado` |
 | `uPrev` | `sampler2D` | frame anterior da própria cena (se `feedback: true`) |
+| `uNoise` | `sampler2D` | rede de ruído 256×256 gerada pelo host (ver abaixo); usada por `vnoise`/`fbm` de `lib/noise.glsl` |
 
 Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhida — a cena não precisa de saber se há fonte ativa. Com reatividade 0, os sinais continuam a mexer suavemente (LFOs).
+
+### `uNoise` (desde a v3)
+
+Textura de um canal (`R8`), 256×256, filtro `LINEAR`, `REPEAT` nos dois eixos, sem mipmaps. Byte `i` (por linhas; a linha 0 é a primeira enviada, ou seja, `v = 0`) = os 8 bits de cima do estado do **xorshift32** com semente `0x9E3779B9`, depois de `i + 1` passos (`x ^= x << 13; x ^= x >>> 17; x ^= x << 5`, 32 bits sem sinal). Todos os hosts têm de gerar os mesmos bytes: `authoring/test/fixtures/noise-lattice.json` (primeiros e últimos bytes, soma e FNV-1a) é a verificação partilhada.
+
+`vnoise` faz uma única leitura bilinear em `(floor(p) + smoothstep(fract(p)) + 0.5) / 256`, o que dá ruído de valor suave sem calcular hashes. Na GE9215 da box isto tornou as cenas com ruído cerca de 2,2× mais rápidas (medido no passo 0.5). O padrão repete-se de 256 em 256 unidades de ruído, uma escala muito maior do que a usada pelas cenas.
 
 ## `scene.json`
 
 ```json
 {
-  "format": 2,
+  "format": 3,
   "id": "nebula",
   "name": "Nebulosa",
   "description": "Domain warping de ruído; cores da paleta.",
@@ -87,7 +94,7 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 
 | Campo | Obrigatório | Descrição |
 |---|---|---|
-| `format` | sim | versão deste formato (`2`; os hosts aceitam também `1`, que não tem `presets`) |
+| `format` | sim | versão deste formato (`3`; os hosts aceitam também `1` e `2`) |
 | `id`, `name` | sim | identificador e nome visível |
 | `description`, `tags` | não | para a página de controlo e playlists. **Convenção:** a primeira tag é o **estilo** (`ambient`, `psicadélico clássico`, `psicadélico tech`, `glitch`, `geométrico`); a autoria e a página de controlo agrupam as cenas por ela |
 | `fps` | não | limite de fps desta cena (defeito: o do perfil) |
@@ -137,3 +144,4 @@ O valor por defeito da cena (sem preset) é sempre uma escolha válida, por isso
 |---|---|
 | 1 | Versão inicial. |
 | 2 | Campo opcional `presets` (2026-10-05). |
+| 3 | Uniform `uNoise` (rede de ruído gerada pelo host); `vnoise` passa a ler a textura (2026-10-05). |
