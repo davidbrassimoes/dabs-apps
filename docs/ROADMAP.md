@@ -20,7 +20,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - [x] Presets por cena (2026-10-05): formato de cena v2 com `presets` opcional (`FORMATO-CENA.md`); seletor de preset, editor de paleta e "Copiar como preset" no authoring; 2–3 presets em cada uma das 15 cenas; `smoke.mjs --presets` captura todos.
   - [x] Defeitos vistos nas capturas, corrigidos (2026-10-05) e validados no Chrome: costura do `spiral-melt` (descontinuidade do `atan` → número inteiro de pares de braços, com cross-fade); `flow-particles` quase preto e dependente da resolução (emissão em unidades normalizadas, fade para fundo da paleta; igual a `renderScale` 0.25 e 1.0); `nebula` escura (piso de brilho) e a esticar a imagem (`imageCoverUV` em `shared/glsl/lib/image.glsl`).
   - Por fazer: `flow-particles` avança e desvanece por frame (não por segundo), por isso depende do limite de fps — aceitável com fps fixo, rever se o contrato ganhar `uDeltaTime`. `color-field` declara `image: optional` mas não lê `uImage`.
-- [ ] **0.4 Renderer nativo mínimo (`tv-app/`)** — Kotlin + GLES 3.0:
+- [~] **0.4 Renderer nativo mínimo (`tv-app/`)** — Kotlin + GLES 3.0 (2026-10-05: implementado e instalado na box; falta validar no ecrã):
   - Activity em ecrã inteiro, carrega cenas de `assets/` (cópia gerada pelo Gradle a partir de `scenes/` e `shared/`),
   - FBO à escala interna + `OutputPass`, limite de fps, feedback ping-pong,
   - troca de cena com o comando (D-pad esquerda/direita),

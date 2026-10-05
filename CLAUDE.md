@@ -80,7 +80,7 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 | Componente | Compilar | Correr | Testar |
 |---|---|---|---|
 | authoring | `cd authoring && npm install && npm run build` | `npm run dev` → http://localhost:5180/ | `npm test` (composição de shaders) · `npm run check` (tipos) · `node scripts/smoke.mjs --gpu` (headless, com o servidor a correr) |
-| tv-app | _a definir_ | _a definir_ | _a definir_ |
+| tv-app | `cd tv-app && ./gradlew :app:assembleDebug` | `adb -s 192.168.1.27:5555 install -r app/build/outputs/apk/debug/app-debug.apk` + `adb -s 192.168.1.27:5555 shell am start -n dev.santavibes.tv/.MainActivity`; logs: `adb -s 192.168.1.27:5555 logcat -s SantaVibes` | `./gradlew :core:test` |
 | signals-core | _a definir_ | — | _a definir_ |
 | pc-bridge | _a definir_ | _a definir_ | _a definir_ |
 | phone-app | _a definir_ | _a definir_ | _a definir_ |
