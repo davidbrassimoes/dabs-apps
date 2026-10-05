@@ -22,6 +22,8 @@ import android.widget.TextView
  * Frames are paced by Choreographer (vsync) at the scene's fps cap, so the GL thread
  * only renders when asked (RENDERMODE_WHEN_DIRTY).
  *
+ * Open a given scene: am start -n dev.santavibes.tv/.MainActivity --es scene nebula
+ *
  * Benchmark (step 0.5), from adb:
  *   am start -n dev.santavibes.tv/.MainActivity --ez bench true [--es scales 0.25,0.33,0.4,0.5] [--es scenes aurora,nebula]
  * renders continuously without vsync and logs "bench" lines (see SceneRenderer.Bench).
@@ -88,6 +90,7 @@ class MainActivity : Activity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         library = SceneLibrary(assets)
         renderer = SceneRenderer(library, library.profile("tv"))
+        renderer.initialSceneId = intent.getStringExtra("scene")
         benchMode = intent.getBooleanExtra("bench", false)
         if (benchMode) {
             val scales = (intent.getStringExtra("scales") ?: "0.25,0.33,0.4,0.5").split(",").map { it.trim().toDouble() }.toDoubleArray()

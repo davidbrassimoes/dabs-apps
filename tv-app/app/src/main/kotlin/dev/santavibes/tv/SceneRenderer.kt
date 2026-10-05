@@ -60,6 +60,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     class Bench(val scales: DoubleArray, val sceneIds: Set<String>?, val warmS: Double = 2.0, val measureS: Double = 4.0)
 
     var bench: Bench? = null
+
+    /** Scene to open first (intent extra "scene"); ignored when unknown. */
+    var initialSceneId: String? = null
     @Volatile var benchDone = false; private set
 
     /** Ask the GL thread to move `delta` scenes forward/back (D-pad). */
@@ -130,7 +133,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
             skipScenePass = true
             Log.i(SceneLibrary.TAG, "bench start: ${benchOrder.size} scenes x ${b.scales.size} scales, warm ${b.warmS}s, measure ${b.measureS}s, vsync off")
         }
-        val first = if (sceneIndex in lib.scenes.indices) sceneIndex else 0
+        val wanted = lib.scenes.indexOfFirst { it.def.id == initialSceneId }
+        val first = if (sceneIndex in lib.scenes.indices) sceneIndex else if (wanted >= 0) wanted else 0
         sceneIndex = -1
         if (lib.scenes.isNotEmpty()) loadScene(first)
     }

@@ -26,7 +26,7 @@ cd tv-app
 ./gradlew :app:assembleDebug         # APK em app/build/outputs/apk/debug/app-debug.apk
 adb connect 192.168.1.27:5555
 adb -s 192.168.1.27:5555 install -r app/build/outputs/apk/debug/app-debug.apk
-adb -s 192.168.1.27:5555 shell am start -n dev.santavibes.tv/.MainActivity
+adb -s 192.168.1.27:5555 shell am start -n dev.santavibes.tv/.MainActivity [--es scene nebula]
 adb -s 192.168.1.27:5555 logcat -s SantaVibes   # cena, GL, e de 10 em 10 s: fps, intervalo médio/p95/máx, cpu, alloc B/s
 ```
 
@@ -87,5 +87,9 @@ Primeira passagem, 2026-10-05: build debug, perfil `tv`, surface 1920×1080, sin
 
 Com estes números, cada cena ficou com a `renderScale` que mantém o p95 abaixo de ~28 ms (orçamento de 33,3 ms a 30 fps): 0.33 para aurora, nebula, veils, liquid-light e flow-particles; 0.4 para ink-bloom, marble, glitch-drift e spiral-melt; as restantes sem mudança.
 
-**Por fazer:** confirmar no modo normal (com limite de fps) que todas ficam no limite; teste de 30 min (aquecimento); custo do crossfade quando chegar à tv-app (soma das duas cenas).
+### Modo normal com as escalas novas, 2026-10-05
+
+Uma janela de 10 s por cena, com o limite de fps de cada cena: **todas no limite** (30,0 fps; breath e halo a 24), intervalo médio 33,3 ms e **p95 33,5 ms** em todas. O máximo de 45–57 ms só aparece nas janelas com troca de cena (compilação do shader); nas janelas sem troca, máximo ~34 ms e `alloc=0 B/s`.
+
+**Por fazer:** custo do crossfade quando chegar à tv-app (soma das duas cenas durante ~4 s).
 
