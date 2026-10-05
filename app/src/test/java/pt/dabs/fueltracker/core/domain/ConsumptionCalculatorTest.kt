@@ -6,6 +6,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import pt.dabs.fueltracker.core.domain.model.DistanceSource
 import pt.dabs.fueltracker.core.domain.model.Period
 import java.time.LocalDate
 import java.time.YearMonth
@@ -17,6 +18,74 @@ class ConsumptionCalculatorTest {
     @Test
     fun `no fill ups means no cycles`() {
         assertTrue(ConsumptionCalculator.computeCycles(emptyList()).isEmpty())
+    }
+
+    // --- parcial (posto a zeros a cada abastecimento) ------------------------------
+
+    @Test
+    fun `first fill up with the trip meter already has a cycle`() {
+        // Talão real: 42,63 L, parcial 602,0 km → 7,08 L/100 km sem precisar de registo anterior.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(fillUp(1, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_020))).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(161_657, cycle.startOdometerKm)
+        assertEquals(7_081, cycle.consumptionMlPer100Km)
+        assertEquals(DistanceSource.TRIP, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `trip that matches the odometer confirms the odometer distance`() {
+        val cycles = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_015), // 601,5 vs 602: dentro dos 2 km
+        ))
+        val cycle = cycles.single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `missed fill up record makes the trip the right distance`() {
+        // Faltou registar um abastecimento a meio: o total abrange 1 204 km, os litros só 602.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-01", 161_055, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 6_020),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.TRIP, cycle.distanceSource)
+        assertTrue(cycle.tripMismatch)
+        assertEquals(7_081, cycle.consumptionMlPer100Km)
+    }
+
+    @Test
+    fun `trip not reset falls back to the odometer`() {
+        // O parcial não foi posto a zeros: mostra 1 204 km para um ciclo de 602.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-10-04", 162_259, 42_630, tripTenthsKm = 12_040),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertTrue(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `trip is ignored when partial fill ups are inside the cycle`() {
+        // Com um abastecimento parcial pelo meio o parcial já foi posto a zeros nele: não mede o ciclo.
+        val cycle = ConsumptionCalculator.computeCycles(listOf(
+            fillUp(1, "2026-09-10", 161_657, 40_000),
+            fillUp(2, "2026-09-20", 161_900, 10_000, isFullTank = false),
+            fillUp(3, "2026-10-04", 162_259, 32_630, tripTenthsKm = 3_590),
+        )).single()
+        assertEquals(602, cycle.distanceKm)
+        assertEquals(DistanceSource.ODOMETER, cycle.distanceSource)
+        assertFalse(cycle.tripMismatch)
+    }
+
+    @Test
+    fun `zero trip is ignored`() {
+        assertTrue(ConsumptionCalculator.computeCycles(listOf(fillUp(1, "2026-10-04", 162_259, 42_630, tripTenthsKm = 0))).isEmpty())
     }
 
     @Test

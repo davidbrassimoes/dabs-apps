@@ -24,6 +24,7 @@ fun fillUp(
     isFullTank: Boolean = true,
     atcud: String? = null,
     time: String = "12:00",
+    tripTenthsKm: Int? = null,
 ): FillUp = FillUp(
     id = id,
     dateTime = at(date, time),
@@ -33,5 +34,6 @@ fun fillUp(
     totalCents = totalCents,
     isFullTank = isFullTank,
     atcud = atcud,
+    tripTenthsKm = tripTenthsKm,
     createdAt = at(date, time),
 )

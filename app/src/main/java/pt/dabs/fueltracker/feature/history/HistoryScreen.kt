@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import pt.dabs.fueltracker.R
+import pt.dabs.fueltracker.core.domain.model.DistanceSource
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import pt.dabs.fueltracker.core.ui.format.PtFormat
 import java.time.ZoneId
@@ -203,6 +204,17 @@ private fun HistoryRow(item: HistoryItem, onClick: () -> Unit, onDeleteClick: ()
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (item.isAnomalous) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    when {
+                        cycle.tripMismatch -> R.string.history_trip_mismatch
+                        cycle.distanceSource == DistanceSource.TRIP -> R.string.history_trip_distance
+                        else -> null
+                    }?.let { note ->
+                        Text(
+                            text = stringResource(note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (cycle.tripMismatch) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }

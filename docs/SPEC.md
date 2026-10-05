@@ -28,6 +28,7 @@ O utilizador **atesta sempre**, por isso cada abastecimento fecha um ciclo cheio
 | id | Long | PK |
 | dateTime | Instant/LocalDateTime | data do talão; hora se disponível |
 | odometerKm | Int | total do conta-km no momento do abastecimento |
+| tripTenthsKm | Int? | conta-km parcial lido ao abastecer, antes de o pôr a zeros (décimas de km): a distância do ciclo; null se não registado |
 | volumeMl | Int | litros × 1000 (evitar floats) |
 | pricePerLiterMilliCents | Int ou Long | preço/litro com 3 casas decimais (ex: 1,749 €) |
 | totalCents | Long | total pago em cêntimos (= campo O do QR: total do documento, já com os descontos do talão) |
@@ -48,7 +49,7 @@ Valores monetários e volumes guardados como inteiros. Conversão e formatação
 
 ## Cálculos
 Para cada abastecimento cheio *i* com abastecimento cheio anterior *i-1*:
-- `distância_i = odo_i − odo_{i−1}`
+- `distância_i = odo_i − odo_{i−1}`, confrontada com o conta-km parcial quando registado (o utilizador põe-no a zeros a cada abastecimento): batem (±2 km) → conta-km; parcial menor → faltou registar um abastecimento → parcial; parcial maior → não foi posto a zeros → conta-km; ambos os casos ficam assinalados. Sem cheio anterior registado (o primeiro abastecimento) usa-se o parcial. O parcial só conta se o ciclo for um único abastecimento.
 - `L/100km_i = litros_i / distância_i × 100`
 - Se houver abastecimentos não cheios entre dois cheios, somar os litros de todos até ao cheio seguinte (suporte futuro).
 
@@ -61,6 +62,7 @@ Toda a lógica de cálculo em funções puras, testadas unitariamente.
 
 ## Validações
 - `odometerKm` > odómetro do abastecimento anterior (por data)
+- Conta-km parcial ≈ odómetro − odómetro anterior (±2 km); aviso, não bloqueio
 - Distância desde o último abastecimento plausível face aos litros (ex: consumo entre 2 e 25 L/100 km); aviso, não bloqueio
 - `litros × preço/litro − desconto ≈ total` (tolerância de alguns cêntimos)
 - Litros ≤ capacidade do depósito (se configurada)

@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import pt.dabs.fueltracker.R
+import pt.dabs.fueltracker.core.domain.NumberInput
 import pt.dabs.fueltracker.core.domain.Severity
 import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.ui.format.PtFormat
@@ -29,6 +30,12 @@ fun ValidationIssue.message(): String = when (this) {
     ValidationIssue.MissingPrice -> stringResource(R.string.validation_missing_price)
     ValidationIssue.MissingTotal -> stringResource(R.string.validation_missing_total)
     ValidationIssue.InvalidDiscount -> stringResource(R.string.validation_invalid_discount)
+    ValidationIssue.InvalidTrip -> stringResource(R.string.validation_invalid_trip)
+    is ValidationIssue.TripMismatch -> stringResource(
+        if (tripTenthsKm < odometerDistanceKm * 10L) R.string.validation_trip_shorter else R.string.validation_trip_longer,
+        NumberInput.formatScaled(tripTenthsKm.toLong(), 1) + " km",
+        PtFormat.km(odometerDistanceKm),
+    )
     is ValidationIssue.OdometerNotAfterPrevious ->
         stringResource(R.string.validation_odometer_not_after_previous, PtFormat.km(previousOdometerKm))
     is ValidationIssue.OdometerNotBeforeNext ->

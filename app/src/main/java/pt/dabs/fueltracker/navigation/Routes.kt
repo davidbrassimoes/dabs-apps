@@ -27,7 +27,8 @@ data object ShowNifRoute
 data object ScanReceiptRoute
 
 /**
- * Leitura do conta-km; devolve o valor em [SCANNED_ODOMETER_KEY] ou `true` em
+ * Leitura do conta-km; devolve o total em [SCANNED_ODOMETER_KEY] (e o parcial, em décimas de km,
+ * em [SCANNED_TRIP_KEY], se lido) ou `true` em
  * [ODOMETER_MANUAL_KEY] quando o utilizador prefere escrever à mão.
  * [lastOdometerKm] e [predictedKm] usam [NO_VALUE] quando desconhecidos.
  */
@@ -38,6 +39,7 @@ const val NO_VALUE = -1
 const val SCANNED_QR_KEY = "scanned_qr"
 const val SCANNED_TEXT_KEY = "scanned_text"
 const val SCANNED_ODOMETER_KEY = "scanned_odometer"
+const val SCANNED_TRIP_KEY = "scanned_trip"
 const val ODOMETER_MANUAL_KEY = "odometer_manual"
 
 /**

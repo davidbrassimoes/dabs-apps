@@ -64,6 +64,7 @@ fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
             val scannedQr by handle.getStateFlow<String?>(SCANNED_QR_KEY, null).collectAsStateWithLifecycle()
             val scannedText by handle.getStateFlow<String?>(SCANNED_TEXT_KEY, null).collectAsStateWithLifecycle()
             val scannedOdometer by handle.getStateFlow<Int?>(SCANNED_ODOMETER_KEY, null).collectAsStateWithLifecycle()
+            val scannedTrip by handle.getStateFlow<Int?>(SCANNED_TRIP_KEY, null).collectAsStateWithLifecycle()
             val odometerManual by handle.getStateFlow(ODOMETER_MANUAL_KEY, false).collectAsStateWithLifecycle()
             FillUpScreen(
                 onDone = { navController.popBackStack() },
@@ -78,9 +79,11 @@ fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
                     handle[SCANNED_TEXT_KEY] = null
                 },
                 scannedOdometer = scannedOdometer,
+                scannedTrip = scannedTrip,
                 odometerManual = odometerManual,
                 onScannedOdometerConsumed = {
                     handle[SCANNED_ODOMETER_KEY] = null
+                    handle[SCANNED_TRIP_KEY] = null
                     handle[ODOMETER_MANUAL_KEY] = false
                 },
             )
@@ -103,8 +106,12 @@ fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
             ScanOdometerScreen(
                 lastOdometerKm = route.lastOdometerKm.takeIf { it != NO_VALUE },
                 predictedKm = route.predictedKm.takeIf { it != NO_VALUE },
-                onResult = { km ->
-                    navController.previousBackStackEntry?.savedStateHandle?.set(SCANNED_ODOMETER_KEY, km)
+                onResult = { km, tripTenthsKm ->
+                    navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
+                        // O parcial primeiro: o total é o que dispara o consumo no formulário.
+                        handle[SCANNED_TRIP_KEY] = tripTenthsKm
+                        handle[SCANNED_ODOMETER_KEY] = km
+                    }
                     navController.popBackStack()
                 },
                 onManual = {

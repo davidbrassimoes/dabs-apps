@@ -2,6 +2,7 @@ package pt.dabs.fueltracker.core.domain
 
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import java.time.Instant
+import kotlin.math.abs
 
 enum class Severity { ERROR, WARNING }
 
@@ -16,6 +17,17 @@ sealed interface ValidationIssue {
 
     /** Desconto escrito mas inválido (vazio conta como zero). */
     data object InvalidDiscount : ValidationIssue { override val severity = Severity.ERROR }
+
+    /** Parcial escrito mas inválido (vazio = não registado). */
+    data object InvalidTrip : ValidationIssue { override val severity = Severity.ERROR }
+
+    /**
+     * O parcial (posto a zeros no abastecimento anterior) não bate com a distância pelo conta-km
+     * total: faltou registar um abastecimento, ou o parcial não foi posto a zeros.
+     */
+    data class TripMismatch(val tripTenthsKm: Int, val odometerDistanceKm: Int) : ValidationIssue {
+        override val severity = Severity.WARNING
+    }
 
     /** Odómetro não é maior do que o do abastecimento anterior (por data). */
     data class OdometerNotAfterPrevious(val previousOdometerKm: Int) : ValidationIssue {
@@ -62,6 +74,10 @@ data class FillUpDraft(
     val totalCents: Long?,
     /** Descontos do talão; 0 sem desconto, null = valor inválido. */
     val discountCents: Long? = 0,
+    /** Conta-km parcial em décimas de km; null = não registado. */
+    val tripTenthsKm: Int? = null,
+    /** O parcial foi escrito mas não é um número válido. */
+    val tripInvalid: Boolean = false,
     val isFullTank: Boolean = true,
     val atcud: String? = null,
     /** NIF do adquirente lido do QR (campo B); null se não houve leitura. */
@@ -106,6 +122,7 @@ object FillUpValidator {
         if (total == null) issues += ValidationIssue.MissingTotal
         val discount = draft.discountCents?.takeIf { it >= 0 }
         if (discount == null) issues += ValidationIssue.InvalidDiscount
+        if (draft.tripInvalid || (draft.tripTenthsKm != null && draft.tripTenthsKm < 0)) issues += ValidationIssue.InvalidTrip
 
         val previous = others.lastOrNull { it.dateTime <= draft.dateTime }
         val next = others.firstOrNull { it.dateTime > draft.dateTime }
@@ -117,11 +134,19 @@ object FillUpValidator {
             if (next != null && odometer >= next.odometerKm) {
                 issues += ValidationIssue.OdometerNotBeforeNext(next.odometerKm)
             }
+            // O parcial foi posto a zeros no abastecimento anterior: deve dar a mesma distância.
+            val trip = draft.tripTenthsKm
+            if (previous != null && trip != null && trip >= 0 && odometer > previous.odometerKm) {
+                val odometerDistance = odometer - previous.odometerKm
+                if (abs(odometerDistance * 10L - trip) > ConsumptionCalculator.TRIP_TOLERANCE_KM * 10L) {
+                    issues += ValidationIssue.TripMismatch(trip, odometerDistance)
+                }
+            }
         }
 
         if (volume != null && price != null && total != null && discount != null) {
             val expected = FuelMath.totalCents(volume, price) - discount
-            if (kotlin.math.abs(expected - total) > options.totalToleranceCents) {
+            if (abs(expected - total) > options.totalToleranceCents) {
                 issues += ValidationIssue.TotalMismatch(expected)
             }
         }
@@ -139,6 +164,7 @@ object FillUpValidator {
                 pricePerLiterMilliCents = price ?: 0,
                 totalCents = total ?: 0,
                 isFullTank = draft.isFullTank,
+                tripTenthsKm = draft.tripTenthsKm,
                 createdAt = draft.dateTime,
             )
             val cycle = ConsumptionCalculator.computeCycles(others + candidate)

@@ -20,7 +20,7 @@ object FillUpCsv {
     val BOM: String = 0xFEFF.toChar().toString()
 
     val HEADER: List<String> = listOf(
-        "id", "data_hora", "odometro_km", "litros", "preco_litro", "total_eur", "desconto_eur", "deposito_cheio",
+        "id", "data_hora", "odometro_km", "parcial_km", "litros", "preco_litro", "total_eur", "desconto_eur", "deposito_cheio",
         "nif_posto", "nome_posto", "atcud", "fatura_com_nif", "notas", "criado_em",
     )
 
@@ -40,6 +40,7 @@ object FillUpCsv {
                 fillUp.id.toString(),
                 fillUp.dateTime.toString(),
                 fillUp.odometerKm.toString(),
+                fillUp.tripTenthsKm?.let { NumberInput.formatScaled(it.toLong(), 1) }.orEmpty(),
                 NumberInput.formatScaled(fillUp.volumeMl.toLong(), 3),
                 NumberInput.formatScaled(fillUp.pricePerLiterMilliCents.toLong(), 5),
                 NumberInput.formatScaled(fillUp.totalCents, 2),
@@ -75,6 +76,11 @@ object FillUpCsv {
             try {
                 val dateTime = parseInstant(field("data_hora")) ?: throw CsvFieldException("data_hora")
                 val odometer = NumberInput.parseOdometerKm(field("odometro_km").orEmpty()) ?: throw CsvFieldException("odometro_km")
+                // Coluna opcional (ficheiros anteriores à v3 não a têm): vazio = parcial não registado.
+                val trip = field("parcial_km").let { text ->
+                    if (text.isNullOrBlank()) null
+                    else NumberInput.parseScaled(text, 1)?.takeIf { it in 0..Int.MAX_VALUE.toLong() }?.toInt() ?: throw CsvFieldException("parcial_km")
+                }
                 val volume = NumberInput.parseLitersToMl(field("litros").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("litros")
                 val price = NumberInput.parsePricePerLiterToMilliCents(field("preco_litro").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("preco_litro")
                 val total = NumberInput.parseEurosToCents(field("total_eur").orEmpty())?.takeIf { it > 0 } ?: throw CsvFieldException("total_eur")
@@ -92,6 +98,7 @@ object FillUpCsv {
                     pricePerLiterMilliCents = price,
                     totalCents = total,
                     discountCents = discount,
+                    tripTenthsKm = trip,
                     isFullTank = fullTank,
                     stationNif = field("nif_posto")?.ifBlank { null },
                     stationName = field("nome_posto")?.ifBlank { null },

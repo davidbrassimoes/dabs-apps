@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,6 +50,35 @@ class MigrationTest {
         }
     }
 
+    @Test
+    fun migrate2To3KeepsRowsWithoutTrip() {
+        helper.createDatabase(TEST_DB, 2).use { db ->
+            db.insert(
+                "fill_ups",
+                SQLiteDatabase.CONFLICT_ABORT,
+                ContentValues().apply {
+                    put("date_time", 1_000L)
+                    put("odometer_km", 162_259)
+                    put("volume_ml", 42_630)
+                    put("price_per_liter_milli_cents", 229_900)
+                    put("total_cents", 9_588L)
+                    put("discount_cents", 213L)
+                    put("is_full_tank", 1)
+                    put("created_at", 1_000L)
+                },
+            )
+        }
+
+        helper.runMigrationsAndValidate(TEST_DB, 3, true, MIGRATION_2_3).use { db ->
+            db.query("SELECT discount_cents, trip_tenths_km FROM fill_ups").use { cursor ->
+                assertEquals(1, cursor.count)
+                cursor.moveToFirst()
+                assertEquals(213L, cursor.getLong(0))
+                assertTrue(cursor.isNull(1))
+            }
+        }
+    }
+
     /** Todas as migrações juntas abrem a base de dados atual pelo Room (como a app faz). */
     @Test
     fun migrateAllOpensWithRoom() = runBlocking {
@@ -67,10 +97,12 @@ class MigrationTest {
                     pricePerLiterMilliCents = 229_900,
                     totalCents = 9_588,
                     discountCents = 213,
+                    tripTenthsKm = 6_020,
                     createdAtEpochMillis = 2_000L,
                 )
             )
             assertEquals(213L, database.fillUpDao().getById(id)!!.discountCents)
+            assertEquals(6_020, database.fillUpDao().getById(id)!!.tripTenthsKm)
         } finally {
             database.close()
         }

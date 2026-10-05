@@ -23,6 +23,8 @@ class FillUpValidatorTest {
         isFullTank: Boolean = true,
         atcud: String? = null,
         discountCents: Long? = 0,
+        tripTenthsKm: Int? = null,
+        tripInvalid: Boolean = false,
     ) = FillUpDraft(
         id = id,
         dateTime = at(date),
@@ -33,6 +35,8 @@ class FillUpValidatorTest {
         isFullTank = isFullTank,
         atcud = atcud,
         discountCents = discountCents,
+        tripTenthsKm = tripTenthsKm,
+        tripInvalid = tripInvalid,
     )
 
     @Test
@@ -171,6 +175,23 @@ class FillUpValidatorTest {
     fun `invalid or negative discount is an error`() {
         assertTrue(ValidationIssue.InvalidDiscount in FillUpValidator.validate(draft(discountCents = null), existing))
         assertTrue(ValidationIssue.InvalidDiscount in FillUpValidator.validate(draft(discountCents = -1), existing))
+    }
+
+    @Test
+    fun `trip meter must match the odometer distance since the previous fill up`() {
+        // Anterior a 11 200 km; o rascunho a 11 800 km: 600 km pelo conta-km.
+        assertTrue(FillUpValidator.validate(draft(tripTenthsKm = 6_000), existing).none { it is ValidationIssue.TripMismatch })
+        assertTrue(FillUpValidator.validate(draft(tripTenthsKm = 5_985), existing).none { it is ValidationIssue.TripMismatch })
+        assertTrue(ValidationIssue.TripMismatch(3_000, 600) in FillUpValidator.validate(draft(tripTenthsKm = 3_000), existing))
+        assertTrue(ValidationIssue.TripMismatch(12_000, 600) in FillUpValidator.validate(draft(tripTenthsKm = 12_000), existing))
+        assertFalse(FillUpValidator.validate(draft(tripTenthsKm = 3_000), existing).hasErrors)
+        // Sem abastecimento anterior não há com que comparar.
+        assertTrue(FillUpValidator.validate(draft(tripTenthsKm = 3_000), emptyList()).isEmpty())
+    }
+
+    @Test
+    fun `invalid trip text is an error`() {
+        assertTrue(ValidationIssue.InvalidTrip in FillUpValidator.validate(draft(tripInvalid = true), existing))
     }
 
     @Test

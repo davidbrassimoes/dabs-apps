@@ -1,6 +1,7 @@
 package pt.dabs.fueltracker.core.domain
 
 import pt.dabs.fueltracker.core.domain.model.ConsumptionCycle
+import pt.dabs.fueltracker.core.domain.model.DistanceSource
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import pt.dabs.fueltracker.core.domain.model.Period
 import pt.dabs.fueltracker.core.domain.model.PeriodSummary
@@ -8,6 +9,7 @@ import pt.dabs.fueltracker.core.domain.model.StationSummary
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import kotlin.math.abs
 
 /** Funções puras de cálculo de consumo e agregados. */
 object ConsumptionCalculator {
@@ -21,12 +23,25 @@ object ConsumptionCalculator {
     fun sortChronologically(fillUps: List<FillUp>): List<FillUp> =
         fillUps.sortedWith(compareBy({ it.dateTime }, { it.odometerKm }, { it.id }))
 
+    /** Diferença admitida entre o parcial e o conta-km total (o total não tem décimas). */
+    const val TRIP_TOLERANCE_KM = 2
+
     /**
      * Ciclos cheio-a-cheio em ordem cronológica.
      *
-     * Um ciclo fecha em cada abastecimento com depósito cheio que tenha um cheio anterior.
-     * Os litros e o custo de abastecimentos parciais entre dois cheios somam ao ciclo seguinte.
-     * Ciclos com distância ≤ 0 (dados inconsistentes) são ignorados, mas os seus litros
+     * Um ciclo fecha em cada abastecimento com depósito cheio. Os litros e o custo de
+     * abastecimentos parciais entre dois cheios somam ao ciclo seguinte.
+     *
+     * A distância vem do conta-km total (fim − cheio anterior) e, quando o abastecimento tem o
+     * parcial registado (posto a zeros no abastecimento anterior), é confrontada com ele:
+     * - batem (±[TRIP_TOLERANCE_KM]): distância do conta-km;
+     * - parcial claramente menor: faltou registar um abastecimento pelo meio (o total abrange dois
+     *   ciclos com os litros de um só) → distância do parcial, marcada como divergente;
+     * - parcial claramente maior: não foi posto a zeros → distância do conta-km, marcada como divergente;
+     * - sem cheio anterior registado (o primeiro abastecimento): distância do parcial.
+     * O parcial só conta quando o ciclo é um único abastecimento (sem parciais pelo meio).
+     *
+     * Ciclos sem distância positiva (dados inconsistentes) são ignorados, mas os seus litros
      * continuam a acumular para o ciclo seguinte.
      */
     fun computeCycles(fillUps: List<FillUp>): List<ConsumptionCycle> {
@@ -35,33 +50,55 @@ object ConsumptionCalculator {
         var lastFull: FillUp? = null
         var pendingVolumeMl = 0L
         var pendingCostCents = 0L
+        var pendingCount = 0
 
         for (fillUp in sorted) {
             pendingVolumeMl += fillUp.volumeMl
             pendingCostCents += fillUp.totalCents
+            pendingCount++
             if (!fillUp.isFullTank) continue
 
-            val previous = lastFull
-            if (previous != null) {
-                val distanceKm = fillUp.odometerKm - previous.odometerKm
-                if (distanceKm <= 0) {
-                    // Dados inconsistentes: mantém o cheio anterior como início e acumula para o próximo.
-                    continue
+            val tripKm = fillUp.tripTenthsKm
+                ?.takeIf { it > 0 && pendingCount == 1 }
+                ?.let { FuelMath.roundDiv(it.toLong(), 10).toInt() }
+                ?.takeIf { it > 0 }
+            val odometerKm = lastFull?.let { fillUp.odometerKm - it.odometerKm }?.takeIf { it > 0 }
+            val (distanceKm, source, mismatch) = when {
+                odometerKm != null && tripKm != null -> when {
+                    abs(tripKm - odometerKm) <= TRIP_TOLERANCE_KM -> Triple(odometerKm, DistanceSource.ODOMETER, false)
+                    tripKm < odometerKm -> Triple(tripKm, DistanceSource.TRIP, true)
+                    else -> Triple(odometerKm, DistanceSource.ODOMETER, true)
                 }
-                cycles += ConsumptionCycle(
-                    fillUpId = fillUp.id,
-                    startOdometerKm = previous.odometerKm,
-                    endOdometerKm = fillUp.odometerKm,
-                    volumeMl = pendingVolumeMl.toInt(),
-                    costCents = pendingCostCents,
-                    endDateTime = fillUp.dateTime,
-                    consumptionMlPer100Km = FuelMath.consumptionMlPer100Km(pendingVolumeMl, distanceKm),
-                    costMilliCentsPerKm = FuelMath.costMilliCentsPerKm(pendingCostCents, distanceKm),
-                )
+                odometerKm != null -> Triple(odometerKm, DistanceSource.ODOMETER, false)
+                tripKm != null -> Triple(tripKm, DistanceSource.TRIP, lastFull != null)
+                else -> null
+            } ?: run {
+                // Sem distância: o primeiro abastecimento sem parcial, ou dados inconsistentes
+                // (mantém o cheio anterior como início e acumula para o próximo).
+                if (lastFull == null) {
+                    lastFull = fillUp
+                    pendingVolumeMl = 0L
+                    pendingCostCents = 0L
+                    pendingCount = 0
+                }
+                continue
             }
+            cycles += ConsumptionCycle(
+                fillUpId = fillUp.id,
+                startOdometerKm = fillUp.odometerKm - distanceKm,
+                endOdometerKm = fillUp.odometerKm,
+                volumeMl = pendingVolumeMl.toInt(),
+                costCents = pendingCostCents,
+                endDateTime = fillUp.dateTime,
+                consumptionMlPer100Km = FuelMath.consumptionMlPer100Km(pendingVolumeMl, distanceKm),
+                costMilliCentsPerKm = FuelMath.costMilliCentsPerKm(pendingCostCents, distanceKm),
+                distanceSource = source,
+                tripMismatch = mismatch,
+            )
             lastFull = fillUp
             pendingVolumeMl = 0L
             pendingCostCents = 0L
+            pendingCount = 0
         }
         return cycles
     }

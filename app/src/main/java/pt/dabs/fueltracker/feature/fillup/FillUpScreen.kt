@@ -73,6 +73,7 @@ fun FillUpScreen(
     scannedText: String?,
     onScannedQrConsumed: () -> Unit,
     scannedOdometer: Int?,
+    scannedTrip: Int?,
     odometerManual: Boolean,
     onScannedOdometerConsumed: () -> Unit,
     viewModel: FillUpViewModel = hiltViewModel(),
@@ -93,7 +94,7 @@ fun FillUpScreen(
 
     LaunchedEffect(scannedOdometer, odometerManual) {
         if (scannedOdometer != null) {
-            viewModel.onOdometerScanned(scannedOdometer)
+            viewModel.onOdometerScanned(scannedOdometer, scannedTrip)
             onScannedOdometerConsumed()
         } else if (odometerManual) {
             viewModel.onOdometerManualRequested()
@@ -124,6 +125,7 @@ fun FillUpScreen(
         onDateChange = viewModel::onDateChange,
         onTimeChange = viewModel::onTimeChange,
         onOdometerChange = viewModel::onOdometerChange,
+        onTripChange = viewModel::onTripChange,
         onVolumeChange = viewModel::onVolumeChange,
         onPriceChange = viewModel::onPriceChange,
         onTotalChange = viewModel::onTotalChange,
@@ -148,6 +150,7 @@ fun FillUpContent(
     onDateChange: (LocalDate) -> Unit,
     onTimeChange: (LocalTime) -> Unit,
     onOdometerChange: (String) -> Unit,
+    onTripChange: (String) -> Unit,
     onVolumeChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
     onTotalChange: (String) -> Unit,
@@ -205,19 +208,32 @@ fun FillUpContent(
                 }
             }
 
-            OutlinedTextField(
-                value = state.odometerText,
-                onValueChange = onOdometerChange,
-                label = { Text(stringResource(R.string.fillup_odometer)) },
-                suffix = { Text("km") },
-                supportingText = {
-                    state.previousOdometerKm?.let { Text(stringResource(R.string.fillup_previous_odometer, PtFormat.km(it))) }
-                },
-                isError = state.showErrors && errors.any { it is ValidationIssue.MissingOdometer || it is ValidationIssue.OdometerNotAfterPrevious || it is ValidationIssue.OdometerNotBeforeNext },
-                keyboardOptions = numberKeyboard,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = state.odometerText,
+                    onValueChange = onOdometerChange,
+                    label = { Text(stringResource(R.string.fillup_odometer)) },
+                    suffix = { Text("km") },
+                    supportingText = {
+                        state.previousOdometerKm?.let { Text(stringResource(R.string.fillup_previous_odometer, PtFormat.km(it))) }
+                    },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.MissingOdometer || it is ValidationIssue.OdometerNotAfterPrevious || it is ValidationIssue.OdometerNotBeforeNext },
+                    keyboardOptions = numberKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1.3f),
+                )
+                OutlinedTextField(
+                    value = state.tripText,
+                    onValueChange = onTripChange,
+                    label = { Text(stringResource(R.string.fillup_trip)) },
+                    suffix = { Text("km") },
+                    supportingText = { Text(stringResource(R.string.fillup_trip_hint)) },
+                    isError = state.showErrors && errors.any { it is ValidationIssue.InvalidTrip },
+                    keyboardOptions = decimalKeyboard,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
             OutlinedButton(onClick = onScanOdometer, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.fillup_scan_odometer))
             }

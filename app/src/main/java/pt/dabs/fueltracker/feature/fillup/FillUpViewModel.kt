@@ -59,6 +59,8 @@ data class FillUpUiState(
     val date: LocalDate,
     val time: LocalTime,
     val odometerText: String = "",
+    /** Conta-km parcial lido ao abastecer (antes de o pôr a zeros); vazio = não registado. */
+    val tripText: String = "",
     val volumeText: String = "",
     val priceText: String = "",
     val totalText: String = "",
@@ -156,6 +158,7 @@ class FillUpViewModel(
                         date = local.toLocalDate(),
                         time = local.toLocalTime().withSecond(0).withNano(0),
                         odometerText = loaded.odometerKm.toString(),
+                        tripText = loaded.tripTenthsKm?.let { trip -> NumberInput.formatScaled(trip.toLong(), 1) }.orEmpty(),
                         volumeText = NumberInput.formatScaled(loaded.volumeMl.toLong(), 3, trimTrailingZeros = true),
                         priceText = NumberInput.formatScaled(loaded.pricePerLiterMilliCents.toLong(), 5, trimTrailingZeros = true),
                         totalText = NumberInput.formatScaled(loaded.totalCents, 2),
@@ -176,6 +179,7 @@ class FillUpViewModel(
     fun onDateChange(date: LocalDate) = edit { copy(date = date) }
     fun onTimeChange(time: LocalTime) = edit { copy(time = time) }
     fun onOdometerChange(text: String) = edit { copy(odometerText = text) }
+    fun onTripChange(text: String) = edit { copy(tripText = text) }
     fun onFullTankChange(full: Boolean) = edit { copy(isFullTank = full) }
     fun onStationNameChange(text: String) = edit { copy(stationName = text) }
     fun onNotesChange(text: String) = edit { copy(notes = text) }
@@ -279,8 +283,14 @@ class FillUpViewModel(
         _uiState.update { it.copy(pendingOdometerScan = false) }
     }
 
-    /** Valor lido pela câmara; é uma sugestão como qualquer outra e continua editável. */
-    fun onOdometerScanned(km: Int) = edit { copy(odometerText = km.toString(), pendingOdometerScan = false) }
+    /** Valores lidos pela câmara (total e, se lido, o parcial); são sugestões e continuam editáveis. */
+    fun onOdometerScanned(km: Int, tripTenthsKm: Int? = null) = edit {
+        copy(
+            odometerText = km.toString(),
+            tripText = tripTenthsKm?.let { NumberInput.formatScaled(it.toLong(), 1) } ?: tripText,
+            pendingOdometerScan = false,
+        )
+    }
 
     /** O utilizador preferiu escrever: pré-preenche com o valor previsto se o campo estiver vazio. */
     fun onOdometerManualRequested() {
@@ -376,6 +386,10 @@ class FillUpViewModel(
         }
     }
 
+    /** Parcial em décimas de km; null se vazio ou inválido. */
+    private fun parseTrip(text: String): Int? =
+        NumberInput.parseScaled(text.trim(), 1)?.takeIf { it in 0..Int.MAX_VALUE.toLong() }?.toInt()
+
     /** Vazio = sem desconto; null = texto inválido. */
     private fun parseDiscount(text: String): Long? = if (text.isBlank()) 0L else NumberInput.parseEurosToCents(text)
 
@@ -392,6 +406,8 @@ class FillUpViewModel(
         pricePerLiterMilliCents = NumberInput.parsePricePerLiterToMilliCents(state.priceText),
         totalCents = NumberInput.parseEurosToCents(state.totalText),
         discountCents = parseDiscount(state.discountText),
+        tripTenthsKm = parseTrip(state.tripText),
+        tripInvalid = state.tripText.isNotBlank() && parseTrip(state.tripText) == null,
         isFullTank = state.isFullTank,
         atcud = state.receipt?.atcud,
         buyerNif = state.receipt?.buyerNif,
@@ -461,6 +477,7 @@ class FillUpViewModel(
                 pricePerLiterMilliCents = price,
                 totalCents = total,
                 discountCents = discount,
+                tripTenthsKm = draft.tripTenthsKm,
                 isFullTank = state.isFullTank,
                 stationNif = receipt?.issuerNif,
                 stationName = state.stationName.trim().ifEmpty { null },

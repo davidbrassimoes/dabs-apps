@@ -224,6 +224,34 @@ class FillUpViewModelTest {
     }
 
     @Test
+    fun `panel scan fills odometer and trip, and the trip is saved`() = runTest {
+        val repository = FakeFillUpRepository(existing)
+        val viewModel = newViewModel(repository)
+        viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        viewModel.onOdometerScanned(11_200, tripTenthsKm = 6_000) // anterior a 10 600: 600 km
+        val state = viewModel.uiState.value
+        assertEquals("11200", state.odometerText)
+        assertEquals("600,0", state.tripText)
+        assertFalse(state.issues.any { it is ValidationIssue.TripMismatch })
+
+        viewModel.onSaveClick()
+        viewModel.onConfirmWarnings() // talão sem NIF
+        assertEquals(6_000, repository.current.single { it.id == 3L }.tripTenthsKm)
+    }
+
+    @Test
+    fun `trip that disagrees with the odometer warns, and can be cleared`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onOdometerChange("11200")
+        viewModel.onTripChange("1200,0")
+        assertTrue(viewModel.uiState.value.issues.contains(ValidationIssue.TripMismatch(12_000, 600)))
+        viewModel.onTripChange("abc")
+        assertTrue(viewModel.uiState.value.issues.contains(ValidationIssue.InvalidTrip))
+        viewModel.onTripChange("")
+        assertFalse(viewModel.uiState.value.issues.any { it is ValidationIssue.InvalidTrip || it is ValidationIssue.TripMismatch })
+    }
+
+    @Test
     fun `receipt photo without qr uses the printed total`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
         viewModel.onReceiptScanned(null, realReceiptRows())

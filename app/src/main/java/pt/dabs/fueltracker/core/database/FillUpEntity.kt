@@ -31,6 +31,9 @@ data class FillUpEntity(
     /** Descontos do talão (positivos); litros × preço = total + desconto. */
     @ColumnInfo(name = "discount_cents", defaultValue = "0")
     val discountCents: Long = 0,
+    /** Conta-km parcial ao abastecer, em décimas de km (posto a zeros a cada abastecimento). */
+    @ColumnInfo(name = "trip_tenths_km")
+    val tripTenthsKm: Int? = null,
     @ColumnInfo(name = "is_full_tank", defaultValue = "1")
     val isFullTank: Boolean = true,
     @ColumnInfo(name = "station_nif")

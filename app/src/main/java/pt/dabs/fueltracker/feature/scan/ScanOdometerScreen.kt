@@ -82,7 +82,7 @@ private const val REQUIRED_STABLE_FRAMES = 3
 fun ScanOdometerScreen(
     lastOdometerKm: Int?,
     predictedKm: Int?,
-    onResult: (Int) -> Unit,
+    onResult: (km: Int, tripTenthsKm: Int?) -> Unit,
     onManual: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -114,8 +114,9 @@ fun ScanOdometerScreen(
             analyzingPhoto = true
             photoError = null
             try {
-                val reading = stillScanner.readOdometer(uri, lastOdometerKm)
-                if (reading != null) currentOnResult(reading) else photoError = R.string.scan_odometer_photo_not_found
+                val reading = stillScanner.readPanel(uri, lastOdometerKm)
+                val total = reading.totalKm
+                if (total != null) currentOnResult(total, reading.tripTenthsKm) else photoError = R.string.scan_odometer_photo_not_found
             } catch (e: Exception) {
                 photoError = R.string.scan_photo_failed
             } finally {
@@ -231,7 +232,7 @@ fun ScanOdometerScreen(
 private fun OdometerCameraPreview(
     lastOdometerKm: Int?,
     onProgress: (candidate: Int?, progress: Float, panel: SevenSegmentReader.PanelReading?) -> Unit,
-    onResult: (Int) -> Unit,
+    onResult: (km: Int, tripTenthsKm: Int?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -254,6 +255,8 @@ private fun OdometerCameraPreview(
         val mainExecutor = ContextCompat.getMainExecutor(context)
         val stabilizer = OdometerStabilizer(requiredFrames = REQUIRED_STABLE_FRAMES)
         val delivered = AtomicBoolean(false)
+        // Parciais lidos e quantas vezes: entrega-se o mais repetido, não o do último frame.
+        val tripVotes = HashMap<Int, Int>()
 
         controller.setImageAnalysisAnalyzer(analysisExecutor) { proxy ->
             val reading = proxy.use { frame ->
@@ -267,11 +270,12 @@ private fun OdometerCameraPreview(
             }
             mainExecutor.execute {
                 if (delivered.get()) return@execute
+                reading?.tripTenthsKm?.let { tripVotes.merge(it, 1, Int::plus) }
                 val locked = stabilizer.offer(reading?.totalKm)
                 currentOnProgress(stabilizer.candidate, stabilizer.progress, reading)
                 if (locked != null && delivered.compareAndSet(false, true)) {
                     controller.clearImageAnalysisAnalyzer()
-                    currentOnResult(locked)
+                    currentOnResult(locked, tripVotes.maxByOrNull { it.value }?.key)
                 }
             }
         }

@@ -74,6 +74,8 @@
     <string name="fillup_title_edit">Editar abastecimento</string>
     <string name="fillup_odometer">Conta-km total</string>
     <string name="fillup_previous_odometer">Anterior: %1$s</string>
+    <string name="fillup_trip">Conta-km parcial</string>
+    <string name="fillup_trip_hint">Antes de o pôr a zeros</string>
     <string name="fillup_volume">Litros</string>
     <string name="fillup_price">Preço por litro</string>
     <string name="fillup_total">Total pago</string>
@@ -107,6 +109,9 @@
     <string name="validation_missing_price">Indica o preço por litro</string>
     <string name="validation_missing_total">Indica o total pago</string>
     <string name="validation_invalid_discount">Desconto inválido</string>
+    <string name="validation_invalid_trip">Conta-km parcial inválido</string>
+    <string name="validation_trip_shorter">O conta-km parcial (%1$s) é menor do que a distância pelo conta-km (%2$s). Faltou registar um abastecimento? O consumo deste ciclo usa o parcial.</string>
+    <string name="validation_trip_longer">O conta-km parcial (%1$s) é maior do que a distância pelo conta-km (%2$s). Não foi posto a zeros no abastecimento anterior? O consumo deste ciclo usa o conta-km.</string>
     <string name="validation_odometer_not_after_previous">O conta-km tem de ser maior do que o do abastecimento anterior (%1$s)</string>
     <string name="validation_odometer_not_before_next">O conta-km tem de ser menor do que o do abastecimento seguinte (%1$s)</string>
     <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
@@ -172,6 +177,8 @@
     <string name="history_partial">Parcial</string>
     <string name="history_cycle">%1$s · %2$s · %3$s</string>
     <string name="history_anomaly">Consumo acima do habitual</string>
+    <string name="history_trip_distance">Distância pelo conta-km parcial</string>
+    <string name="history_trip_mismatch">Conta-km parcial e total não batem: vê os avisos ao editar</string>
     <string name="history_deleted">Abastecimento apagado</string>
     <string name="history_delete_title">Apagar abastecimento?</string>
     <string name="history_delete_body">Podes anular logo a seguir na mensagem que aparece em baixo.</string>

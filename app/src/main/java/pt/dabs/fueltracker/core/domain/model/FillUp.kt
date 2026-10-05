@@ -8,6 +8,8 @@ import java.time.Instant
  * - [pricePerLiterMilliCents]: milésimos de cêntimo por litro (1,749 €/L = 174 900)
  * - [totalCents]: cêntimos; total pago (o do QR, já com os descontos do talão)
  * - [discountCents]: cêntimos; descontos do talão, positivos. litros × preço = total + desconto
+ * - [tripTenthsKm]: décimas de km; conta-km parcial lido ao abastecer (antes de o pôr a zeros),
+ *   ou seja a distância do ciclo; null se não foi registado
  */
 data class FillUp(
     val id: Long = NEW_ID,
@@ -17,6 +19,7 @@ data class FillUp(
     val pricePerLiterMilliCents: Int,
     val totalCents: Long,
     val discountCents: Long = 0,
+    val tripTenthsKm: Int? = null,
     val isFullTank: Boolean = true,
     val stationNif: String? = null,
     val stationName: String? = null,

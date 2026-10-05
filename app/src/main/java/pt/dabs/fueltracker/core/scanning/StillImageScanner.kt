@@ -53,14 +53,16 @@ class StillImageScanner(private val context: Context) {
     }
 
     /**
-     * Conta-km total numa fotografia do painel. Primeiro o leitor de sete segmentos (que lê o
-     * visor de blocos do carro, onde o ML Kit falha); se não encontrar nada, o OCR genérico.
+     * Conta-km total e parcial numa fotografia do painel. Primeiro o leitor de sete segmentos (que
+     * lê o visor de blocos do carro, onde o ML Kit falha); se não encontrar o total, o OCR genérico
+     * (só o total).
      */
-    suspend fun readOdometer(uri: Uri, lastOdometerKm: Int?): Int? {
-        val luma = withContext(Dispatchers.Default) {
-            decodeLuma(uri)?.let { SevenSegmentReader.readOdometer(it, lastOdometerKm) }
-        }
-        return luma ?: OdometerReader.read(recognizeRows(uri), lastOdometerKm)
+    suspend fun readPanel(uri: Uri, lastOdometerKm: Int?): SevenSegmentReader.PanelReading {
+        val panel = withContext(Dispatchers.Default) {
+            decodeLuma(uri)?.let { SevenSegmentReader.readPanel(it, lastOdometerKm) }
+        } ?: SevenSegmentReader.PanelReading.EMPTY
+        if (panel.totalKm != null) return panel
+        return panel.copy(totalKm = OdometerReader.read(recognizeRows(uri), lastOdometerKm), consistentWithTrip = null)
     }
 
     /** Luminância da fotografia, já rodada segundo o EXIF e reduzida para a análise. */
