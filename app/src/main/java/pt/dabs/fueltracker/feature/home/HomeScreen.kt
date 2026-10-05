@@ -22,6 +22,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,10 +43,19 @@ fun HomeScreen(
     onAddFillUp: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenStats: () -> Unit,
+    onShowNif: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeContent(state = state, onAddFillUp = onAddFillUp, onOpenHistory = onOpenHistory, onOpenSettings = onOpenSettings)
+    HomeContent(
+        state = state,
+        onAddFillUp = onAddFillUp,
+        onOpenHistory = onOpenHistory,
+        onOpenSettings = onOpenSettings,
+        onOpenStats = onOpenStats,
+        onShowNif = onShowNif,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +65,8 @@ fun HomeContent(
     onAddFillUp: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenStats: () -> Unit,
+    onShowNif: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -90,6 +102,14 @@ fun HomeContent(
                 EmptyHome()
             } else {
                 HomeStats(state)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(onClick = onOpenStats, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.stats_title))
+                }
+                OutlinedButton(onClick = onShowNif, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.nif_show))
+                }
             }
             Spacer(Modifier.height(80.dp)) // espaço para o FAB
         }

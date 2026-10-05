@@ -2,6 +2,18 @@ package pt.dabs.fueltracker.core.domain.model
 
 import java.time.YearMonth
 
+/** Agregado por posto. [key] é o NIF do posto quando existe, senão o nome normalizado. */
+data class StationSummary(
+    val key: String,
+    val name: String,
+    val stationNif: String?,
+    val fillUpCount: Int,
+    val volumeMl: Long,
+    val totalCents: Long,
+    val averagePricePerLiterMilliCents: Int?,
+    val lastDateTime: java.time.Instant,
+)
+
 sealed interface Period {
     data class Month(val yearMonth: YearMonth) : Period
     data class Year(val year: Int) : Period

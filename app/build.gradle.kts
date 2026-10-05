@@ -76,6 +76,9 @@ dependencies {
     implementation(libs.androidx.camera.mlkit.vision)
     implementation(libs.mlkit.barcode.scanning)
     implementation(libs.mlkit.text.recognition)
+
+    // Gráficos (módulo base; o tema Material 3 é fornecido pela app para evitar o M3 multiplataforma)
+    implementation(libs.vico.compose)
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)

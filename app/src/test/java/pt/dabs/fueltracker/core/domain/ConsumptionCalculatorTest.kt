@@ -373,6 +373,44 @@ class ConsumptionCalculatorTest {
     }
 
     @Test
+    fun `station summaries group by nif, then by name, most visited first`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000, 170_000).copy(stationNif = "500697256", stationName = "Galp A1"),
+            fillUp(2, "2026-01-10", 10_600, 30_000, 180_000).copy(stationNif = "500697256", stationName = null),
+            fillUp(3, "2026-01-20", 11_100, 20_000, 160_000).copy(stationNif = null, stationName = "BP Centro"),
+            fillUp(4, "2026-01-25", 11_400, 10_000, 160_000).copy(stationNif = null, stationName = "bp centro "),
+            fillUp(5, "2026-01-30", 11_700, 10_000, 160_000), // sem posto: ignorado
+            fillUp(6, "2026-02-05", 12_000, 35_000, 175_000).copy(stationNif = "501234567", stationName = "Repsol"),
+        )
+        val stations = ConsumptionCalculator.stationSummaries(fillUps)
+        // Galp e BP empatam com 2 abastecimentos; a BP foi visitada mais recentemente.
+        assertEquals(listOf("bp centro", "500697256", "501234567"), stations.map { it.key })
+
+        val galp = stations[1]
+        assertEquals("Galp A1", galp.name)
+        assertEquals(2, galp.fillUpCount)
+        assertEquals(70_000L, galp.volumeMl)
+        assertEquals(6_800L + 5_400L, galp.totalCents)
+        assertEquals(FuelMath.averagePricePerLiterMilliCents(12_200, 70_000), galp.averagePricePerLiterMilliCents)
+        assertEquals(at("2026-01-10"), galp.lastDateTime)
+
+        val bp = stations[0]
+        assertEquals("bp centro", bp.name) // último nome escrito, sem espaços à volta
+        assertNull(bp.stationNif)
+        assertEquals(2, bp.fillUpCount)
+    }
+
+    @Test
+    fun `station summaries tie break by most recent`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000).copy(stationName = "A"),
+            fillUp(2, "2026-02-01", 10_600, 40_000).copy(stationName = "B"),
+        )
+        assertEquals(listOf("b", "a"), ConsumptionCalculator.stationSummaries(fillUps).map { it.key })
+        assertTrue(ConsumptionCalculator.stationSummaries(emptyList()).isEmpty())
+    }
+
+    @Test
     fun `summaries of empty list are empty`() {
         assertTrue(ConsumptionCalculator.monthlySummaries(emptyList(), LISBON).isEmpty())
         assertTrue(ConsumptionCalculator.yearlySummaries(emptyList(), LISBON).isEmpty())

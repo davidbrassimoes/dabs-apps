@@ -12,6 +12,12 @@ data object HistoryRoute
 @Serializable
 data object SettingsRoute
 
+@Serializable
+data object StatsRoute
+
+@Serializable
+data object ShowNifRoute
+
 /**
  * Leitura do talão; devolve ao ecrã anterior o texto do QR em [SCANNED_QR_KEY] e as linhas
  * reconhecidas por OCR (separadas por `\n`) em [SCANNED_TEXT_KEY].

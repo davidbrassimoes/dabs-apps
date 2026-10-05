@@ -20,6 +20,32 @@
     <string name="label_average_price">Preço médio</string>
     <string name="label_date">Data</string>
     <string name="label_odometer">Conta-km</string>
+    <string name="label_fill_ups">Abastecimentos</string>
+
+    <!-- Estatísticas -->
+    <string name="stats_title">Estatísticas</string>
+    <string name="stats_empty">As estatísticas aparecem a partir do segundo depósito cheio.</string>
+    <string name="stats_consumption_title">Consumo por ciclo</string>
+    <string name="stats_consumption_subtitle">Média global: %1$s</string>
+    <string name="stats_monthly_spend_title">Gasto por mês</string>
+    <string name="stats_monthly_km_title">Quilómetros por mês</string>
+    <string name="stats_monthly_km_subtitle">Ciclos fechados no mês</string>
+    <string name="stats_price_title">Preço por litro</string>
+    <string name="stats_years_title">Resumo por ano</string>
+    <string name="stats_stations_title">Por posto</string>
+    <plurals name="stats_station_count">
+        <item quantity="one">%1$d abastecimento</item>
+        <item quantity="other">%1$d abastecimentos</item>
+    </plurals>
+    <string name="stats_anomalies_title">Consumos acima do habitual</string>
+    <string name="stats_anomalies_subtitle">Ciclos mais de 20%% acima da média dos anteriores</string>
+    <string name="stats_anomaly_values">%1$s (média anterior %2$s)</string>
+
+    <!-- Mostrar NIF -->
+    <string name="nif_show">Mostrar NIF</string>
+    <string name="nif_label">NIF</string>
+    <string name="nif_missing">Ainda não configuraste o teu NIF.</string>
+    <string name="nif_tap_to_close">Toca para fechar</string>
 
     <!-- Início -->
     <string name="home_add_fill_up">Abastecer</string>

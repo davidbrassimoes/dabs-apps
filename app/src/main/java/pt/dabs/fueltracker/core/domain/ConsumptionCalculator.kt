@@ -4,6 +4,7 @@ import pt.dabs.fueltracker.core.domain.model.ConsumptionCycle
 import pt.dabs.fueltracker.core.domain.model.FillUp
 import pt.dabs.fueltracker.core.domain.model.Period
 import pt.dabs.fueltracker.core.domain.model.PeriodSummary
+import pt.dabs.fueltracker.core.domain.model.StationSummary
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -190,6 +191,37 @@ object ConsumptionCalculator {
         return monthlySummaries(fillUps, zone).firstOrNull { it.period == Period.Month(yearMonth) }
             ?: summarise(Period.Month(yearMonth), emptyList(), emptyList())
     }
+
+    /**
+     * Agregados por posto, do mais frequentado para o menos. Agrupa pelo NIF do posto quando existe,
+     * senão pelo nome (sem distinção de maiúsculas); abastecimentos sem posto ficam de fora.
+     */
+    fun stationSummaries(fillUps: List<FillUp>): List<StationSummary> =
+        fillUps
+            .mapNotNull { fillUp ->
+                val nif = fillUp.stationNif?.takeIf { it.isNotBlank() }
+                val name = fillUp.stationName?.trim()?.takeIf { it.isNotEmpty() }
+                val key = nif ?: name?.lowercase() ?: return@mapNotNull null
+                key to fillUp
+            }
+            .groupBy({ it.first }, { it.second })
+            .map { (key, inStation) ->
+                val sorted = sortChronologically(inStation)
+                val volume = inStation.sumOf { it.volumeMl.toLong() }
+                val total = inStation.sumOf { it.totalCents }
+                StationSummary(
+                    key = key,
+                    name = sorted.lastOrNull { !it.stationName.isNullOrBlank() }?.stationName?.trim()
+                        ?: sorted.last().stationNif.orEmpty(),
+                    stationNif = sorted.lastOrNull { !it.stationNif.isNullOrBlank() }?.stationNif,
+                    fillUpCount = inStation.size,
+                    volumeMl = volume,
+                    totalCents = total,
+                    averagePricePerLiterMilliCents = if (volume > 0) FuelMath.averagePricePerLiterMilliCents(total, volume) else null,
+                    lastDateTime = sorted.last().dateTime,
+                )
+            }
+            .sortedWith(compareByDescending<StationSummary> { it.fillUpCount }.thenByDescending { it.lastDateTime })
 
     private fun summarise(period: Period, fillUps: List<FillUp>, cycles: List<ConsumptionCycle>): PeriodSummary {
         val volumeMl = fillUps.sumOf { it.volumeMl.toLong() }
