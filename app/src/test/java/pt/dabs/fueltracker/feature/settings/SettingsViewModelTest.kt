@@ -1,23 +1,19 @@
 package pt.dabs.fueltracker.feature.settings
 
-
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import pt.dabs.fueltracker.core.csv.FillUpCsv
 import pt.dabs.fueltracker.core.data.DocumentStore
-import pt.dabs.fueltracker.core.data.UserSettings
 import pt.dabs.fueltracker.core.domain.LISBON
 import pt.dabs.fueltracker.core.domain.at
 import pt.dabs.fueltracker.core.domain.fillUp
 import pt.dabs.fueltracker.feature.FakeFillUpRepository
-import pt.dabs.fueltracker.feature.FakeSettingsRepository
 import pt.dabs.fueltracker.feature.MainDispatcherRule
 import java.io.IOException
 import java.time.Clock
@@ -45,61 +41,9 @@ class SettingsViewModelTest {
     }
 
     private fun newViewModel(
-        settings: FakeSettingsRepository = FakeSettingsRepository(),
         fillUps: FakeFillUpRepository = FakeFillUpRepository(),
         documents: FakeDocumentStore = FakeDocumentStore(),
-    ) = SettingsViewModel(settings, fillUps, documents, clock)
-
-    @Test
-    fun `loads stored settings as editable text`() = runTest {
-        val viewModel = newViewModel(FakeSettingsRepository(UserSettings(nif = "123456789")))
-        val state = viewModel.uiState.value
-        assertFalse(state.isLoading)
-        assertEquals("123456789", state.nifText)
-        assertTrue(state.canSave)
-    }
-
-    @Test
-    fun `empty fields are allowed and clear the settings`() = runTest {
-        val repository = FakeSettingsRepository(UserSettings(nif = "123456789"))
-        val viewModel = newViewModel(repository)
-        viewModel.onNifChange("")
-        viewModel.onSaveClick()
-        assertTrue(viewModel.uiState.value.saved)
-        assertNull(repository.current.nif)
-    }
-
-    @Test
-    fun `invalid nif blocks saving and is shown after the attempt`() = runTest {
-        val repository = FakeSettingsRepository()
-        val viewModel = newViewModel(repository)
-        viewModel.onNifChange("123456780")
-        assertEquals(setOf(SettingsError.INVALID_NIF), viewModel.uiState.value.errors)
-        assertFalse(viewModel.uiState.value.showErrors)
-        viewModel.onSaveClick()
-        assertTrue(viewModel.uiState.value.showErrors)
-        assertFalse(viewModel.uiState.value.saved)
-        assertNull(repository.current.nif)
-    }
-
-    @Test
-    fun `valid values are normalized and stored`() = runTest {
-        val repository = FakeSettingsRepository()
-        val viewModel = newViewModel(repository)
-        viewModel.onNifChange("500 697 256")
-        viewModel.onSaveClick()
-        assertTrue(viewModel.uiState.value.saved)
-        assertEquals("500697256", repository.current.nif)
-    }
-
-    @Test
-    fun `editing after save resets the saved flag`() = runTest {
-        val viewModel = newViewModel()
-        viewModel.onSaveClick()
-        assertTrue(viewModel.uiState.value.saved)
-        viewModel.onNifChange("500697256")
-        assertFalse(viewModel.uiState.value.saved)
-    }
+    ) = SettingsViewModel(fillUps, documents, clock)
 
     @Test
     fun `suggested export file name carries the date`() = runTest {

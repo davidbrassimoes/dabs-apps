@@ -45,8 +45,6 @@ fun ValidationIssue.message(): String = when (this) {
     is ValidationIssue.TotalMismatch ->
         stringResource(R.string.validation_total_mismatch, PtFormat.euros(expectedTotalCents))
     ValidationIssue.DuplicateAtcud -> stringResource(R.string.validation_duplicate_atcud)
-    ValidationIssue.ReceiptWithoutNif -> stringResource(R.string.validation_receipt_without_nif)
-    is ValidationIssue.ReceiptNifMismatch -> stringResource(R.string.validation_receipt_nif_mismatch, buyerNif)
 }
 
 @Composable

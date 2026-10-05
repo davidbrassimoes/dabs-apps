@@ -44,9 +44,6 @@ data class AtQrCode(
     val rawFields: Map<String, String>,
 ) {
     val buyerIsFinalConsumer: Boolean get() = buyerNif == Nif.FINAL_CONSUMER
-
-    /** true se a fatura foi emitida com o NIF [userNif]. */
-    fun hasBuyerNif(userNif: String): Boolean = !buyerIsFinalConsumer && buyerNif == userNif
 }
 
 sealed interface AtQrParseResult {

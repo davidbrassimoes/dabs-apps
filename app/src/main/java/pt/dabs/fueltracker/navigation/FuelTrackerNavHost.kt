@@ -11,7 +11,6 @@ import androidx.navigation.toRoute
 import pt.dabs.fueltracker.feature.fillup.FillUpScreen
 import pt.dabs.fueltracker.feature.history.HistoryScreen
 import pt.dabs.fueltracker.feature.home.HomeScreen
-import pt.dabs.fueltracker.feature.nif.ShowNifScreen
 import pt.dabs.fueltracker.feature.stats.StatsScreen
 import pt.dabs.fueltracker.feature.scan.ScanOdometerScreen
 import pt.dabs.fueltracker.feature.scan.ScanReceiptScreen
@@ -39,17 +38,10 @@ fun FuelTrackerNavHost(newFillUpRequests: Int = 0) {
                 onOpenHistory = { navController.navigate(HistoryRoute) },
                 onOpenSettings = { navController.navigate(SettingsRoute) },
                 onOpenStats = { navController.navigate(StatsRoute) },
-                onShowNif = { navController.navigate(ShowNifRoute) },
             )
         }
         composable<StatsRoute> {
             StatsScreen(onBack = { navController.popBackStack() })
-        }
-        composable<ShowNifRoute> {
-            ShowNifScreen(
-                onBack = { navController.popBackStack() },
-                onOpenSettings = { navController.navigate(SettingsRoute) },
-            )
         }
         composable<HistoryRoute> {
             HistoryScreen(

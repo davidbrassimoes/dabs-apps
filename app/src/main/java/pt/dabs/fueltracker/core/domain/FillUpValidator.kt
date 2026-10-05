@@ -50,14 +50,6 @@ sealed interface ValidationIssue {
     }
 
     data object DuplicateAtcud : ValidationIssue { override val severity = Severity.WARNING }
-
-    /** O talão foi emitido a "consumidor final", sem NIF. */
-    data object ReceiptWithoutNif : ValidationIssue { override val severity = Severity.WARNING }
-
-    /** O talão tem um NIF de adquirente diferente do configurado. */
-    data class ReceiptNifMismatch(val buyerNif: String) : ValidationIssue {
-        override val severity = Severity.WARNING
-    }
 }
 
 /** Valores em edição; null = campo vazio ou inválido. */
@@ -76,8 +68,6 @@ data class FillUpDraft(
     val tripInvalid: Boolean = false,
     val isFullTank: Boolean = true,
     val atcud: String? = null,
-    /** NIF do adquirente lido do QR (campo B); null se não houve leitura. */
-    val buyerNif: String? = null,
 )
 
 data class ValidationOptions(
@@ -93,13 +83,11 @@ object FillUpValidator {
      *
      * @param existing abastecimentos guardados; o que tem o mesmo id do rascunho (edição) é ignorado.
      * @param atcudAlreadyUsed true se o ATCUD do rascunho já existe noutro abastecimento.
-     * @param userNif NIF do utilizador configurado nas Definições, se houver.
      */
     fun validate(
         draft: FillUpDraft,
         existing: List<FillUp>,
         atcudAlreadyUsed: Boolean = false,
-        userNif: String? = null,
         options: ValidationOptions = ValidationOptions(),
     ): List<ValidationIssue> {
         val issues = ArrayList<ValidationIssue>()
@@ -169,14 +157,6 @@ object FillUpValidator {
 
         if (!draft.atcud.isNullOrBlank() && atcudAlreadyUsed) {
             issues += ValidationIssue.DuplicateAtcud
-        }
-
-        val buyerNif = draft.buyerNif?.trim()
-        if (!buyerNif.isNullOrEmpty()) {
-            when {
-                buyerNif == Nif.FINAL_CONSUMER -> issues += ValidationIssue.ReceiptWithoutNif
-                !userNif.isNullOrBlank() && buyerNif != userNif -> issues += ValidationIssue.ReceiptNifMismatch(buyerNif)
-            }
         }
 
         return issues

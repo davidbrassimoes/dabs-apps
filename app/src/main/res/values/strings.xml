@@ -49,11 +49,6 @@
     <string name="widget_typical_distance">~%1$s por depósito</string>
     <string name="widget_empty">Sem ciclos ainda</string>
 
-    <!-- Mostrar NIF -->
-    <string name="nif_show">Mostrar NIF</string>
-    <string name="nif_label">NIF</string>
-    <string name="nif_missing">Ainda não configuraste o teu NIF.</string>
-    <string name="nif_tap_to_close">Toca para fechar</string>
 
     <!-- Início -->
     <string name="home_add_fill_up">Abastecer</string>
@@ -116,8 +111,6 @@
     <string name="validation_implausible_consumption">Consumo pouco plausível: %1$s. Confirma o conta-km e os litros</string>
     <string name="validation_total_mismatch">Litros × preço − desconto dá %1$s, diferente do total indicado</string>
     <string name="validation_duplicate_atcud">Este talão já foi registado. Se guardares, fica sem a ligação ao ATCUD</string>
-    <string name="validation_receipt_without_nif">O talão foi emitido sem NIF (consumidor final)</string>
-    <string name="validation_receipt_nif_mismatch">O talão tem o NIF %1$s, diferente do teu</string>
 
     <!-- Leitura do QR -->
     <string name="scan_title">Ler talão</string>
@@ -152,10 +145,6 @@
 
     <!-- Definições -->
     <string name="settings_title">Definições</string>
-    <string name="settings_nif">O teu NIF</string>
-    <string name="settings_nif_hint">Para mostrar no posto e comparar com o talão</string>
-    <string name="settings_nif_invalid">NIF inválido: tem de ter 9 dígitos com dígito de controlo correto</string>
-    <string name="settings_saved">Definições guardadas</string>
     <string name="settings_data_title">Dados</string>
     <string name="settings_data_body">O CSV usa ponto e vírgula e vírgula decimal, abre no Excel. A importação junta aos registos existentes e ignora talões repetidos.</string>
     <string name="settings_export">Exportar CSV</string>

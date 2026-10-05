@@ -14,9 +14,7 @@ import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.at
 import pt.dabs.fueltracker.core.domain.fillUp
 import pt.dabs.fueltracker.core.domain.model.FillUp
-import pt.dabs.fueltracker.core.data.UserSettings
 import pt.dabs.fueltracker.feature.FakeFillUpRepository
-import pt.dabs.fueltracker.feature.FakeSettingsRepository
 import pt.dabs.fueltracker.feature.MainDispatcherRule
 import java.time.Clock
 import java.time.LocalDate
@@ -39,13 +37,11 @@ class FillUpViewModelTest {
     private fun newViewModel(
         repository: FakeFillUpRepository,
         fillUpId: Long = FillUp.NEW_ID,
-        settings: UserSettings = UserSettings(),
         startWithScan: Boolean = false,
     ) = FillUpViewModel(
         fillUpId = fillUpId,
         startWithScan = startWithScan,
         repository = repository,
-        settingsRepository = FakeSettingsRepository(settings),
         clock = clock,
     )
 
@@ -121,7 +117,7 @@ class FillUpViewModelTest {
         assertEquals("JFK2H8QX-4471", state.receipt?.atcud)
         assertEquals("500697256", state.receipt?.issuerNif)
         assertEquals("FS 01P2026/4471", state.receipt?.documentId)
-        assertTrue(state.issues.any { it is ValidationIssue.ReceiptWithoutNif })
+        assertEquals(false, state.receipt?.buyerNifPresent) // consumidor final
     }
 
     @Test
@@ -139,27 +135,13 @@ class FillUpViewModelTest {
         viewModel.onQrScanned(receiptQr)
         viewModel.onOdometerChange("11200")
         viewModel.onVolumeChange("40")
-        viewModel.onSaveClick()           // aviso de talão sem NIF
-        assertTrue(viewModel.uiState.value.askWarningConfirmation)
-        viewModel.onConfirmWarnings()
+        viewModel.onSaveClick()
         val saved = repository.current.single { it.id == 3L }
         assertEquals("500697256", saved.stationNif)
         assertEquals("JFK2H8QX-4471", saved.atcud)
         assertEquals(false, saved.buyerNifPresent)
         assertEquals(6_996L, saved.totalCents)
         assertEquals(174_900, saved.pricePerLiterMilliCents)
-    }
-
-    @Test
-    fun `receipt with the user's nif does not warn, another nif does`() = runTest {
-        val withUserNif = receiptQr.replace("B:999999990", "B:123456789")
-        val ok = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(nif = "123456789"))
-        ok.onQrScanned(withUserNif)
-        assertFalse(ok.uiState.value.issues.any { it is ValidationIssue.ReceiptWithoutNif || it is ValidationIssue.ReceiptNifMismatch })
-
-        val other = newViewModel(FakeFillUpRepository(existing), settings = UserSettings(nif = "987654321"))
-        other.onQrScanned(withUserNif)
-        assertTrue(other.uiState.value.issues.any { it is ValidationIssue.ReceiptNifMismatch })
     }
 
     @Test
@@ -215,7 +197,6 @@ class FillUpViewModelTest {
 
         viewModel.onOdometerChange("11200")
         viewModel.onSaveClick()
-        viewModel.onConfirmWarnings() // talão sem NIF
         val saved = repository.current.single { it.id == 3L }
         assertEquals(42_630, saved.volumeMl)
         assertEquals(229_900, saved.pricePerLiterMilliCents)
@@ -235,7 +216,6 @@ class FillUpViewModelTest {
         assertFalse(state.issues.any { it is ValidationIssue.TripMismatch })
 
         viewModel.onSaveClick()
-        viewModel.onConfirmWarnings() // talão sem NIF
         assertEquals(6_000, repository.current.single { it.id == 3L }.tripTenthsKm)
     }
 

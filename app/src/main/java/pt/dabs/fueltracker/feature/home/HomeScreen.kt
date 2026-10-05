@@ -44,7 +44,6 @@ fun HomeScreen(
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStats: () -> Unit,
-    onShowNif: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +53,6 @@ fun HomeScreen(
         onOpenHistory = onOpenHistory,
         onOpenSettings = onOpenSettings,
         onOpenStats = onOpenStats,
-        onShowNif = onShowNif,
     )
 }
 
@@ -66,7 +64,6 @@ fun HomeContent(
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStats: () -> Unit,
-    onShowNif: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -103,13 +100,8 @@ fun HomeContent(
             } else {
                 HomeStats(state)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onOpenStats, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.stats_title))
-                }
-                OutlinedButton(onClick = onShowNif, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.nif_show))
-                }
+            OutlinedButton(onClick = onOpenStats, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.stats_title))
             }
             Spacer(Modifier.height(80.dp)) // espaço para o FAB
         }

@@ -7,21 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -34,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,11 +43,7 @@ fun SettingsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalResources.current
-    val savedMessage = stringResource(R.string.settings_saved)
 
-    LaunchedEffect(state.saved) {
-        if (state.saved) snackbarHostState.showSnackbar(savedMessage)
-    }
     LaunchedEffect(viewModel, resources) {
         viewModel.transferEventFlow.collect { event ->
             val message = when (event) {
@@ -77,8 +67,6 @@ fun SettingsScreen(
         state = state,
         snackbarHostState = snackbarHostState,
         onBack = onBack,
-        onNifChange = viewModel::onNifChange,
-        onSave = viewModel::onSaveClick,
         onExport = { exportLauncher.launch(viewModel.suggestedExportFileName()) },
         onImport = { importLauncher.launch(arrayOf(FillUpCsv.MIME_TYPE, "text/comma-separated-values", "text/plain", "application/octet-stream")) },
     )
@@ -90,13 +78,9 @@ fun SettingsContent(
     state: SettingsUiState,
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit,
-    onNifChange: (String) -> Unit,
-    onSave: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
 ) {
-    val nifError = state.showErrors && SettingsError.INVALID_NIF in state.errors
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -115,29 +99,9 @@ fun SettingsContent(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .imePadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            OutlinedTextField(
-                value = state.nifText,
-                onValueChange = onNifChange,
-                label = { Text(stringResource(R.string.settings_nif)) },
-                supportingText = {
-                    Text(stringResource(if (nifError) R.string.settings_nif_invalid else R.string.settings_nif_hint))
-                },
-                isError = nifError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Button(onClick = onSave, enabled = !state.isLoading, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.action_save))
-            }
-
-            HorizontalDivider()
-
             Text(stringResource(R.string.settings_data_title), style = MaterialTheme.typography.titleMedium)
             Text(
                 text = stringResource(R.string.settings_data_body),

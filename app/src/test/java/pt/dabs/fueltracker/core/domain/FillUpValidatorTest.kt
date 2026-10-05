@@ -203,27 +203,6 @@ class FillUpValidatorTest {
     }
 
     @Test
-    fun `receipt without nif warns regardless of settings`() {
-        val issues = FillUpValidator.validate(draft().copy(buyerNif = Nif.FINAL_CONSUMER), existing)
-        assertEquals(listOf(ValidationIssue.ReceiptWithoutNif), issues)
-        val withUser = FillUpValidator.validate(draft().copy(buyerNif = Nif.FINAL_CONSUMER), existing, userNif = "123456789")
-        assertEquals(listOf(ValidationIssue.ReceiptWithoutNif), withUser)
-    }
-
-    @Test
-    fun `receipt nif is compared with the configured nif`() {
-        val same = FillUpValidator.validate(draft().copy(buyerNif = "123456789"), existing, userNif = "123456789")
-        assertTrue(same.isEmpty())
-        val different = FillUpValidator.validate(draft().copy(buyerNif = "987654321"), existing, userNif = "123456789")
-        assertEquals(listOf(ValidationIssue.ReceiptNifMismatch("987654321")), different)
-        // sem NIF configurado não há com que comparar
-        val noUser = FillUpValidator.validate(draft().copy(buyerNif = "987654321"), existing)
-        assertTrue(noUser.isEmpty())
-        // sem leitura de talão não há aviso
-        assertTrue(FillUpValidator.validate(draft(), existing, userNif = "123456789").isEmpty())
-    }
-
-    @Test
     fun `odometer error suppresses plausibility noise`() {
         val issues = FillUpValidator.validate(draft(odometerKm = 10_000), existing)
         assertTrue(issues.any { it is ValidationIssue.OdometerNotAfterPrevious })

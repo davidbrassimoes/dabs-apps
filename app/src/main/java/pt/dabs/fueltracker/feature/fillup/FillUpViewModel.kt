@@ -12,12 +12,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.data.FillUpRepository
-import pt.dabs.fueltracker.core.data.SettingsRepository
 import pt.dabs.fueltracker.core.domain.ConsumptionCalculator
 import pt.dabs.fueltracker.core.domain.FillUpDraft
 import pt.dabs.fueltracker.core.domain.FillUpValidator
 import pt.dabs.fueltracker.core.domain.FuelMath
-import pt.dabs.fueltracker.core.domain.Nif
 import pt.dabs.fueltracker.core.domain.NumberInput
 import pt.dabs.fueltracker.core.domain.ValidationIssue
 import pt.dabs.fueltracker.core.domain.hasErrors
@@ -47,7 +45,8 @@ data class OcrDebug(val qrRaw: String?, val rows: List<String>)
 /** Dados do talão lidos do QR da AT e associados ao abastecimento. */
 data class ScannedReceipt(
     val issuerNif: String,
-    val buyerNif: String,
+    /** A fatura foi emitida com o NIF de um adquirente (campo B do QR ≠ consumidor final). */
+    val buyerNifPresent: Boolean,
     val atcud: String,
     val documentId: String?,
     val documentDate: LocalDate,
@@ -106,7 +105,6 @@ class FillUpViewModel(
     private val fillUpId: Long,
     startWithScan: Boolean,
     private val repository: FillUpRepository,
-    private val settingsRepository: SettingsRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -114,13 +112,11 @@ class FillUpViewModel(
     constructor(
         savedStateHandle: SavedStateHandle,
         repository: FillUpRepository,
-        settingsRepository: SettingsRepository,
         clock: Clock,
     ) : this(
         fillUpId = savedStateHandle.toRoute<FillUpRoute>().fillUpId,
         startWithScan = savedStateHandle.toRoute<FillUpRoute>().startWithScan,
         repository = repository,
-        settingsRepository = settingsRepository,
         clock = clock,
     )
 
@@ -138,14 +134,11 @@ class FillUpViewModel(
     private val touched = LinkedHashSet<AmountField>()
     private var existing: List<FillUp> = emptyList()
     private var original: FillUp? = null
-    private var userNif: String? = null
     private var atcudAlreadyUsed = false
 
     init {
         viewModelScope.launch {
             existing = repository.observeAll().first()
-            val settings = settingsRepository.settings.first()
-            userNif = settings.nif
             val loaded = if (fillUpId != FillUp.NEW_ID) repository.getById(fillUpId) else null
             original = loaded
             if (loaded != null) {
@@ -321,7 +314,7 @@ class FillUpViewModel(
     private fun applyReceipt(code: AtQrCode) {
         val receipt = ScannedReceipt(
             issuerNif = code.issuerNif,
-            buyerNif = code.buyerNif,
+            buyerNifPresent = !code.buyerIsFinalConsumer,
             atcud = code.atcud,
             documentId = code.documentId,
             documentDate = code.documentDate,
@@ -425,7 +418,6 @@ class FillUpViewModel(
         tripInvalid = state.tripText.isNotBlank() && parseTrip(state.tripText) == null,
         isFullTank = state.isFullTank,
         atcud = state.receipt?.atcud,
-        buyerNif = state.receipt?.buyerNif,
     )
 
     private fun revalidate() {
@@ -435,7 +427,6 @@ class FillUpViewModel(
             draft = draft,
             existing = existing,
             atcudAlreadyUsed = atcudAlreadyUsed,
-            userNif = userNif,
         )
         val others = existing.filter { it.id != fillUpId }
         val previous = FillUpValidator.previousFillUp(others, draft.dateTime)
@@ -497,7 +488,7 @@ class FillUpViewModel(
                 stationName = state.stationName.trim().ifEmpty { null },
                 // O ATCUD é único na base de dados: um talão repetido guarda-se sem a ligação ao ATCUD.
                 atcud = receipt?.atcud?.takeUnless { atcudAlreadyUsed },
-                buyerNifPresent = receipt?.let { !it.buyerIsFinalConsumer },
+                buyerNifPresent = receipt?.buyerNifPresent,
                 notes = state.notes.trim().ifEmpty { null },
                 createdAt = base?.createdAt ?: clock.instant(),
             )
@@ -506,15 +497,13 @@ class FillUpViewModel(
         }
     }
 
-    private val ScannedReceipt.buyerIsFinalConsumer: Boolean get() = buyerNif == Nif.FINAL_CONSUMER
-
     /** Reconstrói o que se sabe do talão de um abastecimento guardado (sem o texto do QR). */
     private fun FillUp.toStoredReceipt(): ScannedReceipt? {
         val atcud = atcud ?: return null
         val issuer = stationNif ?: return null
         return ScannedReceipt(
             issuerNif = issuer,
-            buyerNif = if (buyerNifPresent == true) (userNif ?: "") else Nif.FINAL_CONSUMER,
+            buyerNifPresent = buyerNifPresent == true,
             atcud = atcud,
             documentId = null,
             documentDate = LocalDateTime.ofInstant(dateTime, clock.zone).toLocalDate(),

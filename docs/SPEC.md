@@ -37,14 +37,11 @@ O utilizador **atesta sempre**, por isso cada abastecimento fecha um ciclo cheio
 | stationNif | String? | do QR code |
 | stationName | String? | opcional, editável; sugerido ao ler o talão: o nome já dado a esse NIF noutro abastecimento, senão a marca e o local lidos no texto (ex.: "Repsol Loures B-Sentido N/S") |
 | atcud | String? | do QR code; **único** quando presente (evita duplicados) |
-| buyerNifPresent | Boolean? | o QR indica se a fatura tem NIF do comprador |
+| buyerNifPresent | Boolean? | o QR indica se a fatura tem NIF do comprador (só registado; a app não guarda o NIF do utilizador nem avisa) |
 | notes | String? | |
 | createdAt | Instant | |
 
 Valores monetários e volumes guardados como inteiros. Conversão e formatação só na UI (locale pt-PT: vírgula decimal, €).
-
-### Settings (DataStore)
-- NIF do utilizador (para mostrar no ecrã "Mostrar NIF" e comparar com o do QR)
 
 ## Cálculos
 Para cada abastecimento cheio *i* com abastecimento cheio anterior *i-1*:
@@ -100,12 +97,11 @@ Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia e
 2. **Novo abastecimento** (fluxo): scan talão → scan painel → ecrã de confirmação com todos os campos editáveis e avisos de validação → guardar.
 3. **Histórico**: lista de abastecimentos com consumo de cada ciclo; editar e apagar (com undo).
 4. **Estatísticas**: gráficos de L/100 km ao longo do tempo, € e km por mês, preço/litro; resumo por ano; por posto.
-5. **Mostrar NIF**: ecrã de alto contraste com o NIF em grande, para mostrar ao funcionário.
-6. **Definições**: NIF, export/import CSV, tema.
+5. **Definições**: export/import CSV. (O NIF do utilizador e a capacidade do depósito foram retirados: o NIF não compensa no IRS quando as despesas gerais familiares já chegam ao limite, e a app não pode pô-lo numa fatura já emitida.)
 
 ## Fases
 1. **Fundações**: dependências, arquitetura, Room, entrada manual, histórico, cálculos com testes, ecrã inicial.
-2. **Scan do talão (QR)**: CameraX + Barcode Scanning, parser AT com testes, deteção de duplicados, aviso de NIF em falta.
+2. **Scan do talão (QR)**: CameraX + Barcode Scanning, parser AT com testes, deteção de duplicados.
 3. **OCR do talão**: litros e preço/litro, validação cruzada com o total.
 4. **OCR do conta-km**: leitura em tempo real com estabilização.
-5. **Estatísticas e polimento**: gráficos Vico, anomalias, export/import CSV, widget Glance, ecrã "Mostrar NIF".
+5. **Estatísticas e polimento**: gráficos Vico, anomalias, export/import CSV, widget Glance.

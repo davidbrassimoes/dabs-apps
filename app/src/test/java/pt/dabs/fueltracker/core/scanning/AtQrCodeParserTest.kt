@@ -73,9 +73,6 @@ class AtQrCodeParserTest {
         val code = success("$example3Prefix*N:7614.53*O:117478.78*Q:abcd*R:9999")
         assertEquals("123456789", code.buyerNif)
         assertFalse(code.buyerIsFinalConsumer)
-        assertTrue(code.hasBuyerNif("123456789"))
-        assertFalse(code.hasBuyerNif("987654321"))
-        assertFalse(success(example2).hasBuyerNif("123456789"))
     }
 
     @Test
