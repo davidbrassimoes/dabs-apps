@@ -29,9 +29,11 @@ cena nebula a 30 fps (`07d85cd`, 2026-10-05).
 
 ## Próximos passos
 
-- [ ] CI verde em `products/santa-vibes` (`scripts/check santa-vibes`)
+- [x] CI verde em `products/santa-vibes` (`scripts/check santa-vibes`) (2026-10-06)
+- [x] Repo antigo `davidbrassimoes/santa-vibes` arquivado e pasta local removida (2026-10-06)
 - [ ] `NOTES.md` do produto criado de `templates/notes.md` na próxima fatia
 
 ## Histórico
 
 - 2026-10-06: movido para `dabs-apps`.
+- 2026-10-06: CI verde; repo antigo `davidbrassimoes/santa-vibes` arquivado (só leitura).

@@ -1,8 +1,0 @@
-santa-vibes as the second product: check script, CI job, project file
-
-santa-vibes keeps its own docs, ADRs and component READMEs. scripts/check runs
-the tv-app core tests (Gradle) and the authoring tool check and tests (npm),
-failures only. The CI job is path-filtered, on JDK 21 and Node LTS. The old
-repo is archived once this job is green.
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

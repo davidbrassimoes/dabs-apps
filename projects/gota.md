@@ -25,9 +25,11 @@ marca do posto e tipo de combustível (`d1cb1b8`).
 
 ## Próximos passos
 
-- [ ] CI verde em `products/gota` (`scripts/check gota`)
+- [x] CI verde em `products/gota` (`scripts/check gota`) (2026-10-06)
+- [x] Repo antigo `davidbrassimoes/gota` arquivado e pasta local removida (2026-10-06)
 - [ ] `NOTES.md` do produto criado de `templates/notes.md` na próxima fatia
 
 ## Histórico
 
 - 2026-10-05: movido para `dabs-apps`.
+- 2026-10-06: CI verde; repo antigo `davidbrassimoes/gota` arquivado (só leitura).
