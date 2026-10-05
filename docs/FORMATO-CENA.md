@@ -18,6 +18,39 @@ O host (tv-app e authoring, com o mesmo algoritmo) monta o shader final assim:
 2. Uma linha por parâmetro declarado: `uniform float p_<id>;` (ou `vec3` para `color`)
 3. O corpo de `scene.frag`, com as diretivas `#include "<caminho>"` substituídas pelo conteúdo de `shared/glsl/<caminho>` (cada ficheiro incluído no máximo uma vez).
 
+### Regras do pré-processador
+
+Precisas para que a `tv-app` e o `authoring` produzam **exatamente o mesmo texto** (a implementação de referência é `authoring/src/compose.ts`; os casos em `authoring/test/fixtures/compose-cases.json` são o contrato que os testes de ambos devem cumprir):
+
+- Uma linha é uma diretiva de inclusão se, e só se, corresponder a `^s*#includes+"([^"]+)"s*# Formato de cena (v1)
+
+Uma cena vive em `scenes/<id>/` e tem dois ficheiros:
+
+```
+scenes/<id>/
+  scene.frag   corpo do fragment shader (GLSL ES 3.00, sem #version)
+  scene.json   metadados e esquema de parâmetros
+```
+
+`<id>` é kebab-case e igual ao campo `id` do JSON.
+
+## Composição do shader
+
+O host (tv-app e authoring, com o mesmo algoritmo) monta o shader final assim:
+
+1. `shared/glsl/header.glsl` — `#version 300 es`, precisão, uniforms do contrato, `out vec4 fragColor;`
+2. Uma linha por parâmetro declarado: `uniform float p_<id>;` (ou `vec3` para `color`)
+3. O corpo de `scene.frag`, com as diretivas `#include "<caminho>"` substituídas pelo conteúdo de `shared/glsl/<caminho>` (cada ficheiro incluído no máximo uma vez).
+
+ (aspas duplas; nada depois, nem comentário).
+- O caminho é relativo a `shared/glsl/`. Os ficheiros incluídos podem conter `#include`, resolvidos recursivamente com as mesmas regras.
+- Cada ficheiro é incluído **uma vez** em todo o shader; uma segunda inclusão é substituída por uma única linha de comentário `// #include "<caminho>" (already included)`.
+- Um ficheiro em falta é substituído por `#error include not found: "<caminho>"`, para o erro aparecer no compilador na posição certa.
+- `
+` é normalizado para `
+`; o resultado termina com uma única quebra de linha.
+- O host guarda, para cada linha composta, o ficheiro e a linha de origem, e usa-os para mapear os erros do compilador de volta aos ficheiros do autor.
+
 `scene.frag` define `void main()` e escreve em `fragColor` (RGB *display-referred*, 0..1, sem conversão sRGB em lado nenhum; alfa ignorado). O passe de saída trata o valor como já pronto para o ecrã.
 
 ## Uniforms do contrato

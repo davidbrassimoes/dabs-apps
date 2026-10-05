@@ -1,0 +1,335 @@
+[
+  {
+    "name": "plain body, no params, no includes",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [],
+    "bodyFile": "scenes/a/scene.frag",
+    "body": "void main() {\n    fragColor = vec4(1.0);\n}\n",
+    "includes": {},
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\nvoid main() {\n    fragColor = vec4(1.0);\n}\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "scenes/a/scene.frag",
+          1
+        ],
+        [
+          "scenes/a/scene.frag",
+          2
+        ],
+        [
+          "scenes/a/scene.frag",
+          3
+        ]
+      ]
+    }
+  },
+  {
+    "name": "one uniform line per param; color becomes vec3; declared in order",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [
+      {
+        "id": "speed",
+        "label": "Speed",
+        "type": "float",
+        "min": 0,
+        "max": 1,
+        "default": 0.5
+      },
+      {
+        "id": "bands",
+        "label": "Bands",
+        "type": "int",
+        "min": 1,
+        "max": 5,
+        "default": 3
+      },
+      {
+        "id": "glow",
+        "label": "Glow",
+        "type": "bool",
+        "default": true
+      },
+      {
+        "id": "tint",
+        "label": "Tint",
+        "type": "color",
+        "default": "#ff8800"
+      }
+    ],
+    "bodyFile": "scenes/b/scene.frag",
+    "body": "void main() { fragColor = vec4(p_speed, p_bands, float(p_glow), 1.0) * vec4(p_tint, 1.0); }\n",
+    "includes": {},
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\nuniform float p_speed;\nuniform float p_bands;\nuniform float p_glow;\nuniform vec3 p_tint;\nvoid main() { fragColor = vec4(p_speed, p_bands, float(p_glow), 1.0) * vec4(p_tint, 1.0); }\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "<params>",
+          1
+        ],
+        [
+          "<params>",
+          2
+        ],
+        [
+          "<params>",
+          3
+        ],
+        [
+          "<params>",
+          4
+        ],
+        [
+          "scenes/b/scene.frag",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "name": "include is replaced in place; second include of the same file becomes one comment line",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [],
+    "bodyFile": "scenes/c/scene.frag",
+    "body": "#include \"lib/a.glsl\"\n#include \"lib/a.glsl\"\nvoid main() { fragColor = vec4(fa()); }\n",
+    "includes": {
+      "lib/a.glsl": "float fa() { return 0.5; }\n"
+    },
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\nfloat fa() { return 0.5; }\n// #include \"lib/a.glsl\" (already included)\nvoid main() { fragColor = vec4(fa()); }\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "shared/glsl/lib/a.glsl",
+          1
+        ],
+        [
+          "scenes/c/scene.frag",
+          2
+        ],
+        [
+          "scenes/c/scene.frag",
+          3
+        ]
+      ]
+    }
+  },
+  {
+    "name": "nested includes are expanded recursively; once-only applies across nesting",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [],
+    "bodyFile": "scenes/d/scene.frag",
+    "body": "#include \"lib/b.glsl\"\n#include \"lib/a.glsl\"\nvoid main() { fragColor = vec4(fb()); }\n",
+    "includes": {
+      "lib/a.glsl": "float fa() { return 0.5; }\n",
+      "lib/b.glsl": "#include \"lib/a.glsl\"\nfloat fb() { return fa() * 2.0; }\n"
+    },
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\nfloat fa() { return 0.5; }\nfloat fb() { return fa() * 2.0; }\n// #include \"lib/a.glsl\" (already included)\nvoid main() { fragColor = vec4(fb()); }\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "shared/glsl/lib/a.glsl",
+          1
+        ],
+        [
+          "shared/glsl/lib/b.glsl",
+          2
+        ],
+        [
+          "scenes/d/scene.frag",
+          2
+        ],
+        [
+          "scenes/d/scene.frag",
+          3
+        ]
+      ]
+    }
+  },
+  {
+    "name": "missing include becomes an #error line at the same position",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [],
+    "bodyFile": "scenes/e/scene.frag",
+    "body": "#include \"lib/missing.glsl\"\nvoid main() { fragColor = vec4(0.0); }\n",
+    "includes": {
+      "lib/missing.glsl": null
+    },
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n#error include not found: \"lib/missing.glsl\"\nvoid main() { fragColor = vec4(0.0); }\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "scenes/e/scene.frag",
+          1
+        ],
+        [
+          "scenes/e/scene.frag",
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "name": "include directive matching: leading whitespace ok; trailing text or single quotes are not includes",
+    "header": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\n",
+    "params": [],
+    "bodyFile": "scenes/f/scene.frag",
+    "body": "   #include \"lib/a.glsl\"   \n// #include \"lib/a.glsl\" (commented out: not a directive)\n#include 'lib/a.glsl'\n#include \"lib/a.glsl\" // trailing comment\nvoid main() { fragColor = vec4(fa()); }\n",
+    "includes": {
+      "lib/a.glsl": "float fa() { return 0.5; }\n"
+    },
+    "expected": {
+      "source": "#version 300 es\nprecision highp float;\nuniform float uTime;\nout vec4 fragColor;\nfloat fa() { return 0.5; }\n// #include \"lib/a.glsl\" (commented out: not a directive)\n#include 'lib/a.glsl'\n#include \"lib/a.glsl\" // trailing comment\nvoid main() { fragColor = vec4(fa()); }\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "shared/glsl/header.glsl",
+          3
+        ],
+        [
+          "shared/glsl/header.glsl",
+          4
+        ],
+        [
+          "shared/glsl/lib/a.glsl",
+          1
+        ],
+        [
+          "scenes/f/scene.frag",
+          2
+        ],
+        [
+          "scenes/f/scene.frag",
+          3
+        ],
+        [
+          "scenes/f/scene.frag",
+          4
+        ],
+        [
+          "scenes/f/scene.frag",
+          5
+        ]
+      ]
+    }
+  },
+  {
+    "name": "CRLF input is normalised to LF; missing final newline is tolerated",
+    "header": "#version 300 es\r\nout vec4 fragColor;",
+    "params": [],
+    "bodyFile": "scenes/g/scene.frag",
+    "body": "void main() {\r\n    fragColor = vec4(0.0);\r\n}",
+    "includes": {},
+    "expected": {
+      "source": "#version 300 es\nout vec4 fragColor;\nvoid main() {\n    fragColor = vec4(0.0);\n}\n",
+      "origins": [
+        [
+          "shared/glsl/header.glsl",
+          1
+        ],
+        [
+          "shared/glsl/header.glsl",
+          2
+        ],
+        [
+          "scenes/g/scene.frag",
+          1
+        ],
+        [
+          "scenes/g/scene.frag",
+          2
+        ],
+        [
+          "scenes/g/scene.frag",
+          3
+        ]
+      ]
+    }
+  }
+]

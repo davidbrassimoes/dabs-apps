@@ -31,6 +31,7 @@ cd authoring
 npm install            # uma vez
 npm run dev            # http://localhost:5180/  (watch + hot reload)
 npm run check          # tsc --noEmit
+npm test               # testes da composição de shaders (node --test, fixtures em test/fixtures)
 npm run build          # bundle único, sem servidor
 node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chromium headless (SwiftShader),
                               # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
@@ -53,6 +54,7 @@ dev-server.mjs     servidor sem dependências + esbuild em watch
 index.html         esqueleto da página (sem framework)
 style.css
 scripts/smoke.mjs  teste de fumo headless (DevTools Protocol, sem dependências)
+test/              testes da composição; test/fixtures/compose-cases.json é o contrato partilhado com a tv-app
 src/
   main.ts          arranque, painéis, hot reload, loop
   compose.ts       composição header + params + #include (referência para a tv-app)

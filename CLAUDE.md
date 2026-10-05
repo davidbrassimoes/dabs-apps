@@ -79,7 +79,7 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 
 | Componente | Compilar | Correr | Testar |
 |---|---|---|---|
-| authoring | `cd authoring && npm install && npm run build` | `npm run dev` → http://localhost:5180/ | `npm run check` (tipos) · `node scripts/smoke.mjs` (headless, com o servidor a correr) |
+| authoring | `cd authoring && npm install && npm run build` | `npm run dev` → http://localhost:5180/ | `npm test` (composição de shaders) · `npm run check` (tipos) · `node scripts/smoke.mjs --gpu` (headless, com o servidor a correr) |
 | tv-app | _a definir_ | _a definir_ | _a definir_ |
 | signals-core | _a definir_ | — | _a definir_ |
 | pc-bridge | _a definir_ | _a definir_ | _a definir_ |
