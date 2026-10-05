@@ -21,6 +21,10 @@ import android.widget.TextView
  * Fullscreen renderer. Remote: ◀ ▶ change scene, OK toggles the diagnostic overlay.
  * Frames are paced by Choreographer (vsync) at the scene's fps cap, so the GL thread
  * only renders when asked (RENDERMODE_WHEN_DIRTY).
+ *
+ * Benchmark (step 0.5), from adb:
+ *   am start -n dev.santavibes.tv/.MainActivity --ez bench true [--es scales 0.25,0.33,0.4,0.5] [--es scenes aurora,nebula]
+ * renders continuously without vsync and logs "bench" lines (see SceneRenderer.Bench).
  */
 class MainActivity : Activity() {
     private lateinit var glView: GLSurfaceView
@@ -77,19 +81,26 @@ class MainActivity : Activity() {
     }
 
     private lateinit var library: SceneLibrary
+    private var benchMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         library = SceneLibrary(assets)
         renderer = SceneRenderer(library, library.profile("tv"))
+        benchMode = intent.getBooleanExtra("bench", false)
+        if (benchMode) {
+            val scales = (intent.getStringExtra("scales") ?: "0.25,0.33,0.4,0.5").split(",").map { it.trim().toDouble() }.toDoubleArray()
+            val ids = intent.getStringExtra("scenes")?.split(",")?.map { it.trim() }?.toSet()
+            renderer.bench = SceneRenderer.Bench(scales, ids)
+        }
 
         glView = GLSurfaceView(this).apply {
             setEGLContextClientVersion(3)
             setEGLConfigChooser(8, 8, 8, 8, 0, 0)
             preserveEGLContextOnPause = true
             setRenderer(renderer)
-            renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+            renderMode = if (benchMode) GLSurfaceView.RENDERMODE_CONTINUOUSLY else GLSurfaceView.RENDERMODE_WHEN_DIRTY
         }
         overlay = TextView(this).apply {
             typeface = Typeface.MONOSPACE
@@ -114,7 +125,7 @@ class MainActivity : Activity() {
         glView.onResume()
         running = true
         nextDueNs = 0L
-        Choreographer.getInstance().postFrameCallback(frameCallback)
+        if (!benchMode) Choreographer.getInstance().postFrameCallback(frameCallback)
         ui.post(tick)
     }
 

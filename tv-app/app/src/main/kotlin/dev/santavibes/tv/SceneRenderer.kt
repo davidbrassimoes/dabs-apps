@@ -1,5 +1,6 @@
 package dev.santavibes.tv
 
+import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
@@ -50,6 +51,15 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     val stats = FrameStats()
     private val pendingStep = AtomicInteger(0)
 
+    /**
+     * Benchmark (step 0.5): set before the surface exists. Renders without vsync and walks
+     * output-pass-only, then every scene x scale, logging one "bench" line per step.
+     */
+    class Bench(val scales: DoubleArray, val sceneIds: Set<String>?, val warmS: Double = 2.0, val measureS: Double = 4.0)
+
+    var bench: Bench? = null
+    @Volatile var benchDone = false; private set
+
     /** Ask the GL thread to move `delta` scenes forward/back (D-pad). */
     fun step(delta: Int) {
         pendingStep.addAndGet(delta)
@@ -69,6 +79,17 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var values = FloatArray(0)
     private val imageInfo = floatArrayOf(0f, 1f, 0f, 0f)
     private var lastFrameNs = 0L
+    private var scaleOverride = 0.0 // > 0: replaces the scene/profile renderScale (benchmark)
+
+    // ---- benchmark state (GL thread)
+    private var benchOrder = IntArray(0)
+    private var benchSceneIdx = -1 // -1 = output pass only
+    private var benchScaleIdx = 0
+    private var benchStartNs = 0L
+    private var benchN = 0
+    private val benchIntervals = FloatArray(4096)
+    private val benchCpu = FloatArray(4096)
+    private var skipScenePass = false
 
     private var output = 0
     private var oScene = -1
@@ -97,6 +118,14 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         oBrightness = u("uBrightness"); oContrast = u("uContrast"); oSaturation = u("uSaturation")
         oGamma = u("uGamma"); oBlackFloor = u("uBlackFloor"); oTemperature = u("uTemperature"); oDither = u("uDither")
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
+        bench?.let { b ->
+            EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0) // measure GPU cost, not vsync
+            benchOrder = lib.scenes.indices.filter { b.sceneIds == null || lib.scenes[it].def.id in b.sceneIds }.toIntArray()
+            benchSceneIdx = -1
+            benchScaleIdx = 0
+            skipScenePass = true
+            Log.i(SceneLibrary.TAG, "bench start: ${benchOrder.size} scenes x ${b.scales.size} scales, warm ${b.warmS}s, measure ${b.measureS}s, vsync off")
+        }
         val first = if (sceneIndex in lib.scenes.indices) sceneIndex else 0
         sceneIndex = -1
         if (lib.scenes.isNotEmpty()) loadScene(first)
@@ -131,8 +160,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         sceneTime += dt
         synth.update(dt, sceneTime)
 
-        // --- scene pass -> FBO at renderScale
+        // --- scene pass -> FBO at renderScale (skipped while benchmarking the output pass alone)
         val src = if (pass.feedback) targets[ping] else null
+        if (!skipScenePass) {
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, dst.fbo)
         GLES30.glViewport(0, 0, dst.width, dst.height)
         GLES30.glUseProgram(pass.program)
@@ -156,6 +186,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         }
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
         if (pass.feedback) ping = 1 - ping
+        }
 
         // --- output pass -> surface at native resolution
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
@@ -179,7 +210,60 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         GLES30.glUniform1f(oDither, profile.dither)
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
-        stats.record(now, intervalMs, ((System.nanoTime() - now) / 1e6).toFloat())
+        val cpuMs = ((System.nanoTime() - now) / 1e6).toFloat()
+        stats.record(now, intervalMs, cpuMs)
+        val b = bench
+        if (b != null && !benchDone) benchTick(b, now, intervalMs, cpuMs)
+    }
+
+    // ------------------------------------------------------------ benchmark (allocates only between steps)
+
+    private fun benchTick(b: Bench, now: Long, intervalMs: Float, cpuMs: Float) {
+        if (benchStartNs == 0L) benchStartNs = now
+        val elapsed = (now - benchStartNs) / 1e9
+        if (elapsed >= b.warmS && intervalMs > 0f && benchN < benchIntervals.size) {
+            benchIntervals[benchN] = intervalMs
+            benchCpu[benchN] = cpuMs
+            benchN++
+        }
+        if (elapsed < b.warmS + b.measureS) return
+
+        // Step finished: log it, then move on.
+        val label = if (benchSceneIdx < 0) "output-only" else lib.scenes[benchOrder[benchSceneIdx]].def.id
+        var sum = 0.0
+        var sumCpu = 0.0
+        for (i in 0 until benchN) { sum += benchIntervals[i]; sumCpu += benchCpu[i] }
+        val avg = if (benchN > 0) sum / benchN else 0.0
+        java.util.Arrays.sort(benchIntervals, 0, benchN)
+        val p95 = if (benchN > 0) benchIntervals[((benchN - 1) * 95) / 100] else 0f
+        Log.i(
+            SceneLibrary.TAG,
+            "bench scene=%s scale=%.2f render=%dx%d frames=%d avg=%.2f ms p95=%.2f ms fps=%.1f cpu=%.2f ms".format(
+                java.util.Locale.ROOT, label, if (benchSceneIdx < 0) 0.0 else renderScale, renderWidth, renderHeight,
+                benchN, avg, p95, if (avg > 0) 1000.0 / avg else 0.0, if (benchN > 0) sumCpu / benchN else 0.0,
+            ),
+        )
+        benchN = 0
+        benchStartNs = 0L
+        if (benchSceneIdx < 0) {
+            skipScenePass = false
+            benchSceneIdx = 0
+            benchScaleIdx = 0
+        } else if (++benchScaleIdx >= b.scales.size) {
+            benchScaleIdx = 0
+            if (++benchSceneIdx >= benchOrder.size) {
+                benchDone = true
+                scaleOverride = 0.0
+                Log.i(SceneLibrary.TAG, "bench done")
+                return
+            }
+        }
+        val target = benchOrder[benchSceneIdx]
+        scaleOverride = b.scales[benchScaleIdx]
+        if (target != sceneIndex) loadScene(target) else {
+            renderScale = scaleOverride
+            ensureTargets(force = true)
+        }
     }
 
     // ------------------------------------------------------------ scene switching (not per frame)
@@ -227,7 +311,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         sceneIndex = index
         lastError = null
         fpsCap = def.fps ?: profile.maxFps
-        renderScale = def.renderScale ?: profile.renderScale
+        renderScale = if (scaleOverride > 0) scaleOverride else def.renderScale ?: profile.renderScale
         sceneTime = 0.0
         ensureTargets(force = true)
         stats.reset(System.nanoTime())
