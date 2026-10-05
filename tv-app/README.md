@@ -72,5 +72,20 @@ Primeira passagem, 2026-10-05: build debug, perfil `tv`, surface 1920×1080, sin
 
 **Alocações** (60 s parado na `aurora`, overlay escondido): em 6 janelas, 4 a 0 B/s e 2 com um único bloco TLAB de 32 KB, compatível com a linha de log formatada na thread de UI de 10 em 10 s. O loop de render fica abaixo da resolução do contador (< ~60 B/frame).
 
-**Conclusão provisória:** a GE9215 é bastante mais fraca do que o PC sugere (no PC estas cenas gastam 0,2–0,7 ms de GPU). Faltam: medir sem limite de fps para separar o custo do passe de saída a 1080p do custo da cena, medir cada cena a várias `renderScale` e decidir entre escala por cena, otimização dos shaders e escala dinâmica (0.5).
+### Benchmark (sem vsync), 2026-10-05
+
+`am start -n dev.santavibes.tv/.MainActivity --ez bench true`: o passe de saída sozinho e depois cada cena a 0.25, 0.33, 0.4 e 0.5 (2 s de aquecimento, 4 s de medição). Valores = tempo médio por frame **incluindo** o passe de saída a 1080p.
+
+| | Antes | Ruído por textura (v3) + passe de saída otimizado |
+|---|---|---|
+| Passe de saída sozinho | 15,7 ms | **9,4 ms** |
+| nebula 0.5 / 0.33 | 107,0 / 55,3 ms | 50,5 / **27,4 ms** |
+| aurora 0.5 / 0.33 | 80,1 / 43,5 ms | 40,4 / **22,9 ms** |
+| marble 0.5 / 0.4 | 71,8 / 51,4 ms | 35,2 / **26,0 ms** |
+| liquid-light 0.5 / 0.33 | 65,9 / 37,4 ms | 44,6 / **24,8 ms** |
+| plasma 0.5 | 21,1 ms | **15,3 ms** |
+
+Com estes números, cada cena ficou com a `renderScale` que mantém o p95 abaixo de ~28 ms (orçamento de 33,3 ms a 30 fps): 0.33 para aurora, nebula, veils, liquid-light e flow-particles; 0.4 para ink-bloom, marble, glitch-drift e spiral-melt; as restantes sem mudança.
+
+**Por fazer:** confirmar no modo normal (com limite de fps) que todas ficam no limite; teste de 30 min (aquecimento); custo do crossfade quando chegar à tv-app (soma das duas cenas).
 

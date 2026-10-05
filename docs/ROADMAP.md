@@ -26,7 +26,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - troca de cena com o comando (D-pad esquerda/direita),
   - overlay de diagnóstico,
   - **zero alocações por frame**.
-- [~] **0.5 Medição na box** (primeira passagem em `tv-app/README.md`: 6 cenas a ≥ limite, 9 entre 9 e 19 fps a 960×540) — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
+- [~] **0.5 Medição na box** (2026-10-05: modo benchmark; ruído por textura (formato v3) e passe de saída otimizado — cenas ~2,2× e saída 15,7 → 9,4 ms; `renderScale` por cena escolhida pelos números, tudo em `tv-app/README.md`. Falta: verificar no modo normal, teste de 30 min, decidir se a escala dinâmica é precisa) — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
 - [~] **0.6 Drift e transições** (authoring feito em 2026-10-05: drift determinista com casos partilhados, variação de paleta em OKLab, crossfade entre cenas; falta a tv-app, depois do 0.4) — drift de parâmetros e crossfade entre cenas (no authoring e na tv-app). Incluir **variação de paleta** no host (pedido do dono, 2026-10-05): cada cena pode ter várias paletas em `scene.json` e o host roda entre elas devagar, ou deriva o matiz; as cenas continuam a ler só `uPalette`.
 
 **Critérios de aceitação:**
