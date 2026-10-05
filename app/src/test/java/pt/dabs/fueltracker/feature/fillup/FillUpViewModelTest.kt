@@ -252,6 +252,29 @@ class FillUpViewModelTest {
     }
 
     @Test
+    fun `station name is suggested from the receipt text`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        assertEquals("Repsol Loures B-Sentido N/S", viewModel.uiState.value.stationName)
+    }
+
+    @Test
+    fun `a name already given to the station nif wins over the receipt text`() = runTest {
+        val named = existing + fillUp(3, "2026-02-10", 11_200, 40_000).copy(stationNif = "503769959", stationName = "Repsol A8 Loures")
+        val viewModel = newViewModel(FakeFillUpRepository(named))
+        viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        assertEquals("Repsol A8 Loures", viewModel.uiState.value.stationName)
+    }
+
+    @Test
+    fun `a station name typed by the user is never replaced`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onStationNameChange("Bombas da vila")
+        viewModel.onReceiptScanned(realReceiptQr, realReceiptRows())
+        assertEquals("Bombas da vila", viewModel.uiState.value.stationName)
+    }
+
+    @Test
     fun `receipt photo without qr uses the printed total`() = runTest {
         val viewModel = newViewModel(FakeFillUpRepository(existing))
         viewModel.onReceiptScanned(null, realReceiptRows())

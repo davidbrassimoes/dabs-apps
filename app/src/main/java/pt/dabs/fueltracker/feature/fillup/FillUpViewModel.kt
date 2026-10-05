@@ -28,6 +28,7 @@ import pt.dabs.fueltracker.core.scanning.AtQrCode
 import pt.dabs.fueltracker.core.scanning.AtQrCodeParser
 import pt.dabs.fueltracker.core.scanning.AtQrParseResult
 import pt.dabs.fueltracker.core.scanning.ReceiptAmounts
+import pt.dabs.fueltracker.core.scanning.ReceiptStationParser
 import pt.dabs.fueltracker.core.scanning.ReceiptTextParser
 import pt.dabs.fueltracker.navigation.FillUpRoute
 import java.time.Clock
@@ -210,6 +211,7 @@ class FillUpViewModel(
         _uiState.update { it.copy(ocrDebug = OcrDebug(qrRaw?.takeIf { raw -> raw.isNotBlank() }, ocrRows)) }
         if (qrRaw.isNullOrBlank()) {
             applyTextOnlyReceipt(ocrRows)
+            suggestStationName(stationNif = null, ocrRows)
             return
         }
         when (val result = AtQrCodeParser.parse(qrRaw)) {
@@ -217,8 +219,23 @@ class FillUpViewModel(
             is AtQrParseResult.Success -> {
                 applyReceipt(result.code)
                 applyOcr(ReceiptTextParser.parse(ocrRows, result.code.totalCents))
+                suggestStationName(result.code.issuerNif, ocrRows)
             }
         }
+    }
+
+    /**
+     * Preenche o posto se estiver vazio: primeiro o nome que o utilizador já deu a este NIF noutro
+     * abastecimento (o mais recente), senão a marca e o local lidos no talão.
+     */
+    private fun suggestStationName(stationNif: String?, ocrRows: List<String>) {
+        if (_uiState.value.stationName.isNotBlank()) return
+        val known = stationNif?.let { nif ->
+            existing.filter { it.id != fillUpId && it.stationNif == nif && !it.stationName.isNullOrBlank() }
+                .maxByOrNull { it.dateTime }?.stationName
+        }
+        val suggestion = known ?: ReceiptStationParser.suggestName(ocrRows) ?: return
+        _uiState.update { it.copy(stationName = suggestion) }
     }
 
     /** Talão sem QR legível: o total impresso faz as vezes do total do QR. */

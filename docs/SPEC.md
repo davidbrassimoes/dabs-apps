@@ -35,7 +35,7 @@ O utilizador **atesta sempre**, por isso cada abastecimento fecha um ciclo cheio
 | discountCents | Long | descontos do talão em cêntimos (positivos, default 0); `litros × preço/litro = total + desconto` |
 | isFullTank | Boolean | default true |
 | stationNif | String? | do QR code |
-| stationName | String? | opcional, editável |
+| stationName | String? | opcional, editável; sugerido ao ler o talão: o nome já dado a esse NIF noutro abastecimento, senão a marca e o local lidos no texto (ex.: "Repsol Loures B-Sentido N/S") |
 | atcud | String? | do QR code; **único** quando presente (evita duplicados) |
 | buyerNifPresent | Boolean? | o QR indica se a fatura tem NIF do comprador |
 | notes | String? | |
