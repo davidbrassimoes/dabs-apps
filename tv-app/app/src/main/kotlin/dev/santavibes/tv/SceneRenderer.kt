@@ -4,6 +4,7 @@ import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
+import dev.santavibes.core.OutputGrade
 import dev.santavibes.core.ParamType
 import dev.santavibes.core.Profile
 import dev.santavibes.core.SceneFormat
@@ -98,14 +99,15 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var oScenePrev = -1
     private var oMix = -1
     private var oResolution = -1
-    private var oTime = -1
-    private var oBrightness = -1
-    private var oContrast = -1
-    private var oSaturation = -1
-    private var oGamma = -1
-    private var oBlackFloor = -1
-    private var oTemperature = -1
+    private var oNoise = -1
+    private var oDitherOffset = -1
+    private var oGrade = -1
+    private var oGradeOffset = -1
+    private var oInvGamma = -1
+    private var oLevels = -1
     private var oDither = -1
+    private val grade = OutputGrade().apply { compute(profile) }
+    private var frameCount = 0
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         // A new EGL context: every GL object from before is gone.
@@ -117,9 +119,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         output = Gl.program(lib.outputFrag)
         fun u(n: String) = GLES30.glGetUniformLocation(output, n)
         oScene = u("uScene"); oScenePrev = u("uScenePrev"); oMix = u("uMix")
-        oResolution = u("uResolution"); oTime = u("uTime")
-        oBrightness = u("uBrightness"); oContrast = u("uContrast"); oSaturation = u("uSaturation")
-        oGamma = u("uGamma"); oBlackFloor = u("uBlackFloor"); oTemperature = u("uTemperature"); oDither = u("uDither")
+        oResolution = u("uResolution"); oNoise = u("uNoise"); oDitherOffset = u("uDitherOffset")
+        oGrade = u("uGrade"); oGradeOffset = u("uGradeOffset"); oInvGamma = u("uInvGamma"); oLevels = u("uLevels"); oDither = u("uDither")
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
         bench?.let { b ->
             EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0) // measure GPU cost, not vsync
@@ -206,13 +207,15 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         GLES30.glUniform1i(oScenePrev, 1)
         GLES30.glUniform1f(oMix, 1f) // crossfade arrives with step 0.6
         GLES30.glUniform2f(oResolution, surfaceW.toFloat(), surfaceH.toFloat())
-        GLES30.glUniform1f(oTime, sceneTime.toFloat())
-        GLES30.glUniform1f(oBrightness, profile.brightness)
-        GLES30.glUniform1f(oContrast, profile.contrast)
-        GLES30.glUniform1f(oSaturation, profile.saturation)
-        GLES30.glUniform1f(oGamma, profile.gamma)
-        GLES30.glUniform1f(oBlackFloor, profile.blackFloor)
-        GLES30.glUniform1f(oTemperature, profile.temperature)
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, noise)
+        GLES30.glUniform1i(oNoise, 2)
+        frameCount++
+        GLES30.glUniform2f(oDitherOffset, ((frameCount * 73) and 255).toFloat(), ((frameCount * 151) and 255).toFloat())
+        GLES30.glUniformMatrix3fv(oGrade, 1, false, grade.mat, 0)
+        GLES30.glUniform3fv(oGradeOffset, 1, grade.offset, 0)
+        GLES30.glUniform1f(oInvGamma, grade.invGamma)
+        GLES30.glUniform2fv(oLevels, 1, grade.levels, 0)
         GLES30.glUniform1f(oDither, profile.dither)
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 

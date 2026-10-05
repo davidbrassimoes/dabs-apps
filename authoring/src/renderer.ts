@@ -23,6 +23,7 @@ import {
   type GLInfo,
   type Target,
 } from './gl';
+import { computeGrade } from './grade';
 import type { PaletteVariation } from './palette';
 import type { ParamDef, ParamValues, Profile, Rgb, SceneJson } from './scene';
 import type { Signals } from './signals';
@@ -82,13 +83,12 @@ interface OutputProgram {
   uScenePrev: WebGLUniformLocation | null;
   uMix: WebGLUniformLocation | null;
   uResolution: WebGLUniformLocation | null;
-  uTime: WebGLUniformLocation | null;
-  uBrightness: WebGLUniformLocation | null;
-  uContrast: WebGLUniformLocation | null;
-  uSaturation: WebGLUniformLocation | null;
-  uGamma: WebGLUniformLocation | null;
-  uBlackFloor: WebGLUniformLocation | null;
-  uTemperature: WebGLUniformLocation | null;
+  uNoise: WebGLUniformLocation | null;
+  uDitherOffset: WebGLUniformLocation | null;
+  uGrade: WebGLUniformLocation | null;
+  uGradeOffset: WebGLUniformLocation | null;
+  uInvGamma: WebGLUniformLocation | null;
+  uLevels: WebGLUniformLocation | null;
   uDither: WebGLUniformLocation | null;
 }
 
@@ -113,6 +113,10 @@ export class Renderer {
   private values: ParamValues = new Map();
   private readonly palette = new Float32Array(15);
   private readonly imageInfo = new Float32Array([0, 1, 0, 0]);
+  private readonly gradeMat = new Float32Array(9);
+  private readonly gradeOffset = new Float32Array(3);
+  private readonly levels = new Float32Array(2);
+  private frameCount = 0;
   private readonly black: WebGLTexture;
   private readonly noise: WebGLTexture;
   private image: WebGLTexture | null = null;
@@ -146,13 +150,12 @@ export class Renderer {
       uScenePrev: u('uScenePrev'),
       uMix: u('uMix'),
       uResolution: u('uResolution'),
-      uTime: u('uTime'),
-      uBrightness: u('uBrightness'),
-      uContrast: u('uContrast'),
-      uSaturation: u('uSaturation'),
-      uGamma: u('uGamma'),
-      uBlackFloor: u('uBlackFloor'),
-      uTemperature: u('uTemperature'),
+      uNoise: u('uNoise'),
+      uDitherOffset: u('uDitherOffset'),
+      uGrade: u('uGrade'),
+      uGradeOffset: u('uGradeOffset'),
+      uInvGamma: u('uInvGamma'),
+      uLevels: u('uLevels'),
       uDither: u('uDither'),
     };
   }
@@ -328,15 +331,19 @@ export class Renderer {
     const f = prevDst ? this.fade : 1;
     if (output.uMix) gl.uniform1f(output.uMix, f * f * (3 - 2 * f));
     if (output.uResolution) gl.uniform2f(output.uResolution, this.canvas.width, this.canvas.height);
-    if (output.uTime) gl.uniform1f(output.uTime, cur.time);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, this.noise);
+    if (output.uNoise) gl.uniform1i(output.uNoise, 2);
+    this.frameCount = (this.frameCount + 1) | 0;
+    if (output.uDitherOffset) gl.uniform2f(output.uDitherOffset, (this.frameCount * 73) & 255, (this.frameCount * 151) & 255);
     const pr = this.profile;
     if (pr) {
-      if (output.uBrightness) gl.uniform1f(output.uBrightness, pr.brightness);
-      if (output.uContrast) gl.uniform1f(output.uContrast, pr.contrast);
-      if (output.uSaturation) gl.uniform1f(output.uSaturation, pr.saturation);
-      if (output.uGamma) gl.uniform1f(output.uGamma, pr.gamma);
-      if (output.uBlackFloor) gl.uniform1f(output.uBlackFloor, pr.blackFloor);
-      if (output.uTemperature) gl.uniform1f(output.uTemperature, pr.temperature);
+      // The authoring panel edits the profile in place, so the grade is recomputed each frame.
+      const invGamma = computeGrade(pr, this.gradeMat, this.gradeOffset, this.levels);
+      if (output.uGrade) gl.uniformMatrix3fv(output.uGrade, false, this.gradeMat);
+      if (output.uGradeOffset) gl.uniform3fv(output.uGradeOffset, this.gradeOffset);
+      if (output.uInvGamma) gl.uniform1f(output.uInvGamma, invGamma);
+      if (output.uLevels) gl.uniform2fv(output.uLevels, this.levels);
       if (output.uDither) gl.uniform1f(output.uDither, pr.dither);
     }
     gl.drawArrays(gl.TRIANGLES, 0, 3);
