@@ -57,6 +57,7 @@ const secSignals = $('sec-signals');
 const secRender = $('sec-render');
 const secProfile = $('sec-profile');
 const secImage = $('sec-image');
+const secVary = $('sec-vary');
 
 // Debug hook for scripts/smoke.mjs (state is read-only; applyPreset drives the preset captures).
 const debug = {
@@ -362,6 +363,31 @@ const signalsUi = (() => {
   return { live };
 })();
 
+const varyUi = (() => {
+  section('Drift e variação', secVary);
+  const drift = group(secVary, 'Drift de parâmetros');
+  slider(drift, {
+    label: 'Intensidade',
+    min: 0,
+    max: 2,
+    step: 0.05,
+    value: renderer.driftAmount,
+    format: (v) => (v === 0 ? 'desligado' : `×${v.toFixed(2)}`),
+    onInput: (v) => (renderer.driftAmount = v),
+  });
+  slider(drift, {
+    label: 'Velocidade',
+    min: 0,
+    max: 4,
+    step: 1,
+    value: 0,
+    format: (v) => `×${2 ** v}`,
+    onInput: (v) => (renderer.driftSpeed = 2 ** v),
+  });
+  drift.appendChild(el('p', 'muted', 'Parâmetros com ~ vagueiam à volta do valor definido; o número a laranja é o valor em uso. Velocidade > ×1 só para pré-visualizar.'));
+  return { drift };
+})();
+
 const renderUi = (() => {
   section('Render', secRender);
   select(secRender, 'Resolução simulada', RESOLUTIONS, `${simWidth}x${simHeight}`, (v) => {
@@ -554,6 +580,14 @@ function updateStats(): void {
     `beat ${fmt(bt[0])} φ${fmt(bt[1])} ${bt[2]?.toFixed(0) ?? '0'}bpm`;
 }
 
+function updateLiveParams(): void {
+  if (!scene || !paramsPanel) return;
+  for (const p of scene.params) {
+    if (!p.drift) continue;
+    paramsPanel.live(p.id, renderer.driftAmount > 0 ? renderer.liveValue(p.id) : undefined);
+  }
+}
+
 function fmt(v: number | undefined): string {
   return (v ?? 0).toFixed(2);
 }
@@ -564,6 +598,7 @@ function loop(now: number): void {
   if (now - lastStats > 250) {
     lastStats = now;
     updateStats();
+    updateLiveParams();
   }
   requestAnimationFrame(loop);
 }

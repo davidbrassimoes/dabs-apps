@@ -107,7 +107,7 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 | `type` | `float`, `int` (enviado como float), `bool` (0/1), `color` (`vec3`, valor em hex) |
 | `min`, `max`, `default` | intervalo e valor por defeito (`color`: só `default`) |
 | `step` | opcional; granularidade na UI |
-| `drift` | 0..1 — amplitude do vaguear lento, como fração do intervalo (0 = fixo). Não se aplica a `bool`/`color`. |
+| `drift` | 0..1 — largura total (pico a pico) do vaguear lento, como fração do intervalo (0 = fixo). Não se aplica a `bool`/`color`. Algoritmo em `ARQUITETURA.md` (Drift de parâmetros). |
 | `group` | opcional; agrupa sliders na UI |
 
 ### Presets

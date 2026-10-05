@@ -6,6 +6,7 @@ Página WebGL2 **só para desenvolvimento**: iterar cenas no PC com hot reload. 
 - Composição de shaders igual à que a `tv-app` terá de fazer (`src/compose.ts` é a implementação de referência de `docs/FORMATO-CENA.md`).
 - Painel de parâmetros gerado do `scene.json`; seletor de cena, de **preset** (`presets` do `scene.json`, formato 2) e de perfil; editor da paleta (`uPalette`); botão **Copiar como preset**, que põe na área de transferência (e na consola) o JSON dos valores e da paleta atuais, pronto a colar em `presets`; sinais sintéticos (LFOs ou sliders manuais, metrónomo com BPM e botão Tap).
 - `feedback` (ping-pong RGBA16F, fallback RGBA8), `renderScale`, limite de fps, passe de saída (`shared/glsl/output.frag`) com os valores do perfil ajustáveis em runtime.
+- **Drift de parâmetros** (`src/drift.ts`, referência para a tv-app): intensidade e velocidade globais na secção "Drift e variação"; o valor em uso aparece a laranja junto de cada slider com `~`.
 - Resolução **simulada da box** (1080p por defeito) para que `uResolution` e o dithering sejam os mesmos que na TV.
 - Erros de compilação mapeados para o ficheiro e linha originais (`scene.frag`, `lib/noise.glsl`, …).
 - Largar uma imagem na página alimenta `uImage` (cenas com `image` ≠ `none`).
@@ -31,7 +32,7 @@ cd authoring
 npm install            # uma vez
 npm run dev            # http://localhost:5180/  (watch + hot reload)
 npm run check          # tsc --noEmit
-npm test               # composição de shaders (fixtures em test/fixtures) e validação de todos os scene.json, presets incluídos
+npm test               # composição de shaders e drift (fixtures partilhadas com a tv-app em test/fixtures) e validação de todos os scene.json
 npm run build          # bundle único, sem servidor
 node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chromium headless (SwiftShader),
                               # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
@@ -62,6 +63,7 @@ test/              testes da composição; test/fixtures/compose-cases.json é o
 src/
   main.ts          arranque, painéis, hot reload, loop
   compose.ts       composição header + params + #include (referência para a tv-app)
+  drift.ts         drift de parâmetros (referência para a tv-app)
   scene.ts         tipos e loaders de scene.json / perfis
   gl.ts            WebGL2: programas, FBOs, timer de GPU
   renderer.ts      passe de cena (ping-pong) + passe de saída, limite de fps, estatísticas

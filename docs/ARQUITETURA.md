@@ -71,9 +71,21 @@ Detalhes em `FONTES-IMAGEM.md`.
 ### 3. Cena
 
 Shader GLSL ES 3.00 + esquema de parâmetros. Contrato completo em `FORMATO-CENA.md`. Por cima das cenas:
-- **Drift**: cada parâmetro com `drift > 0` vagueia lentamente dentro do seu intervalo (ruído de baixa frequência), à volta do valor definido pelo utilizador.
+- **Drift**: cada parâmetro com `drift > 0` vagueia lentamente dentro do seu intervalo, à volta do valor definido pelo utilizador. Algoritmo exato em [Drift de parâmetros](#drift-de-parâmetros).
 - **Transições** entre cenas (crossfade das duas saídas ao longo de N segundos).
 - **Playlists/rotação** automática e **presets** (cena + valores de parâmetros + fonte de imagem).
+
+#### Drift de parâmetros
+
+Determinista e igual em todos os hosts (implementação de referência: `authoring/src/drift.ts`; casos partilhados: `authoring/test/fixtures/drift-cases.json`, a cumprir com tolerância 1e-9; tudo em `double`).
+
+1. **Semente**: FNV-1a de 32 bits sobre `"<id da cena>/<id do parâmetro>"` (0 passa a 1).
+2. **Três números** `u1, u2, u3` em [0, 1): três passos de xorshift32 (`x ^= x << 13; x ^= x >>> 17; x ^= x << 5`, em 32 bits sem sinal), cada um dividido por 2³².
+3. **Espectro**: `f1 = 1 / (30 + 90·u1)` Hz (período de 30 a 120 s), `f2 = 2.618·f1`, `φ1 = 2π·u2`, `φ2 = 2π·u3`.
+4. **Desvio** em [−1, 1]: `o(t) = 0.65·sin(2π·f1·t + φ1) + 0.35·sin(2π·f2·t + φ2)`.
+5. **Valor**: `clamp(base + o(t) · 0.5 · drift · intensidade · (max − min), min, max)`; `int` arredonda depois; `bool` e `color` não derivam. Ou seja, `drift` é a largura total do vaguear como fração do intervalo.
+
+`t` é o **tempo de drift** do host: soma de `dt × velocidade` desde o arranque (não reinicia ao trocar de cena; mudar a velocidade não dá saltos). `intensidade` (0 = desligado, 1 = como na cena) e `velocidade` (1 = tempo real) são definições globais do host.
 
 ### 4. Perfil de saída
 

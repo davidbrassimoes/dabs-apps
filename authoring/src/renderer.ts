@@ -15,7 +15,8 @@ import {
   type GLInfo,
   type Target,
 } from './gl';
-import type { ParamValues, Profile, Rgb, SceneJson } from './scene';
+import { driftSpec, driftValue, type DriftSpec } from './drift';
+import type { ParamDef, ParamValues, Profile, Rgb, SceneJson } from './scene';
 import type { Signals } from './signals';
 
 export interface RenderSettings {
@@ -38,6 +39,9 @@ interface ParamUniform {
   id: string;
   loc: WebGLUniformLocation;
   isColor: boolean;
+  def: ParamDef;
+  drift: DriftSpec;
+  live: number; // last uploaded value (after drift), for the panel
 }
 
 interface SceneProgram {
@@ -73,6 +77,10 @@ export class Renderer {
   readonly stats: Stats = { fps: 0, intervalMs: 0, gpuMs: 0, renderWidth: 0, renderHeight: 0, format: '-' };
   readonly timer: GpuTimer;
   paused = false;
+  /** Global drift multiplier: 0 = off, 1 = as authored in scene.json. */
+  driftAmount = 1;
+  /** Drift time runs at this rate (1 = real time). */
+  driftSpeed = 1;
 
   private scene: SceneProgram | null = null;
   private output: OutputProgram | null = null;
@@ -87,6 +95,7 @@ export class Renderer {
   private profile: Profile | null = null;
 
   private sceneTime = 0;
+  private driftTime = 0;
   private lastRender = 0;
   private intervalEma = 0;
 
@@ -131,7 +140,7 @@ export class Renderer {
     const params: ParamUniform[] = [];
     for (const p of scene.params) {
       const loc = u(`p_${p.id}`);
-      if (loc) params.push({ id: p.id, loc, isColor: p.type === 'color' });
+      if (loc) params.push({ id: p.id, loc, isColor: p.type === 'color', def: p, drift: driftSpec(scene.id, p.id), live: 0 });
     }
     const feedback = scene.feedback === true;
     this.scene = {
@@ -197,6 +206,12 @@ export class Renderer {
     return this.sceneTime;
   }
 
+  /** Value last sent to the shader for a float/int param (base + drift), or undefined. */
+  liveValue(id: string): number | undefined {
+    const p = this.scene?.params.find((x) => x.id === id);
+    return p && !p.isColor ? p.live : undefined;
+  }
+
   clearFeedback(): void {
     const gl = this.gl;
     for (const t of this.targets) {
@@ -221,6 +236,7 @@ export class Renderer {
     const dt = this.lastRender > 0 ? Math.min((nowMs - this.lastRender) / 1000, 0.25) : 0;
     this.lastRender = nowMs;
     this.sceneTime += dt;
+    this.driftTime += dt * this.driftSpeed;
     signals.update(dt, this.sceneTime);
 
     const gl = this.gl;
@@ -257,7 +273,8 @@ export class Renderer {
       if (p.isColor) {
         if (Array.isArray(v)) gl.uniform3f(p.loc, v[0], v[1], v[2]);
       } else if (typeof v === 'number') {
-        gl.uniform1f(p.loc, v);
+        p.live = driftValue(p.def, v, p.drift, this.driftTime, this.driftAmount);
+        gl.uniform1f(p.loc, p.live);
       }
     }
     gl.drawArrays(gl.TRIANGLES, 0, 3);

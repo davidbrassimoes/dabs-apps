@@ -146,7 +146,8 @@ body {
 .ctl .val { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--muted); text-align: right; }
 .ctl.disabled { opacity: 0.45; }
 
-.ctl-slider { grid-template-columns: 110px 1fr 46px; }
+.ctl-slider { grid-template-columns: 104px 1fr 54px; }
+.ctl .val.live { color: var(--accent); }
 .ctl-slider input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
 
 .ctl-check { grid-template-columns: auto 1fr; }

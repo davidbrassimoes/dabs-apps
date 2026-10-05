@@ -50,7 +50,12 @@ export interface Handle<T> {
   setDisabled(d: boolean): void;
 }
 
-export function slider(parent: HTMLElement, o: SliderOpts): Handle<number> {
+export interface SliderHandle extends Handle<number> {
+  /** Show the value actually in use (e.g. after drift) next to the set value; undefined hides it. */
+  setLive(v: number | undefined): void;
+}
+
+export function slider(parent: HTMLElement, o: SliderOpts): SliderHandle {
   const root = el('label', 'ctl ctl-slider');
   const name = el('span', 'name', o.label);
   const input = el('input');
@@ -61,11 +66,18 @@ export function slider(parent: HTMLElement, o: SliderOpts): Handle<number> {
   input.value = String(o.value);
   const out = el('span', 'val');
   const fmt = o.format ?? ((v: number) => formatNumber(v, o.step));
-  out.textContent = fmt(o.value);
+  let value = o.value;
+  let live: number | undefined;
+  const show = () => {
+    out.textContent = live === undefined ? fmt(value) : `~${fmt(live)}`;
+    out.title = live === undefined ? '' : `definido: ${fmt(value)} · em uso: ${fmt(live)}`;
+    out.classList.toggle('live', live !== undefined);
+  };
+  show();
   input.addEventListener('input', () => {
-    const v = Number(input.value);
-    out.textContent = fmt(v);
-    o.onInput(v);
+    value = Number(input.value);
+    show();
+    o.onInput(value);
   });
   root.append(name, input, out);
   parent.appendChild(root);
@@ -73,11 +85,16 @@ export function slider(parent: HTMLElement, o: SliderOpts): Handle<number> {
     root,
     set(v) {
       input.value = String(v);
-      out.textContent = fmt(v);
+      value = v;
+      show();
     },
     setDisabled(d) {
       input.disabled = d;
       root.classList.toggle('disabled', d);
+    },
+    setLive(v) {
+      live = v;
+      show();
     },
   };
 }
@@ -195,6 +212,8 @@ export function formatNumber(v: number, step: number): string {
 export interface ParamsPanel {
   /** Push a value into the UI (e.g. after reset) without firing onChange. */
   set(id: string, value: ParamValue): void;
+  /** Show the drifted value of a float/int param next to its set value. */
+  live(id: string, value: number | undefined): void;
 }
 
 export function buildParamsPanel(
@@ -205,9 +224,10 @@ export function buildParamsPanel(
 ): ParamsPanel {
   container.replaceChildren();
   const handles = new Map<string, (v: ParamValue) => void>();
+  const lives = new Map<string, (v: number | undefined) => void>();
   if (scene.params.length === 0) {
     container.appendChild(el('p', 'muted', 'Esta cena não tem parâmetros.'));
-    return { set: () => undefined };
+    return { set: () => undefined, live: () => undefined };
   }
 
   const groups = new Map<string, HTMLElement>();
@@ -255,6 +275,7 @@ export function buildParamsPanel(
         handles.set(p.id, (v) => {
           if (typeof v === 'number') h.set(v);
         });
+        if (p.drift && p.drift > 0) lives.set(p.id, (v) => h.setLive(v));
       }
     }
   }
@@ -262,6 +283,9 @@ export function buildParamsPanel(
   return {
     set(id, value) {
       handles.get(id)?.(value);
+    },
+    live(id, value) {
+      lives.get(id)?.(value);
     },
   };
 }
