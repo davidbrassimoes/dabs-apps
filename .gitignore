@@ -1,0 +1,22 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+*.local.json
+.claude/settings.local.json
+
+# Worktrees de agentes (ficam fora do histórico)
+.claude/worktrees/
+
+# Sistema operativo e editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Originais de media (ver handbook/01-stack.md): só o MEDIA.md entra
+/media/*/*
+!/media/*/MEDIA.md
+
+# Cada produto acrescenta as pastas de build da sua toolchain no seu próprio .gitignore

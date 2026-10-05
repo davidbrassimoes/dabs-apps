@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(scripts/check*)",
+      "Bash(./scripts/check*)",
+      "Bash(ls*)"
+    ],
+    "deny": [
+      "Read(./**/node_modules/**)",
+      "Read(./**/build/**)",
+      "Read(./**/dist/**)",
+      "Read(./**/out/**)",
+      "Read(./**/target/**)",
+      "Read(./**/bin/**)",
+      "Read(./**/obj/**)",
+      "Read(./**/.gradle/**)",
+      "Read(./**/.kotlin/**)",
+      "Read(./**/.turbo/**)",
+      "Read(./**/.next/**)",
+      "Read(./**/*.lock)",
+      "Read(./**/pnpm-lock.yaml)",
+      "Read(./**/package-lock.json)",
+      "Read(./**/Cargo.lock)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/*.keystore)",
+      "Read(./**/*.jks)",
+      "Read(./**/*.p12)",
+      "Read(./**/*.pem)",
+      "Read(./media/**)",
+      "Read(./**/test-photos/**)",
+      "Read(./**/*.png)",
+      "Read(./**/*.jpg)",
+      "Read(./**/*.wav)"
+    ]
+  }
+}

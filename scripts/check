@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#
+# Corre o `scripts/check` de cada produto e imprime só o que falhou.
+#
+#   scripts/check                 produtos alterados face a origin/main (ou todos, se não der para saber)
+#   scripts/check --all           todos os produtos
+#   scripts/check <nome> [...]    só estes
+#   scripts/check --since <ref>   produtos alterados desde <ref>
+#
+# Um produto é uma pasta em products/ com scripts/check executável. Código partilhado em
+# packages/ ou modules/ com scripts/check entra pela mesma regra. Quando um ficheiro fora
+# de qualquer produto muda (raiz, handbook, .github), correm todos: é mais barato do que
+# adivinhar quem depende de quê.
+
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+roots=(products packages modules)
+mode="changed"
+since=""
+named=()
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --all) mode="all" ;;
+    --since) mode="changed"; since="${2:-}"; shift ;;
+    -h|--help) sed -n '3,12p' "$0"; exit 0 ;;
+    *) mode="named"; named+=("$1") ;;
+  esac
+  shift
+done
+
+# Todos os produtos com um check.
+all_products() {
+  for r in "${roots[@]}"; do
+    [ -d "$r" ] || continue
+    for d in "$r"/*/; do
+      [ -x "${d}scripts/check" ] && echo "${d%/}"
+    done
+  done
+}
+
+# Produtos tocados desde a base; "ALL" se algo fora deles mudou ou não há base.
+changed_products() {
+  local base="$since"
+  if [ -z "$base" ]; then
+    base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main 2>/dev/null || true)"
+  fi
+  if [ -z "$base" ]; then echo ALL; return; fi
+  local files
+  files="$( { git diff --name-only "$base" HEAD; git diff --name-only; git ls-files --others --exclude-standard; } | sort -u )"
+  [ -z "$files" ] && return
+  local matched="" outside=0
+  while IFS= read -r f; do
+    local hit=0
+    for p in $(all_products); do
+      case "$f" in "$p"/*) matched="$matched $p"; hit=1 ;; esac
+    done
+    [ "$hit" -eq 0 ] && outside=1
+  done <<<"$files"
+  if [ "$outside" -eq 1 ]; then echo ALL; return; fi
+  echo "$matched" | tr ' ' '\n' | sort -u | sed '/^$/d'
+}
+
+case "$mode" in
+  all) targets="$(all_products)" ;;
+  named)
+    targets=""
+    for n in "${named[@]}"; do
+      found=""
+      for r in "${roots[@]}"; do [ -x "$r/$n/scripts/check" ] && found="$r/$n"; done
+      if [ -z "$found" ]; then echo "check: produto '$n' não tem scripts/check" >&2; exit 2; fi
+      targets="$targets"$'\n'"$found"
+    done ;;
+  changed)
+    targets="$(changed_products)"
+    [ "$targets" = "ALL" ] && targets="$(all_products)" ;;
+esac
+
+targets="$(echo "$targets" | sed '/^$/d')"
+if [ -z "$targets" ]; then echo "check: nada alterado."; exit 0; fi
+
+fail=0
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+while IFS= read -r p; do
+  if (cd "$p" && ./scripts/check) >"$tmp" 2>&1; then
+    echo "ok    $p"
+  else
+    fail=1
+    echo "FALHA $p"
+    echo "----- $p -----"
+    tail -n 80 "$tmp"
+    echo "--------------"
+  fi
+done <<<"$targets"
+
+exit "$fail"

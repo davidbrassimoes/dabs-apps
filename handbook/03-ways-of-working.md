@@ -1,0 +1,110 @@
+# Ways of working
+
+Uma ou mais pessoas, uma equipa de agentes, e uma regra que mantém tudo coerente:
+**o repo decide.**
+
+## Princípios de método
+
+1. **Agentic first.** Se um agente não consegue navegar, alterar e verificar algo sozinho,
+   a estrutura está errada, não o agente.
+2. **Explícito em vez de mágico.** Cada convenção que o agente tem de descobrir custa
+   tokens e causa erros.
+3. **Chato e estável.** APIs maduras ganham a novidades. Desviar exige medição.
+4. **Feedback rápido.** Um comando, segundos, output curto.
+5. **Handoffs por ficheiros, nunca por conversa.** Quem implementa lê o `SPEC.md` numa
+   sessão nova, sem memória de como foi escrito. É a maior poupança do setup e o que
+   impede a deriva: um agente não herda um mal-entendido que nunca ouviu.
+6. **Performance dos dois lados.** Software rápido para quem o usa; contexto pequeno para
+   quem o constrói.
+
+## Pipeline
+
+```
+brief → [researcher, se preciso] → [architect] SPEC.md
+      → ██ GATE 1: spec ██
+      → [design] mockup → ██ GATE 2: mockup ██
+      → [dev] fatias verticais (plan mode, implementação, scripts/check)
+      → [reviewer] revisão contra o spec e a barra
+      → ██ GATE 3: publicação ██
+      → [copy] texto final → ██ GATE 4: texto ██
+```
+
+## Os quatro gates
+
+O trabalho pára e espera **exatamente** nestes pontos:
+
+| Gate | Quando | Quem aprova | Registo |
+|---|---|---|---|
+| 1. Spec | Antes de existir código. O sítio mais barato para mudar de ideias. | <ADR-001> | `SPEC.md`, "Estado: aprovado (data)" |
+| 2. Mockup | Antes de a interface ser construída | <ADR-001> | `NOTES.md` |
+| 3. Publicação | Antes de algo sair para fora | <ADR-001> | `RELEASE.md` |
+| 4. Texto | Antes de texto público ir para fora | <ADR-001> | `NOTES.md` |
+
+Não são gates: fazer merge, gastar tempo de CI, escolher um nome de variável. Dentro de um
+spec aprovado o agente tem **autonomia total**: decide o como, incluindo testes e
+documentação, e só volta quando acaba ou está genuinamente bloqueado. É essa autonomia
+que torna o gate do spec digno de existir.
+
+## Os agentes (`.claude/agents/`)
+
+| Agente | Faz | Não faz | Modelo |
+|---|---|---|---|
+| `researcher` | Dossier com fontes e grau de confiança antes de um spec: mercado, requisitos de lojas, licenças, prior art | Decidir | o da sessão |
+| `architect` | Brief → `SPEC.md` em fatias verticais; revê trabalho feito contra o spec | Escrever código de produto | o da sessão |
+| `dev` | Implementa uma fatia aprovada, com testes, e deixa `scripts/check` verde | Decidir âmbito ou stack | `sonnet` |
+| `reviewer` | Revê uma fatia contra o spec, a barra e as regras duras; relata, não corrige | Mudar código | o da sessão |
+| `copy` | Texto público na voz do manifesto, honesto, com marcadores onde falta decisão | Decidir estrutura | o da sessão |
+| `design` | Tokens, componentes, acessibilidade, revisão visual | Escrever texto público | o da sessão |
+
+**Escalões de modelo.** Os agentes de julgamento (spec, revisão, pesquisa, texto) herdam o
+modelo da sessão e devem poder chegar ao melhor disponível. O `dev` corre em `sonnet`: dentro
+de um spec aprovado o trabalho é volumoso e bem delimitado, e pôr o escalão de topo aí gasta
+o limite semanal onde menos rende. **A sessão que conduz fica modesta**: corre git e
+despacha; deixa os agentes subir quando o trabalho pede.
+
+**Escrevem-se quando são precisos.** Um agente definido antes do primeiro trabalho real
+está normalmente errado. Os cinco aqui são o mínimo que dois workspaces provaram; o `design`
+só se escreve quando houver interface. Um agente novo (release, dados, hardware) nasce no
+dia em que há um trabalho para ele, do que os anteriores ensinaram.
+
+## Disciplina de contexto e custo
+
+- **`CLAUDE.md` curto.** Carrega em todas as sessões; cada linha custa para sempre.
+  Limite: 80 linhas. O que cresce vai para o handbook ou para um ADR.
+- **O handbook está dividido** para que um trabalho leia só a sua secção.
+- **Cada agente começa limpo** e lê só os seus inputs.
+- **Hooks e `scripts/check` correm builds e testes** e dizem passou ou falhou. Um agente a
+  ler logs é caro; um script a dizer "falhou, aqui está a falha" não é.
+- **Toda a sessão acaba a escrever estado** em `products/<nome>/NOTES.md` ou num ADR. A
+  próxima lê uma página em vez de repetir uma conversa.
+- **Skills e referências carregam a pedido**, nunca por antecipação.
+
+## Trabalhar a vários
+
+Vale com uma pessoa; com duas ou mais deixa de ser boa prática e passa a ser o mecanismo.
+
+- **O repo é a única memória partilhada.** A memória automática do Claude Code é por
+  máquina: o que o agente de um aprende não chega ao do outro. `knowledge/`, ADRs e
+  `NOTES.md` são a sincronização. "Não está commitado, não está decidido" vale a dobrar.
+- **`main` protegida.** Trabalho em branches curtas, PR com CI verde e uma revisão
+  (humana ou `/code-review`) antes do merge. Sem push direto a `main`.
+- **Worktrees de agentes fora do histórico.** `.claude/worktrees/` está no `.gitignore`.
+  Uma branch de agente que valha a pena guardar faz push como qualquer outra.
+- **Configuração em duas camadas.** `.claude/settings.json`, agentes e skills são do repo
+  e iguais para todos. `.claude/settings.local.json` e `~/.claude/CLAUDE.md` são de cada
+  um e ficam fora. Segredos só em `.env` locais; `.env.example` no repo.
+- **Cada produto tem um dono**, nomeado em `projects/<nome>.md`. É quem aprova os gates
+  que o ADR-001 lhe atribui e quem resolve quando duas sessões se pisam.
+- **Issues para bugs e pequenas adições**; direção estratégica e mudanças de âmbito vão
+  para `projects/<nome>.md` e, se virarem uma regra, para um ADR.
+
+## Onde se pensa
+
+Iteração de marca, UI e texto acontece em **artefactos no chat**, onde se comparam opções
+lado a lado e se deitam fora baratas. Só a versão aprovada é commitada. Depois disso vive
+em código ou num ficheiro do produto, e o artefacto é história.
+
+## Registo de decisões
+
+Tudo o que muda uma regra do handbook ganha um ADR em `handbook/decisions/`, numerado,
+datado, com o raciocínio e o que substitui. Nunca se muda uma regra em silêncio.

@@ -1,0 +1,65 @@
+# CI do workspace. Só verifica: não publica, não assina, não usa segredos.
+#
+# Um job por produto, filtrado por caminho com scripts/changed.sh, porque cada produto tem
+# a sua toolchain e nenhuma deve correr por causa de uma alteração à outra. Ações fixadas
+# por SHA completo, versão em comentário (handbook/01-stack.md).
+#
+# Para adicionar um produto: copiar o job de exemplo, trocar o nome, os caminhos e os
+# passos de instalação da toolchain. O passo final é sempre `scripts/check <nome>`.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  handbook:
+    name: Handbook e raiz (CLAUDE.md curto, scripts executáveis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: CLAUDE.md da raiz até 80 linhas
+        run: |
+          n="$(wc -l < CLAUDE.md)"
+          echo "CLAUDE.md: $n linhas"
+          test "$n" -le 80
+      - name: scripts/check de cada produto é executável
+        run: |
+          fail=0
+          for d in products/*/ packages/*/ modules/*/; do
+            [ -d "$d" ] || continue
+            [ -f "${d}scripts/check" ] || continue
+            [ -x "${d}scripts/check" ] || { echo "não executável: ${d}scripts/check"; fail=1; }
+          done
+          exit "$fail"
+
+  # ---- Exemplo: um produto Android (Gradle). Copiar e adaptar. ----
+  # exemplo-android:
+  #   name: products/exemplo (Gradle)
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with:
+  #         persist-credentials: false
+  #         fetch-depth: 0
+  #     - id: changed
+  #       run: scripts/changed.sh products/exemplo .github scripts
+  #     - if: steps.changed.outputs.changed == 'true'
+  #       uses: actions/setup-java@<SHA> # vX
+  #       with: { distribution: temurin, java-version: '21' }
+  #     - if: steps.changed.outputs.changed == 'true'
+  #       uses: gradle/actions/setup-gradle@<SHA> # vX
+  #     - if: steps.changed.outputs.changed == 'true'
+  #       run: scripts/check exemplo

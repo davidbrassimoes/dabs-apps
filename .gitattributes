@@ -1,0 +1,23 @@
+# Fim de linha LF no repo, independentemente do sistema
+* text=auto eol=lf
+
+# Scripts correm em bash também no Windows (Git Bash)
+*.sh text eol=lf
+scripts/check text eol=lf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.wav binary
+*.flac binary
+*.mp3 binary
+*.zip binary
+*.jar binary
+*.keystore binary
+*.jks binary
