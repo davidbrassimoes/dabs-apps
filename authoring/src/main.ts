@@ -23,6 +23,7 @@ import {
   type Rgb,
   type SceneJson,
 } from './scene';
+import { PaletteVariation, rotationPalettes } from './palette';
 import { Signals } from './signals';
 import {
   button,
@@ -76,6 +77,8 @@ const debug = {
 const { gl, info } = createGL(canvas);
 const renderer = new Renderer(gl, info, canvas);
 const signals = new Signals();
+const variation = new PaletteVariation();
+renderer.paletteVariation = variation;
 
 let header = '';
 let sceneIds: string[] = [];
@@ -209,7 +212,7 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   values = preset ? presetValues(json, preset) : defaultValues(json, keepValues ? values : undefined);
   palette = scenePalette(json, preset);
   renderer.setParamValues(values);
-  renderer.setPalette(palette);
+  pushPalette();
   if (changed) {
     delete overrides.renderScale;
     delete overrides.fps;
@@ -225,6 +228,17 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   location.hash = id;
 }
 
+/** Send the current palette to the renderer and rebuild the rotation set (current palette first). */
+function pushPalette(): void {
+  renderer.setPalette(palette);
+  if (!scene) return;
+  const others = [scene.defaultPalette ?? [], ...(scene.presets ?? []).map((p) => p.palette ?? [])]
+    .filter((p) => p.length === 5)
+    .map((p) => p.map(hexToRgb));
+  variation.setPalettes(sceneId, rotationPalettes(palette, others), renderer.driftClock);
+  varyUi.count.textContent = `${variation.size} paleta(s) nesta cena`;
+}
+
 function findPreset(json: SceneJson, id: string): Preset | undefined {
   return id ? json.presets?.find((p) => p.id === id) : undefined;
 }
@@ -237,7 +251,7 @@ function applyPreset(id: string): void {
   values = preset ? presetValues(scene, preset) : defaultValues(scene);
   palette = scenePalette(scene, preset);
   renderer.setParamValues(values);
-  renderer.setPalette(palette);
+  pushPalette();
   for (const [pid, v] of values) paramsPanel?.set(pid, v);
   buildPresetPanel();
 }
@@ -325,7 +339,7 @@ function buildPresetPanel(): void {
   palette.forEach((c, i) =>
     colorInput(g, String(i), rgbToHex(c), (hex) => {
       palette[i] = hexToRgb(hex);
-      renderer.setPalette(palette);
+      pushPalette();
     }),
   );
 }
@@ -384,8 +398,18 @@ const varyUi = (() => {
     format: (v) => `×${2 ** v}`,
     onInput: (v) => (renderer.driftSpeed = 2 ** v),
   });
-  drift.appendChild(el('p', 'muted', 'Parâmetros com ~ vagueiam à volta do valor definido; o número a laranja é o valor em uso. Velocidade > ×1 só para pré-visualizar.'));
-  return { drift };
+  drift.appendChild(el('p', 'muted', 'Parâmetros com ~ vagueiam à volta do valor definido; o número a laranja é o valor em uso. A velocidade também acelera a paleta; > ×1 só para pré-visualizar.'));
+
+  const pal = group(secVary, 'Paleta');
+  const st = variation.settings;
+  checkbox(pal, 'Rodar entre as paletas da cena', st.rotate, (v) => (st.rotate = v));
+  slider(pal, { label: 'Mudar a cada', min: 0.5, max: 10, step: 0.5, value: st.holdS / 60, format: (v) => `${v} min`, onInput: (v) => (st.holdS = v * 60) });
+  slider(pal, { label: 'Transição', min: 5, max: 60, step: 1, value: st.fadeS, format: (v) => `${v} s`, onInput: (v) => (st.fadeS = v) });
+  slider(pal, { label: 'Derivar matiz', min: 0, max: 60, step: 1, value: st.hueDeg, format: (v) => (v === 0 ? 'desligado' : `±${v}°`), onInput: (v) => (st.hueDeg = v) });
+  const count = el('div', 'muted');
+  const now = el('div', 'live mono');
+  pal.append(count, now);
+  return { drift, count, now };
 })();
 
 const renderUi = (() => {
@@ -580,6 +604,15 @@ function updateStats(): void {
     `beat ${fmt(bt[0])} φ${fmt(bt[1])} ${bt[2]?.toFixed(0) ?? '0'}bpm`;
 }
 
+function updatePaletteStatus(): void {
+  const st = variation.settings;
+  const parts: string[] = [];
+  if (st.rotate && variation.size > 1)
+    parts.push(variation.mix > 0 ? `paleta ${variation.current + 1} → ${variation.next + 1} (${Math.round(variation.mix * 100)}%)` : `paleta ${variation.current + 1}/${variation.size}`);
+  if (st.hueDeg > 0) parts.push(`matiz ±${st.hueDeg}°`);
+  varyUi.now.textContent = parts.length ? parts.join(' · ') : 'sem variação';
+}
+
 function updateLiveParams(): void {
   if (!scene || !paramsPanel) return;
   for (const p of scene.params) {
@@ -599,6 +632,7 @@ function loop(now: number): void {
     lastStats = now;
     updateStats();
     updateLiveParams();
+    updatePaletteStatus();
   }
   requestAnimationFrame(loop);
 }

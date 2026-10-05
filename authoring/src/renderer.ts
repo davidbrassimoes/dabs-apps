@@ -16,6 +16,7 @@ import {
   type Target,
 } from './gl';
 import { driftSpec, driftValue, type DriftSpec } from './drift';
+import type { PaletteVariation } from './palette';
 import type { ParamDef, ParamValues, Profile, Rgb, SceneJson } from './scene';
 import type { Signals } from './signals';
 
@@ -81,6 +82,8 @@ export class Renderer {
   driftAmount = 1;
   /** Drift time runs at this rate (1 = real time). */
   driftSpeed = 1;
+  /** When set, fills uPalette every frame (rotation / hue drift); otherwise setPalette() holds. */
+  paletteVariation: PaletteVariation | null = null;
 
   private scene: SceneProgram | null = null;
   private output: OutputProgram | null = null;
@@ -202,6 +205,11 @@ export class Renderer {
     this.lastRender = 0;
   }
 
+  /** Host drift time (seconds × drift speed since start); drives drift and palette variation. */
+  get driftClock(): number {
+    return this.driftTime;
+  }
+
   get time(): number {
     return this.sceneTime;
   }
@@ -257,6 +265,7 @@ export class Renderer {
     if (scene.uBands) gl.uniform4fv(scene.uBands, signals.bands);
     if (scene.uMood) gl.uniform4fv(scene.uMood, signals.mood);
     if (scene.uBeat) gl.uniform4fv(scene.uBeat, signals.beat);
+    this.paletteVariation?.write(this.palette, this.driftTime);
     if (scene.uPalette) gl.uniform3fv(scene.uPalette, this.palette);
     if (scene.uImageInfo) gl.uniform4fv(scene.uImageInfo, this.imageInfo);
 

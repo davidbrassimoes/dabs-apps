@@ -87,6 +87,15 @@ Determinista e igual em todos os hosts (implementação de referência: `authori
 
 `t` é o **tempo de drift** do host: soma de `dt × velocidade` desde o arranque (não reinicia ao trocar de cena; mudar a velocidade não dá saltos). `intensidade` (0 = desligado, 1 = como na cena) e `velocidade` (1 = tempo real) são definições globais do host.
 
+#### Variação de paleta
+
+Feita no host, antes de enviar `uPalette`; as cenas não sabem que existe (implementação de referência: `authoring/src/palette.ts`). Duas variações independentes, ambas em **OKLab** (misturar e rodar o matiz aí mantém a luminosidade percebida, logo a quantidade de luz na sala):
+
+- **Rodar**: o conjunto é a paleta atual, depois a `defaultPalette` e as paletas dos presets da cena, sem repetidas. Contando o tempo de drift desde a última mudança do conjunto (`local`), com `ciclo = permanência + transição`: `k = floor(local / ciclo)`, mostra a paleta `k mod n` e, nos últimos `transição` segundos do ciclo, mistura para `(k + 1) mod n` com `smoothstep`.
+- **Derivar matiz**: roda `(a, b)` de cada cor por `graus × o(t)`, onde `o(t)` é o desvio de drift do pseudo-parâmetro `"@palette"` da cena (mesmo algoritmo da secção anterior).
+
+Converte-se de volta para sRGB e limita-se a 0..1. Definições do host: rodar (sim/não), permanência, transição e amplitude do matiz; na box virão da página de controlo (Fase 3).
+
 ### 4. Perfil de saída
 
 Passe final (`shared/glsl/output.frag`) independente da cena: brilho máximo, contraste, saturação, gama, piso de preto, temperatura de cor, dithering. Também define `renderScale` e `maxFps` por defeito. Perfis em `shared/profiles/*.json`; ajustáveis em runtime pela página de controlo (o perfil do projetor afina-se quando ele for comprado).

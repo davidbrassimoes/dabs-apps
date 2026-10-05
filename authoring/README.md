@@ -7,6 +7,7 @@ Página WebGL2 **só para desenvolvimento**: iterar cenas no PC com hot reload. 
 - Painel de parâmetros gerado do `scene.json`; seletor de cena, de **preset** (`presets` do `scene.json`, formato 2) e de perfil; editor da paleta (`uPalette`); botão **Copiar como preset**, que põe na área de transferência (e na consola) o JSON dos valores e da paleta atuais, pronto a colar em `presets`; sinais sintéticos (LFOs ou sliders manuais, metrónomo com BPM e botão Tap).
 - `feedback` (ping-pong RGBA16F, fallback RGBA8), `renderScale`, limite de fps, passe de saída (`shared/glsl/output.frag`) com os valores do perfil ajustáveis em runtime.
 - **Drift de parâmetros** (`src/drift.ts`, referência para a tv-app): intensidade e velocidade globais na secção "Drift e variação"; o valor em uso aparece a laranja junto de cada slider com `~`.
+- **Variação de paleta** (`src/palette.ts`): rodar entre as paletas da cena (atual, `defaultPalette`, presets) com transição, e/ou derivar o matiz; em OKLab. Desligada por defeito para não mexer na paleta enquanto se afina um preset.
 - Resolução **simulada da box** (1080p por defeito) para que `uResolution` e o dithering sejam os mesmos que na TV.
 - Erros de compilação mapeados para o ficheiro e linha originais (`scene.frag`, `lib/noise.glsl`, …).
 - Largar uma imagem na página alimenta `uImage` (cenas com `image` ≠ `none`).
@@ -64,6 +65,7 @@ src/
   main.ts          arranque, painéis, hot reload, loop
   compose.ts       composição header + params + #include (referência para a tv-app)
   drift.ts         drift de parâmetros (referência para a tv-app)
+  palette.ts       variação de paleta no host: rotação e matiz em OKLab
   scene.ts         tipos e loaders de scene.json / perfis
   gl.ts            WebGL2: programas, FBOs, timer de GPU
   renderer.ts      passe de cena (ping-pong) + passe de saída, limite de fps, estatísticas
