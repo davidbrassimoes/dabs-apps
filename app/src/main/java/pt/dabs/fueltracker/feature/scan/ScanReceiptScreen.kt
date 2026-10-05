@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.SystemClock
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.resolutionselector.ResolutionSelector
@@ -27,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,8 +58,10 @@ import com.google.mlkit.vision.interfaces.Detector
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import pt.dabs.fueltracker.R
+import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.scanning.OcrLine
 import pt.dabs.fueltracker.core.scanning.OcrRows
+import pt.dabs.fueltracker.core.scanning.StillImageScanner
 
 /**
  * Lê o código QR do talão e, nas mesmas imagens, o texto do talão (litros e preço/litro).
@@ -84,6 +89,28 @@ fun ScanReceiptScreen(
         if (!permissionGranted) launcher.launch(Manifest.permission.CAMERA)
     }
 
+    // Fotografia já tirada: o seletor de fotos do sistema não precisa de permissões.
+    val scope = rememberCoroutineScope()
+    val stillScanner = remember { StillImageScanner(context.applicationContext) }
+    var analyzingPhoto by remember { mutableStateOf(false) }
+    var photoError by remember { mutableStateOf<Int?>(null) }
+    val currentOnResult by rememberUpdatedState(onResult)
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            analyzingPhoto = true
+            photoError = null
+            try {
+                val scan = stillScanner.scanReceipt(uri)
+                if (scan.qrRaw != null) currentOnResult(scan.qrRaw, scan.ocrRows) else photoError = R.string.scan_photo_no_qr
+            } catch (e: Exception) {
+                photoError = R.string.scan_photo_failed
+            } finally {
+                analyzingPhoto = false
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -104,18 +131,6 @@ fun ScanReceiptScreen(
                         onResult = onResult,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    Surface(
-                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
-                        shape = MaterialTheme.shapes.medium,
-                        tonalElevation = 3.dp,
-                    ) {
-                        Text(
-                            text = stringResource(if (qrFound) R.string.scan_reading_text else R.string.scan_hint),
-                            modifier = Modifier.padding(16.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
                 }
                 permissionAsked -> {
                     Column(
@@ -127,6 +142,37 @@ fun ScanReceiptScreen(
                         Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
                             Text(stringResource(R.string.scan_permission_retry))
                         }
+                    }
+                }
+            }
+
+            Surface(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 3.dp,
+            ) {
+                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(
+                            when {
+                                analyzingPhoto -> R.string.scan_photo_analyzing
+                                photoError != null -> photoError!!
+                                qrFound -> R.string.scan_reading_text
+                                permissionGranted -> R.string.scan_hint
+                                else -> R.string.scan_photo_only_hint
+                            }
+                        ),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (photoError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedButton(
+                        onClick = { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        enabled = !analyzingPhoto,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.scan_pick_photo))
                     }
                 }
             }

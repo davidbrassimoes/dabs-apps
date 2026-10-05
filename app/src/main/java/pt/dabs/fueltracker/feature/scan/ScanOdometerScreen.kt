@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -13,8 +14,10 @@ import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,8 +65,10 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import pt.dabs.fueltracker.R
 import pt.dabs.fueltracker.core.scanning.OcrLine
 import pt.dabs.fueltracker.core.scanning.OcrRows
+import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.scanning.OdometerReader
 import pt.dabs.fueltracker.core.scanning.OdometerStabilizer
+import pt.dabs.fueltracker.core.scanning.StillImageScanner
 import pt.dabs.fueltracker.core.ui.format.PtFormat
 
 /** Fração do pré-visualizador ocupada pela moldura onde se enquadram os dígitos. */
@@ -96,6 +102,28 @@ fun ScanOdometerScreen(
     }
     LaunchedEffect(Unit) {
         if (!permissionGranted) launcher.launch(Manifest.permission.CAMERA)
+    }
+
+    // Fotografia do painel já tirada: OCR sobre a imagem inteira, sem moldura nem estabilização.
+    val scope = rememberCoroutineScope()
+    val stillScanner = remember { StillImageScanner(context.applicationContext) }
+    var analyzingPhoto by remember { mutableStateOf(false) }
+    var photoError by remember { mutableStateOf<Int?>(null) }
+    val currentOnResult by rememberUpdatedState(onResult)
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            analyzingPhoto = true
+            photoError = null
+            try {
+                val reading = OdometerReader.read(stillScanner.recognizeRows(uri), lastOdometerKm)
+                if (reading != null) currentOnResult(reading) else photoError = R.string.scan_odometer_photo_not_found
+            } catch (e: Exception) {
+                photoError = R.string.scan_photo_failed
+            } finally {
+                analyzingPhoto = false
+            }
+        }
     }
 
     Scaffold(
@@ -142,10 +170,15 @@ fun ScanOdometerScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = candidate?.let { stringResource(R.string.scan_odometer_reading, PtFormat.km(it)) }
-                            ?: stringResource(R.string.scan_odometer_hint),
+                        text = when {
+                            analyzingPhoto -> stringResource(R.string.scan_photo_analyzing)
+                            photoError != null -> stringResource(photoError!!)
+                            candidate != null -> stringResource(R.string.scan_odometer_reading, PtFormat.km(candidate!!))
+                            else -> stringResource(R.string.scan_odometer_hint)
+                        },
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
+                        color = if (photoError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     )
                     if (candidate != null) {
                         Spacer(Modifier.height(8.dp))
@@ -163,8 +196,17 @@ fun ScanOdometerScreen(
                         )
                     }
                     Spacer(Modifier.height(12.dp))
-                    OutlinedButton(onClick = onManual, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.scan_odometer_manual))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(
+                            onClick = { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                            enabled = !analyzingPhoto,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(stringResource(R.string.scan_pick_photo))
+                        }
+                        OutlinedButton(onClick = onManual, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(R.string.scan_odometer_manual))
+                        }
                     }
                 }
             }

@@ -117,6 +117,12 @@
     <string name="scan_failed_title">Não é um QR de fatura</string>
     <string name="scan_failed_body">O código lido não tem o formato das faturas portuguesas (campos A, B, F, H, O). Tenta o QR impresso no talão.</string>
     <string name="scan_retry">Tentar de novo</string>
+    <string name="scan_pick_photo">Escolher foto</string>
+    <string name="scan_photo_only_hint">Sem câmara podes escolher uma fotografia do talão já tirada.</string>
+    <string name="scan_photo_analyzing">A analisar a fotografia…</string>
+    <string name="scan_photo_no_qr">Não encontrei um código QR legível nessa fotografia. Tenta outra com o QR nítido.</string>
+    <string name="scan_photo_failed">Não consegui abrir a fotografia.</string>
+    <string name="scan_odometer_photo_not_found">Não encontrei um conta-km plausível nessa fotografia. Tenta outra ou escreve à mão.</string>
 
     <!-- Leitura do conta-km -->
     <string name="scan_odometer_title">Ler conta-km</string>
