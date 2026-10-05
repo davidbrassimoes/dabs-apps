@@ -105,6 +105,19 @@ object ConsumptionCalculator {
     data class RangeEstimate(val km: Int, val fromTankCapacity: Boolean)
 
     /**
+     * Odómetro previsto para o próximo abastecimento: o último odómetro mais a distância média
+     * dos últimos [lastN] ciclos. Sem ciclos devolve o último odómetro; sem abastecimentos, null.
+     */
+    fun predictNextOdometerKm(fillUps: List<FillUp>, lastN: Int = DEFAULT_RECENT_CYCLES): Int? {
+        val sorted = sortChronologically(fillUps)
+        val last = sorted.lastOrNull() ?: return null
+        val recent = computeCycles(sorted).takeLast(lastN)
+        if (recent.isEmpty()) return last.odometerKm
+        val averageDistance = FuelMath.roundDiv(recent.sumOf { it.distanceKm.toLong() }, recent.size.toLong())
+        return last.odometerKm + averageDistance.toInt()
+    }
+
+    /**
      * Litros que, em média, ainda estão no depósito quando o utilizador atesta:
      * capacidade − média de litros dos últimos [lastN] abastecimentos cheios.
      * Devolve null sem capacidade, sem abastecimentos cheios, ou se a média exceder a capacidade

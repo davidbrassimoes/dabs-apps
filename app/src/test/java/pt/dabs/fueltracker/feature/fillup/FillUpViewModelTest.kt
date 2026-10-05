@@ -40,12 +40,71 @@ class FillUpViewModelTest {
         repository: FakeFillUpRepository,
         fillUpId: Long = FillUp.NEW_ID,
         settings: UserSettings = UserSettings(),
+        startWithScan: Boolean = false,
     ) = FillUpViewModel(
         fillUpId = fillUpId,
+        startWithScan = startWithScan,
         repository = repository,
         settingsRepository = FakeSettingsRepository(settings),
         clock = clock,
     )
+
+    @Test
+    fun `predicted odometer is previous plus the average cycle distance`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        // um ciclo de 600 km → 10 600 + 600
+        assertEquals(11_200, viewModel.uiState.value.predictedOdometerKm)
+        // ao editar o último registo, a previsão ignora-o
+        val editing = newViewModel(FakeFillUpRepository(existing), fillUpId = 2L)
+        assertEquals(10_000, editing.uiState.value.predictedOdometerKm)
+    }
+
+    @Test
+    fun `scanned odometer fills the field and is validated like typed input`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onOdometerScanned(11_250)
+        assertEquals("11250", viewModel.uiState.value.odometerText)
+        assertFalse(viewModel.uiState.value.issues.any { it is ValidationIssue.OdometerNotAfterPrevious })
+        viewModel.onOdometerScanned(10_000)
+        assertTrue(viewModel.uiState.value.issues.any { it is ValidationIssue.OdometerNotAfterPrevious })
+    }
+
+    @Test
+    fun `manual request prefills the predicted odometer only when empty`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onOdometerManualRequested()
+        assertEquals("11200", viewModel.uiState.value.odometerText)
+        viewModel.onOdometerChange("11300")
+        viewModel.onOdometerManualRequested()
+        assertEquals("11300", viewModel.uiState.value.odometerText)
+    }
+
+    @Test
+    fun `quick flow asks for the receipt scan, then the odometer scan, once each`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing), startWithScan = true)
+        assertTrue(viewModel.uiState.value.pendingReceiptScan)
+        assertFalse(viewModel.uiState.value.pendingOdometerScan)
+        viewModel.onReceiptScanStarted()
+        assertFalse(viewModel.uiState.value.pendingReceiptScan)
+
+        viewModel.onReceiptScanned(receiptQr, emptyList())
+        assertTrue(viewModel.uiState.value.pendingOdometerScan)
+        viewModel.onOdometerScanStarted()
+        assertFalse(viewModel.uiState.value.pendingOdometerScan)
+        viewModel.onOdometerScanned(11_200)
+        assertFalse(viewModel.uiState.value.pendingOdometerScan)
+    }
+
+    @Test
+    fun `no odometer scan is suggested when the odometer is already filled or when editing`() = runTest {
+        val viewModel = newViewModel(FakeFillUpRepository(existing))
+        viewModel.onOdometerChange("11200")
+        viewModel.onReceiptScanned(receiptQr, emptyList())
+        assertFalse(viewModel.uiState.value.pendingOdometerScan)
+
+        val editing = newViewModel(FakeFillUpRepository(existing), fillUpId = 2L, startWithScan = true)
+        assertFalse(editing.uiState.value.pendingReceiptScan)
+    }
 
     private val receiptQr = "A:500697256*B:999999990*C:PT*D:FS*E:N*F:20260301*G:FS 01P2026/4471*H:JFK2H8QX-4471" +
         "*I1:PT*I7:56.88*I8:13.08*N:13.08*O:69.96*Q:Ab3d*R:1234"

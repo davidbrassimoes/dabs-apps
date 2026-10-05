@@ -64,9 +64,13 @@ import java.time.format.DateTimeFormatter
 fun FillUpScreen(
     onDone: () -> Unit,
     onScanReceipt: () -> Unit,
+    onScanOdometer: (lastOdometerKm: Int?, predictedKm: Int?) -> Unit,
     scannedQr: String?,
     scannedText: String?,
     onScannedQrConsumed: () -> Unit,
+    scannedOdometer: Int?,
+    odometerManual: Boolean,
+    onScannedOdometerConsumed: () -> Unit,
     viewModel: FillUpViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -83,10 +87,35 @@ fun FillUpScreen(
         }
     }
 
+    LaunchedEffect(scannedOdometer, odometerManual) {
+        if (scannedOdometer != null) {
+            viewModel.onOdometerScanned(scannedOdometer)
+            onScannedOdometerConsumed()
+        } else if (odometerManual) {
+            viewModel.onOdometerManualRequested()
+            onScannedOdometerConsumed()
+        }
+    }
+
+    // Fluxo rápido: talão → conta-km → confirmação. Cada passo dispara uma única vez.
+    LaunchedEffect(state.pendingReceiptScan, state.isLoading) {
+        if (state.pendingReceiptScan && !state.isLoading) {
+            viewModel.onReceiptScanStarted()
+            onScanReceipt()
+        }
+    }
+    LaunchedEffect(state.pendingOdometerScan) {
+        if (state.pendingOdometerScan) {
+            viewModel.onOdometerScanStarted()
+            onScanOdometer(state.previousOdometerKm, state.predictedOdometerKm)
+        }
+    }
+
     FillUpContent(
         state = state,
         onBack = onDone,
         onScanReceipt = onScanReceipt,
+        onScanOdometer = { onScanOdometer(state.previousOdometerKm, state.predictedOdometerKm) },
         onDismissScanError = viewModel::onDismissScanError,
         onDateChange = viewModel::onDateChange,
         onTimeChange = viewModel::onTimeChange,
@@ -109,6 +138,7 @@ fun FillUpContent(
     state: FillUpUiState,
     onBack: () -> Unit,
     onScanReceipt: () -> Unit,
+    onScanOdometer: () -> Unit,
     onDismissScanError: () -> Unit,
     onDateChange: (LocalDate) -> Unit,
     onTimeChange: (LocalTime) -> Unit,
@@ -181,6 +211,9 @@ fun FillUpContent(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
+            OutlinedButton(onClick = onScanOdometer, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.fillup_scan_odometer))
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(

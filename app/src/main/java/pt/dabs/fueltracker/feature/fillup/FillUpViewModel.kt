@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.dabs.fueltracker.core.data.FillUpRepository
 import pt.dabs.fueltracker.core.data.SettingsRepository
+import pt.dabs.fueltracker.core.domain.ConsumptionCalculator
 import pt.dabs.fueltracker.core.domain.FillUpDraft
 import pt.dabs.fueltracker.core.domain.FillUpValidator
 import pt.dabs.fueltracker.core.domain.FuelMath
@@ -62,6 +63,12 @@ data class FillUpUiState(
     val notes: String = "",
     /** Odómetro do abastecimento anterior (por data), para sugestão. */
     val previousOdometerKm: Int? = null,
+    /** Odómetro previsto (anterior + distância média por depósito), para pré-preencher. */
+    val predictedOdometerKm: Int? = null,
+    /** Fluxo rápido: o ecrã deve abrir a leitura do talão assim que puder. */
+    val pendingReceiptScan: Boolean = false,
+    /** Depois do talão, abrir a leitura do conta-km se ainda não estiver preenchido. */
+    val pendingOdometerScan: Boolean = false,
     /** Talão lido nesta sessão ou guardado com o abastecimento em edição. */
     val receipt: ScannedReceipt? = null,
     /** Última leitura de QR falhou (não era um QR da AT ou estava incompleto). */
@@ -82,6 +89,7 @@ data class FillUpUiState(
 @HiltViewModel
 class FillUpViewModel(
     private val fillUpId: Long,
+    startWithScan: Boolean,
     private val repository: FillUpRepository,
     private val settingsRepository: SettingsRepository,
     private val clock: Clock,
@@ -93,13 +101,20 @@ class FillUpViewModel(
         repository: FillUpRepository,
         settingsRepository: SettingsRepository,
         clock: Clock,
-    ) : this(savedStateHandle.toRoute<FillUpRoute>().fillUpId, repository, settingsRepository, clock)
+    ) : this(
+        fillUpId = savedStateHandle.toRoute<FillUpRoute>().fillUpId,
+        startWithScan = savedStateHandle.toRoute<FillUpRoute>().startWithScan,
+        repository = repository,
+        settingsRepository = settingsRepository,
+        clock = clock,
+    )
 
     private val _uiState = MutableStateFlow(
         FillUpUiState(
             isEdit = fillUpId != FillUp.NEW_ID,
             date = LocalDate.now(clock),
             time = LocalTime.now(clock).withSecond(0).withNano(0),
+            pendingReceiptScan = startWithScan && fillUpId == FillUp.NEW_ID,
         )
     )
     val uiState: StateFlow<FillUpUiState> = _uiState.asStateFlow()
@@ -203,6 +218,30 @@ class FillUpViewModel(
         _uiState.update { it.copy(scanFailed = false) }
     }
 
+    /** O ecrã abriu a leitura do talão pedida pelo fluxo rápido. */
+    fun onReceiptScanStarted() {
+        _uiState.update { it.copy(pendingReceiptScan = false) }
+    }
+
+    /** O ecrã abriu a leitura do conta-km sugerida depois do talão. */
+    fun onOdometerScanStarted() {
+        _uiState.update { it.copy(pendingOdometerScan = false) }
+    }
+
+    /** Valor lido pela câmara; é uma sugestão como qualquer outra e continua editável. */
+    fun onOdometerScanned(km: Int) = edit { copy(odometerText = km.toString(), pendingOdometerScan = false) }
+
+    /** O utilizador preferiu escrever: pré-preenche com o valor previsto se o campo estiver vazio. */
+    fun onOdometerManualRequested() {
+        val state = _uiState.value
+        val predicted = state.predictedOdometerKm
+        if (state.odometerText.isBlank() && predicted != null) {
+            edit { copy(odometerText = predicted.toString(), pendingOdometerScan = false) }
+        } else {
+            _uiState.update { it.copy(pendingOdometerScan = false) }
+        }
+    }
+
     private fun applyReceipt(code: AtQrCode) {
         val receipt = ScannedReceipt(
             issuerNif = code.issuerNif,
@@ -226,6 +265,8 @@ class FillUpViewModel(
                 ocrOutcome = null,
                 date = code.documentDate,
                 totalText = NumberInput.formatScaled(code.totalCents, 2),
+                // Passo seguinte do fluxo: ler o painel, a não ser que o odómetro já esteja escrito.
+                pendingOdometerScan = it.odometerText.isBlank(),
             )
         }
         viewModelScope.launch {
@@ -303,8 +344,17 @@ class FillUpViewModel(
             atcudAlreadyUsed = atcudAlreadyUsed,
             userNif = userNif,
         )
-        val previous = FillUpValidator.previousFillUp(existing, draft.dateTime, excludingId = fillUpId)
-        _uiState.update { it.copy(issues = issues, previousOdometerKm = previous?.odometerKm, askWarningConfirmation = false) }
+        val others = existing.filter { it.id != fillUpId }
+        val previous = FillUpValidator.previousFillUp(others, draft.dateTime)
+        val predicted = ConsumptionCalculator.predictNextOdometerKm(others)
+        _uiState.update {
+            it.copy(
+                issues = issues,
+                previousOdometerKm = previous?.odometerKm,
+                predictedOdometerKm = predicted,
+                askWarningConfirmation = false,
+            )
+        }
     }
 
     fun onSaveClick() {

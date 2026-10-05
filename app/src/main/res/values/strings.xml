@@ -84,6 +84,15 @@
     <string name="scan_failed_body">O código lido não tem o formato das faturas portuguesas (campos A, B, F, H, O). Tenta o QR impresso no talão.</string>
     <string name="scan_retry">Tentar de novo</string>
 
+    <!-- Leitura do conta-km -->
+    <string name="scan_odometer_title">Ler conta-km</string>
+    <string name="scan_odometer_hint">Enquadra só os dígitos do conta-km total dentro da moldura e mantém o telemóvel quieto.</string>
+    <string name="scan_odometer_reading">A ler: %1$s</string>
+    <string name="scan_odometer_last">Anterior: %1$s</string>
+    <string name="scan_odometer_predicted">Previsto: ~%1$s</string>
+    <string name="scan_odometer_manual">Escrever à mão</string>
+    <string name="fillup_scan_odometer">Ler conta-km com a câmara</string>
+
     <!-- Definições -->
     <string name="settings_title">Definições</string>
     <string name="settings_nif">O teu NIF</string>

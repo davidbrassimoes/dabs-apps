@@ -204,6 +204,24 @@ class ConsumptionCalculatorTest {
     }
 
     @Test
+    fun `predicted odometer adds the average cycle distance to the last odometer`() {
+        val fillUps = listOf(
+            fillUp(1, "2026-01-01", 10_000, 40_000),
+            fillUp(2, "2026-01-10", 10_600, 39_000),
+            fillUp(3, "2026-01-20", 11_300, 39_000),
+        )
+        // média (600 + 700) / 2 = 650 → 11 300 + 650
+        assertEquals(11_950, ConsumptionCalculator.predictNextOdometerKm(fillUps))
+        assertEquals(12_000, ConsumptionCalculator.predictNextOdometerKm(fillUps, lastN = 1))
+    }
+
+    @Test
+    fun `predicted odometer without cycles is the last odometer, without data is null`() {
+        assertEquals(10_000, ConsumptionCalculator.predictNextOdometerKm(listOf(fillUp(1, "2026-01-01", 10_000, 40_000))))
+        assertNull(ConsumptionCalculator.predictNextOdometerKm(emptyList()))
+    }
+
+    @Test
     fun `typical reserve is capacity minus average full fill up`() {
         val fillUps = listOf(
             fillUp(1, "2026-01-01", 10_000, 40_000),
