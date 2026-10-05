@@ -26,6 +26,10 @@ abstract class DataModule {
     @Singleton
     abstract fun bindSettingsRepository(impl: DataStoreSettingsRepository): SettingsRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindDocumentStore(impl: ContentResolverDocumentStore): DocumentStore
+
     companion object {
         private const val SETTINGS_STORE = "settings"
 

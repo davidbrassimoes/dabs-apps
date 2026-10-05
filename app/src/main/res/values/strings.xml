@@ -129,6 +129,17 @@
     <string name="settings_tank_capacity_invalid">Indica a capacidade em litros, por exemplo 45</string>
     <string name="settings_tank_capacity_explainer">A capacidade serve só para avisar quando os litros do talão a ultrapassam e para estimar a reserva com que costumas atestar. Os litros consumidos vêm sempre do talão.</string>
     <string name="settings_saved">Definições guardadas</string>
+    <string name="settings_data_title">Dados</string>
+    <string name="settings_data_body">O CSV usa ponto e vírgula e vírgula decimal, abre no Excel. A importação junta aos registos existentes e ignora talões repetidos.</string>
+    <string name="settings_export">Exportar CSV</string>
+    <string name="settings_import">Importar CSV</string>
+    <plurals name="settings_exported">
+        <item quantity="one">Exportado %1$d abastecimento</item>
+        <item quantity="other">Exportados %1$d abastecimentos</item>
+    </plurals>
+    <string name="settings_imported">Novos: %1$d · Repetidos ignorados: %2$d · Linhas inválidas: %3$d</string>
+    <string name="settings_import_header_invalid">Ficheiro não reconhecido: %1$s</string>
+    <string name="settings_transfer_failed">Não foi possível aceder ao ficheiro</string>
 
     <!-- Histórico -->
     <string name="history_title">Histórico</string>
