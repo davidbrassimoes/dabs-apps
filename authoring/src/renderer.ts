@@ -1,8 +1,15 @@
 // Scene renderer: FBO at renderScale (ping-pong when the scene uses feedback),
 // then the shared output pass to the canvas at the simulated display resolution.
 // Mirrors what tv-app/SceneRenderer + OutputPass will do on the box.
+//
+// Scene transitions: each scene lives in a slot (program, targets, ping-pong, time).
+// When a new scene arrives with a pending transition, the current slot becomes the
+// outgoing one and keeps rendering — with its uniforms frozen at their last values,
+// which GL keeps as program state — while the output pass crossfades the two.
+// Outside transitions only one scene is rendered.
 
 import type { Composed } from './compose';
+import { driftSpec, driftValue, type DriftSpec } from './drift';
 import {
   FULLSCREEN_VS,
   GpuTimer,
@@ -15,7 +22,6 @@ import {
   type GLInfo,
   type Target,
 } from './gl';
-import { driftSpec, driftValue, type DriftSpec } from './drift';
 import type { PaletteVariation } from './palette';
 import type { ParamDef, ParamValues, Profile, Rgb, SceneJson } from './scene';
 import type { Signals } from './signals';
@@ -60,9 +66,19 @@ interface SceneProgram {
   params: ParamUniform[];
 }
 
+/** One running scene: its program, render targets and clock. */
+interface Slot {
+  scene: SceneProgram;
+  targets: Target[];
+  ping: number;
+  time: number;
+}
+
 interface OutputProgram {
   program: WebGLProgram;
   uScene: WebGLUniformLocation | null;
+  uScenePrev: WebGLUniformLocation | null;
+  uMix: WebGLUniformLocation | null;
   uResolution: WebGLUniformLocation | null;
   uTime: WebGLUniformLocation | null;
   uBrightness: WebGLUniformLocation | null;
@@ -85,10 +101,12 @@ export class Renderer {
   /** When set, fills uPalette every frame (rotation / hue drift); otherwise setPalette() holds. */
   paletteVariation: PaletteVariation | null = null;
 
-  private scene: SceneProgram | null = null;
+  private cur: Slot | null = null;
+  private out: Slot | null = null; // outgoing scene during a transition
+  private fade = 1; // 0..1 progress of the transition
+  private fadeS = 0;
+  private pendingFadeS = 0;
   private output: OutputProgram | null = null;
-  private targets: Target[] = [];
-  private ping = 0;
   private settings: RenderSettings = { width: 1920, height: 1080, renderScale: 0.5, fps: 30 };
   private values: ParamValues = new Map();
   private readonly palette = new Float32Array(15);
@@ -97,7 +115,6 @@ export class Renderer {
   private image: WebGLTexture | null = null;
   private profile: Profile | null = null;
 
-  private sceneTime = 0;
   private driftTime = 0;
   private lastRender = 0;
   private intervalEma = 0;
@@ -122,6 +139,8 @@ export class Renderer {
     this.output = {
       program,
       uScene: u('uScene'),
+      uScenePrev: u('uScenePrev'),
+      uMix: u('uMix'),
       uResolution: u('uResolution'),
       uTime: u('uTime'),
       uBrightness: u('uBrightness'),
@@ -134,21 +153,31 @@ export class Renderer {
     };
   }
 
-  /** Compile and swap the scene program. On failure throws and keeps the previous one. */
+  /** The next setScene() crossfades from the current scene over `seconds` (0 = cut). */
+  transitionNext(seconds: number): void {
+    this.pendingFadeS = seconds;
+  }
+
+  /**
+   * Compile and swap the scene program. On failure throws and keeps the previous one.
+   * With a pending transition the current scene becomes the outgoing one and the new
+   * scene starts in a fresh slot (time 0, cleared targets); otherwise the program is
+   * replaced in place (hot reload keeps time and feedback).
+   */
   setScene(scene: SceneJson, composed: Composed): void {
     const gl = this.gl;
+    const pending = this.pendingFadeS;
+    this.pendingFadeS = 0;
     const program = compileProgram(gl, FULLSCREEN_VS, composed.source); // throws ShaderError
-    if (this.scene) gl.deleteProgram(this.scene.program);
     const u = (n: string) => gl.getUniformLocation(program, n);
     const params: ParamUniform[] = [];
     for (const p of scene.params) {
       const loc = u(`p_${p.id}`);
       if (loc) params.push({ id: p.id, loc, isColor: p.type === 'color', def: p, drift: driftSpec(scene.id, p.id), live: 0 });
     }
-    const feedback = scene.feedback === true;
-    this.scene = {
+    const prog: SceneProgram = {
       program,
-      feedback,
+      feedback: scene.feedback === true,
       uTime: u('uTime'),
       uResolution: u('uResolution'),
       uBands: u('uBands'),
@@ -160,7 +189,21 @@ export class Renderer {
       uPrev: u('uPrev'),
       params,
     };
+    const fresh = pending > 0 || !this.cur;
+    if (pending > 0 && this.cur) {
+      if (this.out) this.destroySlot(this.out);
+      this.out = this.cur;
+      this.cur = { scene: prog, targets: [], ping: 0, time: 0 };
+      this.fade = 0;
+      this.fadeS = pending;
+    } else if (this.cur) {
+      gl.deleteProgram(this.cur.scene.program);
+      this.cur.scene = prog;
+    } else {
+      this.cur = { scene: prog, targets: [], ping: 0, time: 0 };
+    }
     this.ensureTargets();
+    if (fresh) this.clearSlot(this.cur);
   }
 
   setParamValues(values: ParamValues): void {
@@ -201,7 +244,7 @@ export class Renderer {
   }
 
   resetTime(): void {
-    this.sceneTime = 0;
+    if (this.cur) this.cur.time = 0;
     this.lastRender = 0;
   }
 
@@ -211,82 +254,61 @@ export class Renderer {
   }
 
   get time(): number {
-    return this.sceneTime;
+    return this.cur?.time ?? 0;
+  }
+
+  /** 0..1 while crossfading between scenes, 1 otherwise. */
+  get transition(): number {
+    return this.out ? this.fade : 1;
   }
 
   /** Value last sent to the shader for a float/int param (base + drift), or undefined. */
   liveValue(id: string): number | undefined {
-    const p = this.scene?.params.find((x) => x.id === id);
+    const p = this.cur?.scene.params.find((x) => x.id === id);
     return p && !p.isColor ? p.live : undefined;
   }
 
   clearFeedback(): void {
-    const gl = this.gl;
-    for (const t of this.targets) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (this.cur) this.clearSlot(this.cur);
   }
 
   // ------------------------------------------------------------ frame
 
   /** Returns true when a scene frame was rendered this call. */
   frame(nowMs: number, signals: Signals): boolean {
-    const scene = this.scene;
+    const cur = this.cur;
     const output = this.output;
-    if (!scene || !output || this.paused || this.targets.length === 0) return false;
+    if (!cur || !output || this.paused || cur.targets.length === 0) return false;
 
     const s = this.settings;
     if (s.fps > 0 && this.lastRender > 0 && nowMs - this.lastRender < 1000 / s.fps - 1.5) return false;
 
     const dt = this.lastRender > 0 ? Math.min((nowMs - this.lastRender) / 1000, 0.25) : 0;
     this.lastRender = nowMs;
-    this.sceneTime += dt;
+    cur.time += dt;
     this.driftTime += dt * this.driftSpeed;
-    signals.update(dt, this.sceneTime);
+    signals.update(dt, cur.time);
 
     const gl = this.gl;
     this.timer.poll();
     this.timer.begin();
 
-    // --- scene pass -> FBO at renderScale
-    const src = scene.feedback ? this.targets[this.ping] : undefined;
-    const dst = scene.feedback ? this.targets[1 - this.ping] : this.targets[0];
-    if (!dst) return false;
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fbo);
-    gl.viewport(0, 0, dst.width, dst.height);
-    gl.useProgram(scene.program);
-
-    if (scene.uTime) gl.uniform1f(scene.uTime, this.sceneTime);
-    if (scene.uResolution) gl.uniform2f(scene.uResolution, dst.width, dst.height);
-    if (scene.uBands) gl.uniform4fv(scene.uBands, signals.bands);
-    if (scene.uMood) gl.uniform4fv(scene.uMood, signals.mood);
-    if (scene.uBeat) gl.uniform4fv(scene.uBeat, signals.beat);
+    // --- scene passes -> FBOs at renderScale
     this.paletteVariation?.write(this.palette, this.driftTime);
-    if (scene.uPalette) gl.uniform3fv(scene.uPalette, this.palette);
-    if (scene.uImageInfo) gl.uniform4fv(scene.uImageInfo, this.imageInfo);
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.image ?? this.black);
-    if (scene.uImage) gl.uniform1i(scene.uImage, 0);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, src ? src.tex : this.black);
-    if (scene.uPrev) gl.uniform1i(scene.uPrev, 1);
-
-    for (const p of scene.params) {
-      const v = this.values.get(p.id);
-      if (v === undefined) continue;
-      if (p.isColor) {
-        if (Array.isArray(v)) gl.uniform3f(p.loc, v[0], v[1], v[2]);
-      } else if (typeof v === 'number') {
-        p.live = driftValue(p.def, v, p.drift, this.driftTime, this.driftAmount);
-        gl.uniform1f(p.loc, p.live);
+    const dst = this.renderSlot(cur, signals, true);
+    let prevDst: Target | null = null;
+    const out = this.out;
+    if (out) {
+      this.fade = this.fadeS > 0 ? Math.min(1, this.fade + dt / this.fadeS) : 1;
+      if (this.fade >= 1) {
+        this.destroySlot(out);
+        this.out = null;
+      } else {
+        out.time += dt;
+        prevDst = this.renderSlot(out, signals, false);
       }
     }
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!dst) return false;
 
     // --- output pass -> canvas at display resolution
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -295,8 +317,13 @@ export class Renderer {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, dst.tex);
     if (output.uScene) gl.uniform1i(output.uScene, 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, prevDst ? prevDst.tex : this.black);
+    if (output.uScenePrev) gl.uniform1i(output.uScenePrev, 1);
+    const f = prevDst ? this.fade : 1;
+    if (output.uMix) gl.uniform1f(output.uMix, f * f * (3 - 2 * f));
     if (output.uResolution) gl.uniform2f(output.uResolution, this.canvas.width, this.canvas.height);
-    if (output.uTime) gl.uniform1f(output.uTime, this.sceneTime);
+    if (output.uTime) gl.uniform1f(output.uTime, cur.time);
     const pr = this.profile;
     if (pr) {
       if (output.uBrightness) gl.uniform1f(output.uBrightness, pr.brightness);
@@ -310,7 +337,6 @@ export class Renderer {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     this.timer.end();
-    if (scene.feedback) this.ping = 1 - this.ping;
 
     // --- stats
     if (dt > 0) {
@@ -325,24 +351,91 @@ export class Renderer {
 
   // ------------------------------------------------------------ internals
 
+  /**
+   * Render one slot into its next target. `full` uploads palette and params (the
+   * current scene); the outgoing scene only gets time, resolution and signals and
+   * keeps the rest of its uniforms as they were.
+   */
+  private renderSlot(slot: Slot, signals: Signals, full: boolean): Target | null {
+    const gl = this.gl;
+    const scene = slot.scene;
+    const src = scene.feedback ? slot.targets[slot.ping] : undefined;
+    const dst = scene.feedback ? slot.targets[1 - slot.ping] : slot.targets[0];
+    if (!dst) return null;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fbo);
+    gl.viewport(0, 0, dst.width, dst.height);
+    gl.useProgram(scene.program);
+
+    if (scene.uTime) gl.uniform1f(scene.uTime, slot.time);
+    if (scene.uResolution) gl.uniform2f(scene.uResolution, dst.width, dst.height);
+    if (scene.uBands) gl.uniform4fv(scene.uBands, signals.bands);
+    if (scene.uMood) gl.uniform4fv(scene.uMood, signals.mood);
+    if (scene.uBeat) gl.uniform4fv(scene.uBeat, signals.beat);
+    if (scene.uImageInfo) gl.uniform4fv(scene.uImageInfo, this.imageInfo);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.image ?? this.black);
+    if (scene.uImage) gl.uniform1i(scene.uImage, 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, src ? src.tex : this.black);
+    if (scene.uPrev) gl.uniform1i(scene.uPrev, 1);
+
+    if (full) {
+      if (scene.uPalette) gl.uniform3fv(scene.uPalette, this.palette);
+      for (const p of scene.params) {
+        const v = this.values.get(p.id);
+        if (v === undefined) continue;
+        if (p.isColor) {
+          if (Array.isArray(v)) gl.uniform3f(p.loc, v[0], v[1], v[2]);
+        } else if (typeof v === 'number') {
+          p.live = driftValue(p.def, v, p.drift, this.driftTime, this.driftAmount);
+          gl.uniform1f(p.loc, p.live);
+        }
+      }
+    }
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (scene.feedback) slot.ping = 1 - slot.ping;
+    return dst;
+  }
+
   private applyCanvasSize(): void {
     this.canvas.width = this.settings.width;
     this.canvas.height = this.settings.height;
   }
 
+  /** (Re)create the current slot's targets for its feedback mode and the render size. */
   private ensureTargets(force = false): void {
-    const want = this.scene?.feedback ? 2 : 1;
+    const cur = this.cur;
+    if (!cur) return;
+    const want = cur.scene.feedback ? 2 : 1;
     const w = Math.max(1, Math.round(this.settings.width * this.settings.renderScale));
     const h = Math.max(1, Math.round(this.settings.height * this.settings.renderScale));
-    const first = this.targets[0];
-    if (!force && first && first.width === w && first.height === h && this.targets.length === want) return;
-    for (const t of this.targets) destroyTarget(this.gl, t);
-    this.targets = [];
-    for (let i = 0; i < want; i++) this.targets.push(createTarget(this.gl, w, h, this.info.halfFloat));
-    this.ping = 0;
+    const first = cur.targets[0];
+    if (!force && first && first.width === w && first.height === h && cur.targets.length === want) return;
+    for (const t of cur.targets) destroyTarget(this.gl, t);
+    cur.targets = [];
+    for (let i = 0; i < want; i++) cur.targets.push(createTarget(this.gl, w, h, this.info.halfFloat));
+    cur.ping = 0;
     this.stats.renderWidth = w;
     this.stats.renderHeight = h;
-    this.stats.format = this.targets[0]?.format ?? '-';
+    this.stats.format = cur.targets[0]?.format ?? '-';
+  }
+
+  private clearSlot(slot: Slot): void {
+    const gl = this.gl;
+    for (const t of slot.targets) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  private destroySlot(slot: Slot): void {
+    for (const t of slot.targets) destroyTarget(this.gl, t);
+    slot.targets = [];
+    this.gl.deleteProgram(slot.scene.program);
   }
 }
 

@@ -7,6 +7,8 @@
 //   --quick        skip the hot-reload and error-overlay checks (just load, run, screenshot)
 //   --only a,b     restrict to these scene ids
 //   --settle N     seconds to let each scene run before the screenshot (default 4)
+//   --transitions  instead of the per-scene checks, stay on one page and step through the
+//                  scenes (like the D-pad): GPU ms and a screenshot <from>-to-<to>.png mid-crossfade
 //   --presets      also apply each preset in scene.json and save <scene>@<preset>.png (settle N each)
 //
 // For every scene listed by /api/scenes: loads it, waits, collects console output and
@@ -43,6 +45,7 @@ const QUICK = args.includes('--quick');
 const ONLY = opt('--only', '').split(',').filter(Boolean);
 const SETTLE = Number(opt('--settle', '4')) * 1000;
 const PRESETS = args.includes('--presets');
+const TRANSITIONS = args.includes('--transitions');
 if (!BROWSER) {
   console.error('No Chromium browser found; pass --browser <path>.');
   process.exit(2);
@@ -147,6 +150,31 @@ try {
   if (ONLY.length) scenes = scenes.filter((s) => ONLY.includes(s));
   console.log(`browser: ${BROWSER} (${USE_GPU ? 'GPU via ANGLE/D3D11' : 'SwiftShader, software'})`);
   console.log(`scenes: ${scenes.join(', ')}`);
+
+  if (TRANSITIONS) {
+    const stats = () => evaluate("document.getElementById('stats').textContent");
+    const gpu = (t) => /([0-9.]+) ms GPU/.exec(t)?.[1] ?? 'n/d';
+    const errs = () => evaluate("document.getElementById('errors').hidden ? '' : document.getElementById('errors').innerText");
+    await cdp.send('Page.navigate', { url: `${URL_BASE}#${scenes[0]}` }, sessionId);
+    await sleep(Math.max(3000, SETTLE));
+    for (let i = 0; i + 1 < scenes.length; i++) {
+      const from = scenes[i];
+      const to = scenes[i + 1];
+      const steady = await stats();
+      await evaluate(`location.hash = ${JSON.stringify(to)}`);
+      await sleep(1500); // mid-crossfade with the default 4 s transition
+      const mid = await stats();
+      const tr = await evaluate('window.__sv.transition()');
+      const shot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
+      fs.writeFileSync(path.join(OUT, `${from}-to-${to}.png`), Buffer.from(shot.data, 'base64'));
+      await sleep(3500);
+      const e = await errs();
+      const done = await evaluate('window.__sv.transition()');
+      if (e || done < 1) failed = true;
+      console.log(`${from} -> ${to}: GPU ${gpu(steady)} ms before, ${gpu(mid)} ms mid-fade (t=${tr.toFixed(2)}), ${gpu(await stats())} ms after${done < 1 ? '  NOT FINISHED' : ''}${e ? '  ERROR ' + e : ''}`);
+    }
+    scenes = [];
+  }
 
   for (const id of scenes) {
     logs.length = 0;

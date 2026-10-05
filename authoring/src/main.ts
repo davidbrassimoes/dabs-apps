@@ -69,6 +69,7 @@ const debug = {
   halfFloat: false,
   presets: (): string[] => scene?.presets?.map((p) => p.id) ?? [],
   applyPreset: (id: string): void => applyPreset(id),
+  transition: (): number => renderer.transition,
 };
 (window as unknown as { __sv: typeof debug }).__sv = debug;
 
@@ -88,6 +89,7 @@ let values: ParamValues = new Map();
 let paramsPanel: ParamsPanel | null = null;
 let presetId = ''; // '' = scene defaults
 let palette: Rgb[] = [];
+let transitionS = 4; // crossfade between scenes, seconds (0 = cut)
 let profileId = 'tv';
 let profile: Profile | null = null;
 let profileFromFile: Profile | null = null;
@@ -211,17 +213,24 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   presetId = preset?.id ?? '';
   values = preset ? presetValues(json, preset) : defaultValues(json, keepValues ? values : undefined);
   palette = scenePalette(json, preset);
-  renderer.setParamValues(values);
-  pushPalette();
   if (changed) {
+    // Swap the program first: until then the outgoing scene is still "current" and must
+    // not receive the new scene's values, palette or render scale.
+    renderer.transitionNext(transitionS);
+    await recompile();
+    renderer.setParamValues(values);
+    pushPalette();
     delete overrides.renderScale;
     delete overrides.fps;
+    applySettings();
     renderer.resetTime();
     renderer.clearFeedback();
+  } else {
+    renderer.setParamValues(values);
+    pushPalette();
+    applySettings();
+    await recompile();
   }
-  applySettings();
-  const ok = await recompile();
-  if (ok && changed) renderer.clearFeedback();
   buildScenePanel();
   paramsPanel = buildParamsPanel(secParams, json, values, (pid, v) => values.set(pid, v));
   sceneUi.select.set(id);
@@ -406,6 +415,9 @@ const varyUi = (() => {
   slider(pal, { label: 'Mudar a cada', min: 0.5, max: 10, step: 0.5, value: st.holdS / 60, format: (v) => `${v} min`, onInput: (v) => (st.holdS = v * 60) });
   slider(pal, { label: 'Transição', min: 5, max: 60, step: 1, value: st.fadeS, format: (v) => `${v} s`, onInput: (v) => (st.fadeS = v) });
   slider(pal, { label: 'Derivar matiz', min: 0, max: 60, step: 1, value: st.hueDeg, format: (v) => (v === 0 ? 'desligado' : `±${v}°`), onInput: (v) => (st.hueDeg = v) });
+  const trans = group(secVary, 'Transição entre cenas');
+  slider(trans, { label: 'Crossfade', min: 0, max: 10, step: 0.5, value: transitionS, format: (v) => (v === 0 ? 'corte' : `${v} s`), onInput: (v) => (transitionS = v) });
+  trans.appendChild(el('p', 'muted', 'Durante a transição as duas cenas são renderizadas (custo de GPU a dobrar).'));
   const count = el('div', 'muted');
   const now = el('div', 'live mono');
   pal.append(count, now);

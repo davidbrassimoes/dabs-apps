@@ -4,6 +4,8 @@
 precision highp float;
 
 uniform sampler2D uScene;
+uniform sampler2D uScenePrev; // outgoing scene during a transition
+uniform float uMix;           // transition progress, already eased: 1 = only uScene
 uniform vec2  uResolution;   // screen size
 uniform float uTime;
 
@@ -33,6 +35,8 @@ vec3 applyTemperature(vec3 c, float t) {
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
     vec3 c = texture(uScene, uv).rgb;
+    // Scene crossfade (host-driven); uniform branch, so no cost outside transitions.
+    if (uMix < 1.0) c = mix(texture(uScenePrev, uv).rgb, c, uMix);
 
     c = (c - 0.5) * uContrast + 0.5;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));

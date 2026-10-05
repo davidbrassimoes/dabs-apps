@@ -8,6 +8,7 @@ Página WebGL2 **só para desenvolvimento**: iterar cenas no PC com hot reload. 
 - `feedback` (ping-pong RGBA16F, fallback RGBA8), `renderScale`, limite de fps, passe de saída (`shared/glsl/output.frag`) com os valores do perfil ajustáveis em runtime.
 - **Drift de parâmetros** (`src/drift.ts`, referência para a tv-app): intensidade e velocidade globais na secção "Drift e variação"; o valor em uso aparece a laranja junto de cada slider com `~`.
 - **Variação de paleta** (`src/palette.ts`): rodar entre as paletas da cena (atual, `defaultPalette`, presets) com transição, e/ou derivar o matiz; em OKLab. Desligada por defeito para não mexer na paleta enquanto se afina um preset.
+- **Crossfade entre cenas** (4 s por defeito, ajustável em "Drift e variação"); a cena que sai continua a correr durante o fade.
 - Resolução **simulada da box** (1080p por defeito) para que `uResolution` e o dithering sejam os mesmos que na TV.
 - Erros de compilação mapeados para o ficheiro e linha originais (`scene.frag`, `lib/noise.glsl`, …).
 - Largar uma imagem na página alimenta `uImage` (cenas com `image` ≠ `none`).
@@ -42,6 +43,8 @@ node scripts/smoke.mjs --gpu --quick --only aurora,halo --settle 10
                               # --quick salta hot reload e overlay; --only filtra cenas; --settle N segundos antes da captura
 node scripts/smoke.mjs --gpu --quick --presets --settle 6
                               # --presets aplica também cada preset do scene.json e guarda <cena>@<preset>.png
+node scripts/smoke.mjs --gpu --transitions
+                              # percorre as cenas numa só página: ms de GPU antes / a meio / depois de cada crossfade, capturas <de>-to-<para>.png
 ```
 
 O teste de fumo, por cena:
