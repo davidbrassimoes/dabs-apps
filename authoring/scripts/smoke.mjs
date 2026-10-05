@@ -3,7 +3,10 @@
 //
 //   node scripts/smoke.mjs [--browser <path-to-chrome-or-edge>] [--url http://localhost:5180/] [--out <dir>] [--gpu]
 //
-//   --gpu  use the real GPU through ANGLE/D3D11 instead of SwiftShader (fps and GPU ms become meaningful)
+//   --gpu          use the real GPU through ANGLE/D3D11 instead of SwiftShader (fps and GPU ms become meaningful)
+//   --quick        skip the hot-reload and error-overlay checks (just load, run, screenshot)
+//   --only a,b     restrict to these scene ids
+//   --settle N     seconds to let each scene run before the screenshot (default 4)
 //
 // For every scene listed by /api/scenes: loads it, waits, collects console output and
 // the in-page error overlay, reads the stats line and saves a screenshot <out>/<scene>.png.
@@ -35,6 +38,9 @@ const CANDIDATES = [
 ].filter((p) => p && fs.existsSync(p));
 const BROWSER = CANDIDATES[0];
 const USE_GPU = args.includes('--gpu');
+const QUICK = args.includes('--quick');
+const ONLY = opt('--only', '').split(',').filter(Boolean);
+const SETTLE = Number(opt('--settle', '4')) * 1000;
 if (!BROWSER) {
   console.error('No Chromium browser found; pass --browser <path>.');
   process.exit(2);
@@ -135,7 +141,8 @@ try {
     return r.result.value;
   };
 
-  const scenes = await (await fetch(new URL('/api/scenes', URL_BASE))).json();
+  let scenes = await (await fetch(new URL('/api/scenes', URL_BASE))).json();
+  if (ONLY.length) scenes = scenes.filter((s) => ONLY.includes(s));
   console.log(`browser: ${BROWSER} (${USE_GPU ? 'GPU via ANGLE/D3D11' : 'SwiftShader, software'})`);
   console.log(`scenes: ${scenes.join(', ')}`);
 
@@ -156,9 +163,12 @@ try {
     }
     // Hot reload latency: append a comment to scene.frag, wait for a recompile, restore the file.
     let hotMs = null;
+    let errorText = '';
+    let errorMapped = true;
+    let stillRunning = true;
     const fragPath = path.resolve(HERE, '..', '..', 'scenes', id, 'scene.frag');
     const original = fs.readFileSync(fragPath);
-    try {
+    if (!QUICK) try {
       const before = await evaluate('window.__sv.compiles');
       const t0 = performance.now();
       fs.writeFileSync(fragPath, Buffer.concat([original, Buffer.from('// smoke-test touch\n')]));
@@ -175,8 +185,7 @@ try {
     }
 
     // Error overlay: inject a syntax error, expect the overlay to name scene.frag with a line number.
-    let errorText = '';
-    try {
+    if (!QUICK) try {
       fs.writeFileSync(fragPath, Buffer.concat([original, Buffer.from('void broken( {\n')]));
       for (let i = 0; i < 100; i++) {
         await sleep(50);
@@ -193,12 +202,12 @@ try {
       fs.writeFileSync(fragPath, original);
       await sleep(600);
     }
-    const errorMapped = new RegExp(`scenes/${id}/scene.frag:\\d+`).test(errorText);
-    const stillRunning = await evaluate(
-      "document.getElementById('errors').hidden && window.__sv.compiles > 0",
-    );
-    // Let the scene run a bit more so the screenshot and stats are representative.
-    await sleep(2000);
+    if (!QUICK) {
+      errorMapped = new RegExp(`scenes/${id}/scene.frag:\\d+`).test(errorText);
+      stillRunning = await evaluate("document.getElementById('errors').hidden && window.__sv.compiles > 0");
+    }
+    // Let the scene run so the screenshot and stats are representative.
+    await sleep(SETTLE);
     state = await evaluate(`({
       name: document.querySelector('.scene-name')?.textContent ?? '',
       stats: document.getElementById('stats')?.textContent ?? '',
@@ -214,11 +223,13 @@ try {
     console.log(`   name: ${state?.name}  params: ${state?.params}`);
     if (id === scenes[0]) console.log(`   renderer: ${await evaluate('window.__sv.renderer')}`);
     console.log(`   stats: ${state?.stats}`);
-    console.log(`   hot reload (.frag -> recompiled): ${hotMs === null ? 'TIMEOUT' : hotMs + ' ms'}`);
-    if (hotMs === null) failed = true;
-    console.log(`   error overlay mapped to scene.frag:line: ${errorMapped ? 'yes' : 'NO'}  recovered after fix: ${stillRunning ? 'yes' : 'NO'}`);
-    if (errorText) console.log(`   overlay: ${errorText.split('\n').slice(0, 2).join(' | ')}`);
-    if (!errorMapped || !stillRunning) failed = true;
+    if (!QUICK) {
+      console.log(`   hot reload (.frag -> recompiled): ${hotMs === null ? 'TIMEOUT' : hotMs + ' ms'}`);
+      if (hotMs === null) failed = true;
+      console.log(`   error overlay mapped to scene.frag:line: ${errorMapped ? 'yes' : 'NO'}  recovered after fix: ${stillRunning ? 'yes' : 'NO'}`);
+      if (errorText) console.log(`   overlay: ${errorText.split('\n').slice(0, 2).join(' | ')}`);
+      if (!errorMapped || !stillRunning) failed = true;
+    }
     if (state?.errors) console.log(`   errors: ${state.errors.replace(/\n/g, '\n           ')}`);
     for (const l of logs) console.log(`   ${l}`);
     console.log(`   screenshot: ${file}`);

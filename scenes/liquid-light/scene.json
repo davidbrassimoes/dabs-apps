@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "liquid-light",
+  "name": "Luz Líquida",
+  "description": "Óleo e água num retroprojetor: bolhas que se fundem, rebordos de lente, cores que escorrem. Liquid light show dos anos 60.",
+  "tags": ["liquid light", "orgânico", "psicadélico", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#1a0a2e", "#7a1f6b", "#e0366c", "#ff8c42", "#ffd166"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.15 },
+    { "id": "blobs", "label": "Bolhas", "type": "int", "min": 2, "max": 8, "default": 6, "drift": 0.0 },
+    { "id": "size", "label": "Tamanho", "type": "float", "min": 0.05, "max": 0.5, "default": 0.22, "drift": 0.2 },
+    { "id": "warp", "label": "Distorção", "type": "float", "min": 0.0, "max": 2.0, "default": 0.8, "drift": 0.25 },
+    { "id": "rim", "label": "Rebordo", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+  ]
+}

@@ -36,6 +36,8 @@ npm run build          # bundle único, sem servidor
 node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chromium headless (SwiftShader),
                               # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
 node scripts/smoke.mjs --gpu  # o mesmo com a GPU do PC (ANGLE/D3D11): fps e ms de GPU passam a ter significado
+node scripts/smoke.mjs --gpu --quick --only aurora,halo --settle 10
+                              # --quick salta hot reload e overlay; --only filtra cenas; --settle N segundos antes da captura
 ```
 
 O teste de fumo, por cena:

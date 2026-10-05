@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "id": "ink-bloom",
+  "name": "Tinta",
+  "description": "Gotas de tinta a cair em água: espalham-se, difundem-se e são levadas por correntes lentas. Feedback com difusão.",
+  "tags": ["tinta", "feedback", "orgânico", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": true,
+  "image": "none",
+  "defaultPalette": ["#0d1b3d", "#24306e", "#b23a8c", "#ff6f91", "#ffc97a"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.15 },
+    { "id": "flow", "label": "Correntes", "type": "float", "min": 0.0, "max": 3.0, "default": 1.0, "drift": 0.25 },
+    { "id": "scale", "label": "Escala do campo", "type": "float", "min": 0.5, "max": 6.0, "default": 2.0, "drift": 0.2 },
+    { "id": "diffuse", "label": "Difusão", "type": "float", "min": 0.0, "max": 3.0, "default": 1.6, "drift": 0.1 },
+    { "id": "decay", "label": "Persistência", "type": "float", "min": 0.95, "max": 0.999, "default": 0.996, "drift": 0.0 },
+    { "id": "rate", "label": "Cadência", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.1 },
+    { "id": "pulse", "label": "Gota no beat", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.0, "group": "Reatividade" }
+  ]
+}

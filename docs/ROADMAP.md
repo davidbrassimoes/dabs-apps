@@ -16,7 +16,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - painel de parâmetros **gerado do `scene.json`**, seletor de cena, seletor de perfil (TV/Projetor), sinais sintéticos com sliders manuais (para simular reatividade sem a bridge),
   - suporte a `feedback` (ping-pong) e `renderScale`,
   - contador de fps/frame time.
-- [ ] **0.3 Afinar as 3 cenas iniciais** (`color-field`, `nebula`, `flow-particles`) até ficarem bonitas. Decidir se `flow-particles` passa a sistema de partículas real (estado em textura + pontos instanciados) ou se fica como trilhos por feedback — medir na box.
+- [ ] **0.3 Afinar as cenas iniciais** — às 3 originais juntaram-se 4 propostas de estética (2026-10-05): `liquid-light` (óleo e água em retroprojetor), `ink-bloom` (tinta em água, feedback com difusão), `aurora` (cortinas de luz), `halo` (orbe à Turrell). Decidir quais ficam. Afinar (`color-field`, `nebula`, `flow-particles`) até ficarem bonitas. Decidir se `flow-particles` passa a sistema de partículas real (estado em textura + pontos instanciados) ou se fica como trilhos por feedback — medir na box.
 - [ ] **0.4 Renderer nativo mínimo (`tv-app/`)** — Kotlin + GLES 3.0:
   - Activity em ecrã inteiro, carrega cenas de `assets/` (cópia gerada pelo Gradle a partir de `scenes/` e `shared/`),
   - FBO à escala interna + `OutputPass`, limite de fps, feedback ping-pong,

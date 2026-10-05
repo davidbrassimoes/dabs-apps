@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "aurora",
+  "name": "Aurora",
+  "description": "Cortinas de luz que ondulam devagar, com pregas verticais e um horizonte que brilha. Formas grandes e saturadas.",
+  "tags": ["aurora", "lento", "atmosférico"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#02111b", "#0b3d4f", "#1fa88a", "#8de3b5", "#f2a6ff"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.15 },
+    { "id": "wave", "label": "Ondulação", "type": "float", "min": 0.0, "max": 2.0, "default": 1.0, "drift": 0.25 },
+    { "id": "width", "label": "Largura", "type": "float", "min": 0.3, "max": 3.0, "default": 1.2, "drift": 0.2 },
+    { "id": "folds", "label": "Pregas", "type": "float", "min": 0.0, "max": 2.0, "default": 1.0, "drift": 0.2 },
+    { "id": "glow", "label": "Horizonte", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ]
+}
