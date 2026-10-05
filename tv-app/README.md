@@ -91,5 +91,11 @@ Com estes números, cada cena ficou com a `renderScale` que mantém o p95 abaixo
 
 Uma janela de 10 s por cena, com o limite de fps de cada cena: **todas no limite** (30,0 fps; breath e halo a 24), intervalo médio 33,3 ms e **p95 33,5 ms** em todas. O máximo de 45–57 ms só aparece nas janelas com troca de cena (compilação do shader); nas janelas sem troca, máximo ~34 ms e `alloc=0 B/s`.
 
-**Por fazer:** custo do crossfade quando chegar à tv-app (soma das duas cenas durante ~4 s).
+### Teste de 31 min na `nebula` (a cena mais apertada), 2026-10-05
+
+`am start ... --es scene nebula`, 634×356, limite 30. **187 janelas de 10 s, todas a 30,0 fps**, p95 entre 33,45 e 33,53 ms, pior frame 42 ms, `alloc=0 B/s` exceto um bloco TLAB de 32 KB a cada ~30–40 s (o log da thread de UI). Sem throttling: estado térmico 0 durante todo o teste; SoC a 51,8 °C no fim (leitura "Current temperatures from HAL" do `dumpsys thermalservice`; a secção "Cached" não é atualizada e não serve para curvas).
+
+**Conclusão:** com o ruído por textura, o passe de saída otimizado e a escala por cena, as 15 cenas cumprem o critério da Fase 0 na box. A escala dinâmica não é precisa por agora; volta a ser avaliada com um projetor 4K ou cenas novas mais pesadas.
+
+**Por fazer:** custo do crossfade quando chegar à tv-app (0.6; soma das duas cenas durante ~4 s).
 

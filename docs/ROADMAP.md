@@ -26,11 +26,11 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
   - troca de cena com o comando (D-pad esquerda/direita),
   - overlay de diagnóstico,
   - **zero alocações por frame**.
-- [~] **0.5 Medição na box** (2026-10-05: modo benchmark; ruído por textura (formato v3) e passe de saída otimizado — cenas ~2,2× e saída 15,7 → 9,4 ms; `renderScale` por cena escolhida pelos números, tudo em `tv-app/README.md`. Falta: verificar no modo normal, teste de 30 min, decidir se a escala dinâmica é precisa) — as 3 cenas a correr; registar frame time por cena e por `renderScale` numa tabela em `tv-app/README.md`. Implementar escala dinâmica se necessário.
+- [x] **0.5 Medição na box** (2026-10-05; tudo em `tv-app/README.md`: modo benchmark; ruído por textura (formato v3) e passe de saída otimizado — cenas ~2,2× e saída 15,7 → 9,4 ms; `renderScale` por cena pelos números; as 15 cenas no limite de fps; 31 min de `nebula` a 30,0 fps sem throttling; escala dinâmica não precisa por agora)
 - [~] **0.6 Drift e transições** (authoring feito em 2026-10-05: drift determinista com casos partilhados, variação de paleta em OKLab, crossfade entre cenas; falta a tv-app, depois do 0.4) — drift de parâmetros e crossfade entre cenas (no authoring e na tv-app). Incluir **variação de paleta** no host (pedido do dono, 2026-10-05): cada cena pode ter várias paletas em `scene.json` e o host roda entre elas devagar, ou deriva o matiz; as cenas continuam a ler só `uPalette`.
 
 **Critérios de aceitação:**
-- As 3 cenas correm na box a ≥ 30 fps estáveis com a `renderScale` por defeito, durante 30 min, sem engasgos visíveis.
+- As 3 cenas correm na box a ≥ 30 fps estáveis com a `renderScale` por defeito, durante 30 min, sem engasgos visíveis. _(cumprido 2026-10-05: as 15 cenas no limite; 31 min na `nebula`, a mais pesada)_
 - Uma alteração a um `.frag` aparece no authoring em < 1 s. _(medido 2026-10-04: 140–190 ms, `authoring/scripts/smoke.mjs`)_
 - Os mesmos ficheiros de cena produzem o mesmo resultado (visualmente) no authoring e na box.
 
