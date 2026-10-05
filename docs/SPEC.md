@@ -86,12 +86,13 @@ O QR não inclui litros nem preço/litro. Extrair por ML Kit Text Recognition co
 Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia em resolução máxima tirada logo a seguir (apagada depois). Para afinar os parsers com fotografias reais: pô-las em `test-photos/` (fora do git) e correr `SamplePhotoOcrDumpTest` com `adb shell am instrument`, que escreve o texto reconhecido em `Android/data/pt.dabs.fueltracker/files/ocr-dump/`. Em builds de debug, o formulário mostra a secção "Texto lido (debug)".
 
 ## Leitura do conta-km
-- Conta-km digital (LCD, sete segmentos).
-- Visor da câmara com moldura para enquadrar só os dígitos.
-- Análise em tempo real (CameraX ImageAnalysis + ML Kit): fixar quando o mesmo número aparece estável em N frames consecutivos.
-- Filtrar apenas dígitos; validar contra o último odómetro.
+- Conta-km digital (LCD, sete segmentos). No Corsa cada algarismo é feito de blocos quadrados numa grelha 5×7, com o parcial ("602,0") por cima do total e o rótulo "km" entre os dois.
+- O ML Kit não serve: na foto inteira não lê nenhum dígito do visor e no recorte confunde 6 com 5. Usa-se um leitor próprio de sete segmentos (`SevenSegmentReader`, funções puras): binarização em vários limiares (Otsu e varredura), fusão dos blocos em algarismos, segunda segmentação dentro da faixa de cada linha (o "km" deixa de fazer ponte), leitura dos 7 segmentos, deteção da vírgula decimal (exclui o parcial) e votação entre limiares.
+- Visor da câmara com moldura para enquadrar só os dígitos. Análise em tempo real (CameraX ImageAnalysis, plano Y, zona da moldura): fixar quando o mesmo número aparece estável em N frames consecutivos.
+- Fotografia da galeria: o mesmo leitor na imagem inteira; o OCR genérico só como recurso para outros visores.
+- Validar contra o último odómetro (uma leitura implausível é rejeitada, nunca substituída por outra).
 - Fallback: teclado numérico com o valor previsto pré-preenchido.
-- Se o OCR genérico se revelar insuficiente para sete segmentos, considerar um modelo dedicado (fase posterior, só se necessário).
+- Amostras de teste em `app/src/test/resources/odometer` (foto real do painel e recorte do visor).
 
 ## Ecrãs
 1. **Início**: último consumo, média recente, este mês (km, €, litros), autonomia estimada, botão grande "Abastecer".

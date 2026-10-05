@@ -2,14 +2,13 @@ package pt.dabs.fueltracker.feature.scan
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Rect
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
-import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
@@ -50,26 +49,22 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.mlkit.vision.interfaces.Detector
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import pt.dabs.fueltracker.R
-import pt.dabs.fueltracker.core.scanning.OcrLine
-import pt.dabs.fueltracker.core.scanning.OcrRows
 import kotlinx.coroutines.launch
-import pt.dabs.fueltracker.core.scanning.OdometerReader
+import pt.dabs.fueltracker.core.scanning.LumaImage
 import pt.dabs.fueltracker.core.scanning.OdometerStabilizer
+import pt.dabs.fueltracker.core.scanning.SevenSegmentReader
 import pt.dabs.fueltracker.core.scanning.StillImageScanner
 import pt.dabs.fueltracker.core.ui.format.PtFormat
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** Fração do pré-visualizador ocupada pela moldura onde se enquadram os dígitos. */
 private const val FRAME_WIDTH_FRACTION = 0.8f
@@ -77,8 +72,9 @@ private const val FRAME_HEIGHT_FRACTION = 0.18f
 private const val REQUIRED_STABLE_FRAMES = 3
 
 /**
- * Lê o conta-km total em tempo real: só o texto dentro da moldura conta, só dígitos plausíveis
- * face ao último odómetro são aceites, e o valor fixa quando se repete em frames consecutivos.
+ * Lê o conta-km total em tempo real com o leitor de sete segmentos (o ML Kit não lê o visor de
+ * blocos do carro): só a zona da moldura conta, só leituras plausíveis face ao último odómetro
+ * são aceites, e o valor fixa quando se repete em frames consecutivos.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +100,7 @@ fun ScanOdometerScreen(
         if (!permissionGranted) launcher.launch(Manifest.permission.CAMERA)
     }
 
-    // Fotografia do painel já tirada: OCR sobre a imagem inteira, sem moldura nem estabilização.
+    // Fotografia do painel já tirada: leitor de sete segmentos na imagem inteira (OCR como recurso).
     val scope = rememberCoroutineScope()
     val stillScanner = remember { StillImageScanner(context.applicationContext) }
     var analyzingPhoto by remember { mutableStateOf(false) }
@@ -116,7 +112,7 @@ fun ScanOdometerScreen(
             analyzingPhoto = true
             photoError = null
             try {
-                val reading = OdometerReader.read(stillScanner.recognizeRows(uri), lastOdometerKm)
+                val reading = stillScanner.readOdometer(uri, lastOdometerKm)
                 if (reading != null) currentOnResult(reading) else photoError = R.string.scan_odometer_photo_not_found
             } catch (e: Exception) {
                 photoError = R.string.scan_photo_failed
@@ -225,10 +221,9 @@ private fun OdometerCameraPreview(
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnResult by rememberUpdatedState(onResult)
     val currentOnProgress by rememberUpdatedState(onProgress)
-    var previewSize by remember { mutableStateOf(IntSize.Zero) }
-    val currentPreviewSize by rememberUpdatedState(previewSize)
 
-    val textRecognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+    // A leitura de cada frame (~10-40 ms) corre fora da thread principal.
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
     val controller = remember {
         LifecycleCameraController(context).apply {
             setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
@@ -239,44 +234,43 @@ private fun OdometerCameraPreview(
     }
 
     DisposableEffect(controller, lifecycleOwner) {
-        val executor = ContextCompat.getMainExecutor(context)
+        val mainExecutor = ContextCompat.getMainExecutor(context)
         val stabilizer = OdometerStabilizer(requiredFrames = REQUIRED_STABLE_FRAMES)
-        var delivered = false
+        val delivered = AtomicBoolean(false)
 
-        controller.setImageAnalysisAnalyzer(
-            executor,
-            // Coordenadas referidas ao PreviewView, para comparar com a moldura desenhada por cima.
-            MlKitAnalyzer(listOf<Detector<*>>(textRecognizer), CameraController.COORDINATE_SYSTEM_VIEW_REFERENCED, executor) { result ->
-                if (delivered) return@MlKitAnalyzer
-                val frame = frameRect(currentPreviewSize)
-                val lines = result?.getValue(textRecognizer)?.textBlocks
-                    ?.flatMap { it.lines }
-                    ?.mapNotNull { line ->
-                        line.boundingBox
-                            ?.takeIf { box -> frame == null || frame.contains(box.centerX(), box.centerY()) }
-                            ?.let { box -> OcrLine(line.text, box.top, box.bottom, box.left) }
-                    }
-                    .orEmpty()
-                val reading = OdometerReader.read(OcrRows.merge(lines), lastOdometerKm)
+        controller.setImageAnalysisAnalyzer(analysisExecutor) { proxy ->
+            val reading = proxy.use { frame ->
+                if (delivered.get()) return@use null
+                // O cropRect é a parte da imagem visível no PreviewView (viewport do controlador),
+                // por isso a moldura, centrada, corresponde às mesmas frações da imagem rodada.
+                // Com folga: o leitor encontra os dígitos sozinho dentro da zona.
+                val region = frame.toUprightLuma()
+                    .centerRegion(FRAME_WIDTH_FRACTION * 1.1f, FRAME_HEIGHT_FRACTION * 1.5f)
+                SevenSegmentReader.readOdometer(region, lastOdometerKm)
+            }
+            mainExecutor.execute {
+                if (delivered.get()) return@execute
                 val locked = stabilizer.offer(reading)
                 currentOnProgress(stabilizer.candidate, stabilizer.progress)
-                if (locked != null) {
-                    delivered = true
+                if (locked != null && delivered.compareAndSet(false, true)) {
                     controller.clearImageAnalysisAnalyzer()
                     currentOnResult(locked)
                 }
-            },
-        )
+            }
+        }
         controller.bindToLifecycle(lifecycleOwner)
         onDispose {
+            delivered.set(true)
             controller.clearImageAnalysisAnalyzer()
             controller.unbind()
-            textRecognizer.close()
         }
+    }
+    DisposableEffect(analysisExecutor) {
+        onDispose { analysisExecutor.shutdown() }
     }
 
     AndroidView(
-        modifier = modifier.onSizeChanged { previewSize = it },
+        modifier = modifier,
         factory = { ctx ->
             PreviewView(ctx).apply {
                 scaleType = PreviewView.ScaleType.FILL_CENTER
@@ -286,12 +280,12 @@ private fun OdometerCameraPreview(
     )
 }
 
-/** Retângulo da moldura em píxeis do PreviewView; null enquanto o tamanho não é conhecido. */
-private fun frameRect(size: IntSize): Rect? {
-    if (size.width == 0 || size.height == 0) return null
-    val frameWidth = size.width * FRAME_WIDTH_FRACTION
-    val frameHeight = size.height * FRAME_HEIGHT_FRACTION
-    val left = (size.width - frameWidth) / 2
-    val top = (size.height - frameHeight) / 2
-    return Rect(left.toInt(), top.toInt(), (left + frameWidth).toInt(), (top + frameHeight).toInt())
+/** Plano Y (luminância) da parte visível do frame, já rodado para a orientação do ecrã. */
+private fun ImageProxy.toUprightLuma(): LumaImage {
+    val plane = planes[0]
+    val buffer = plane.buffer.apply { rewind() }
+    val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
+    val crop = cropRect
+    return LumaImage.fromYPlane(bytes, plane.rowStride, plane.pixelStride, crop.left, crop.top, crop.right, crop.bottom)
+        .rotate(imageInfo.rotationDegrees)
 }

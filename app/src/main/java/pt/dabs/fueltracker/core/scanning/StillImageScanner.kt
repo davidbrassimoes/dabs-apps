@@ -1,7 +1,10 @@
 package pt.dabs.fueltracker.core.scanning
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -10,7 +13,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -45,6 +50,44 @@ class StillImageScanner(private val context: Context) {
             barcodeScanner.close()
             textRecognizer.close()
         }
+    }
+
+    /**
+     * Conta-km total numa fotografia do painel. Primeiro o leitor de sete segmentos (que lê o
+     * visor de blocos do carro, onde o ML Kit falha); se não encontrar nada, o OCR genérico.
+     */
+    suspend fun readOdometer(uri: Uri, lastOdometerKm: Int?): Int? {
+        val luma = withContext(Dispatchers.Default) {
+            decodeLuma(uri)?.let { SevenSegmentReader.readOdometer(it, lastOdometerKm) }
+        }
+        return luma ?: OdometerReader.read(recognizeRows(uri), lastOdometerKm)
+    }
+
+    /** Luminância da fotografia, já rodada segundo o EXIF e reduzida para a análise. */
+    private fun decodeLuma(uri: Uri): LumaImage? {
+        val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, info, _ ->
+                // Bitmap em memória normal (getPixels não funciona em bitmaps de hardware).
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                val longest = maxOf(info.size.width, info.size.height)
+                if (longest > SevenSegmentReader.MAX_SIDE) {
+                    val scale = SevenSegmentReader.MAX_SIDE.toFloat() / longest
+                    decoder.setTargetSize((info.size.width * scale).toInt(), (info.size.height * scale).toInt())
+                }
+            }
+        } else {
+            // API 26-27: sem rotação EXIF (o ImageDecoder trata-a a partir da 28).
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+            var sample = 1
+            while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= SevenSegmentReader.MAX_SIDE) sample *= 2
+            context.contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
+            }
+        } ?: return null
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        return LumaImage.fromArgb(bitmap.width, bitmap.height, pixels).also { bitmap.recycle() }
     }
 
     /** Linhas de texto da fotografia, já fundidas por faixa vertical. */

@@ -38,11 +38,14 @@ class SamplePhotoOcrDumpTest {
             testAssets.open(name).use { input -> file.outputStream().use { input.copyTo(it) } }
             val text = scanner.recognizeText(Uri.fromFile(file))
             val receipt = scanner.scanReceipt(Uri.fromFile(file))
+            val odometer = scanner.readOdometer(Uri.fromFile(file), lastOdometerKm = null)
 
             val report = buildString {
                 appendLine("# $name ${text.imageWidth}x${text.imageHeight}")
                 appendLine("## QR")
                 appendLine(receipt.qrRaw ?: "(sem QR)")
+                appendLine("## Conta-km (sete segmentos, OCR como recurso)")
+                appendLine(odometer?.toString() ?: "(nenhum)")
                 appendLine("## Linhas ML Kit (top,bottom,left | texto)")
                 text.lines.forEach { appendLine("${it.top},${it.bottom},${it.left} | ${it.text}") }
                 appendLine("## Linhas fundidas (OcrRows.merge)")
