@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "veils",
+  "name": "Véus",
+  "description": "Véus de seda translúcidos sobrepostos, a ondular ao vento devagar. Camadas que se misturam por transparência.",
+  "tags": ["véus", "suave", "orgânico", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#1c1526", "#4b2a5e", "#9b4f96", "#e07a9a", "#ffd6c2"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.15 },
+    { "id": "layers", "label": "Camadas", "type": "int", "min": 1, "max": 4, "default": 3, "drift": 0.0 },
+    { "id": "wave", "label": "Ondulação", "type": "float", "min": 0.0, "max": 2.0, "default": 1.0, "drift": 0.25 },
+    { "id": "width", "label": "Largura", "type": "float", "min": 0.3, "max": 3.0, "default": 0.9, "drift": 0.2 },
+    { "id": "opacity", "label": "Opacidade", "type": "float", "min": 0.2, "max": 1.0, "default": 0.75, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+  ]
+}
