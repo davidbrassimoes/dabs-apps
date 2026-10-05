@@ -1,8 +1,24 @@
 // Spiral Melt — concentric rings with optional spiral twist, drifting outward and
 // melted by a slow fbm warp. Bands are wide and soft (projector-friendly); colour
-// cycles along the rings. Cost: 2 x fbm(3) per pixel.
+// cycles along the radius. Cost: 2 x fbm(3) per pixel.
+//
+// Seamless spiral: atan() jumps by 2*pi on the negative x axis, so the angular term
+// must shift k by a whole number of tri() periods (2) there: 2n arms. A drifting
+// p_twist crossfades between n and n+1 so the arm count never pops. Colour depends
+// on radius, not on the band index, which would also change across the cut.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+
+const float TAU = 6.28318530718;
+
+vec3 spiral(float r, float turn, float arms, float t, float cycle) {
+    float k = r * p_rings - t * 2.0 + turn * arms;
+    float band = smoothstep(0.5 - p_soft, 0.5 + p_soft, tri(k));
+    // One band walks the dark half of the palette, the other the light half, so
+    // neighbouring bands always contrast.
+    float c = r * 0.9 + cycle;
+    return mix(palette(0.1 + 0.45 * tri(c)), palette(0.55 + 0.45 * tri(c + 0.7)), band);
+}
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
@@ -15,15 +31,14 @@ void main() {
     vec2 q = p + w * p_melt * 0.45;
 
     float r = length(q);
-    float a = atan(q.y, q.x);
-    float k = r * p_rings - t * 2.0 + a * p_twist * 0.5;
-
-    // Two interleaved palette bands with a soft boundary.
-    float band = smoothstep(0.5 - p_soft, 0.5 + p_soft, tri(k));
+    float turn = atan(q.y, q.x) / TAU; // -0.5..0.5, jumps by 1 on the cut
     float cycle = t * 0.08 + uMood.y * 0.3;
-    vec3 c1 = palette(tri(floor(k) * 0.21 + cycle));
-    vec3 c2 = palette(tri(floor(k + 0.5) * 0.21 + 0.5 + cycle));
-    vec3 col = mix(c1, c2, band);
+
+    // p_twist 0..3 -> 0..~4.7 arm pairs; each integer step is seamless.
+    float s = p_twist * 1.5708;
+    float n = floor(s);
+    float f = smoothstep(0.0, 1.0, fract(s));
+    vec3 col = mix(spiral(r, turn, 2.0 * n, t, cycle), spiral(r, turn, 2.0 * n + 2.0, t, cycle), f);
 
     // Centre glows a little; edges stay luminous.
     col *= 0.85 + 0.3 * exp(-r * 2.0) * (0.7 + 0.5 * uMood.x);
