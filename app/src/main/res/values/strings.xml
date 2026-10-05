@@ -134,8 +134,11 @@
 
     <!-- Leitura do conta-km -->
     <string name="scan_odometer_title">Ler conta-km</string>
-    <string name="scan_odometer_hint">Enquadra só os dígitos do conta-km total dentro da moldura e mantém o telemóvel quieto.</string>
+    <string name="scan_odometer_hint">Enquadra o visor do conta-km dentro da moldura (parcial em cima, total em baixo) e mantém o telemóvel quieto.</string>
     <string name="scan_odometer_reading">A ler: %1$s</string>
+    <string name="scan_odometer_trip">Parcial: %1$s</string>
+    <string name="scan_odometer_trip_ok">Parcial: %1$s · bate com o abastecimento anterior</string>
+    <string name="scan_odometer_trip_mismatch">Parcial: %1$s · não bate com o abastecimento anterior. Puseste-o a zeros da última vez?</string>
     <string name="scan_odometer_last">Anterior: %1$s</string>
     <string name="scan_odometer_predicted">Previsto: ~%1$s</string>
     <string name="scan_odometer_manual">Escrever à mão</string>

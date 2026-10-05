@@ -45,6 +45,64 @@ class SevenSegmentReaderTest {
         assertEquals(162_259, SevenSegmentReader.readOdometer(frame, lastOdometerKm = 161_650))
     }
 
+    @Test
+    fun `real Corsa panel reads total and trip, and checks them against the last fill up`() {
+        val lcd = resource("real_corsa_lcd.jpg")
+        val unknown = SevenSegmentReader.readPanel(lcd, lastOdometerKm = null)
+        assertEquals(162_259, unknown.totalKm)
+        assertEquals(6_020, unknown.tripTenthsKm)
+        assertEquals(null, unknown.consistentWithTrip)
+        // Parcial posto a zeros no abastecimento anterior, a 161 657 km: 161 657 + 602,0 = 162 259.
+        val consistent = SevenSegmentReader.readPanel(lcd, lastOdometerKm = 161_657)
+        assertEquals(162_259, consistent.totalKm)
+        assertEquals(true, consistent.consistentWithTrip)
+        // Parcial não posto a zeros da última vez: o total lido mantém-se, só a verificação falha.
+        val forgotReset = SevenSegmentReader.readPanel(lcd, lastOdometerKm = 161_000)
+        assertEquals(162_259, forgotReset.totalKm)
+        assertEquals(false, forgotReset.consistentWithTrip)
+    }
+
+    // --- escolha entre os números lidos ----------------------------------------------------
+
+    private fun number(digits: String, votes: Int, decimal: Boolean = false) =
+        SevenSegmentReader.SegmentNumber(digits, decimal, 0, 0, 0, 0, votes)
+
+    private fun choose(vararg numbers: SevenSegmentReader.SegmentNumber, last: Int? = null) =
+        SevenSegmentReader.choosePanel(numbers.toList(), last, OdometerReader.DEFAULT_MAX_DISTANCE_KM)
+
+    @Test
+    fun `the larger value is the total, even when the trip loses its comma`() {
+        val panel = choose(number("6020", votes = 5), number("162259", votes = 3))
+        assertEquals(162_259, panel.totalKm)
+    }
+
+    @Test
+    fun `the trip itself is never the total`() {
+        // Com vírgula num limiar e sem ela noutro: o 6020 sem vírgula é o parcial, não um total.
+        val panel = choose(number("6020", votes = 4, decimal = true), number("6020", votes = 2))
+        assertEquals(null, panel.totalKm)
+        assertEquals(6_020, panel.tripTenthsKm)
+    }
+
+    @Test
+    fun `last odometer plus trip picks the right total among misreads`() {
+        // 162 259 e uma leitura errada 162 289, ambas plausíveis; o parcial desempata.
+        val panel = choose(
+            number("6020", votes = 3, decimal = true),
+            number("162289", votes = 3),
+            number("162259", votes = 2),
+            last = 161_657,
+        )
+        assertEquals(162_259, panel.totalKm)
+        assertEquals(true, panel.consistentWithTrip)
+    }
+
+    @Test
+    fun `poorly voted larger misreads do not win`() {
+        val panel = choose(number("162259", votes = 6), number("762259", votes = 1))
+        assertEquals(162_259, panel.totalKm)
+    }
+
     // --- amostras sintéticas -----------------------------------------------------------
 
     private enum class Style { BLOCKS, SOLID }

@@ -43,18 +43,62 @@ object SevenSegmentReader {
     fun readOdometerCandidates(image: LumaImage): List<Int> =
         odometerVotes(readNumbers(image)).map { it.first }
 
-    /**
-     * O conta-km total mais provável: entre os candidatos plausíveis face a [lastOdometerKm]
-     * (ver [OdometerReader.pickPlausible]), o lido em mais limiares; em empate, o com mais algarismos.
-     */
+    /** O que se lê no painel: o conta-km total (em baixo) e o parcial (em cima, com uma casa decimal). */
+    data class PanelReading(
+        val totalKm: Int?,
+        /** Parcial em décimas de km (602,0 km = 6020); o utilizador põe-no a zeros a cada abastecimento. */
+        val tripTenthsKm: Int?,
+        /** true/false quando há odómetro anterior e parcial: total ≈ anterior + parcial (±[TRIP_TOLERANCE_KM]). */
+        val consistentWithTrip: Boolean?,
+    ) {
+        companion object {
+            val EMPTY = PanelReading(null, null, null)
+        }
+    }
+
+    /** Diferença admitida entre o total e anterior + parcial (o total não tem décimas e arredonda). */
+    const val TRIP_TOLERANCE_KM = 2
+
     fun readOdometer(
         image: LumaImage,
         lastOdometerKm: Int?,
         maxDistanceKm: Int = OdometerReader.DEFAULT_MAX_DISTANCE_KM,
-    ): Int? = odometerVotes(readNumbers(image))
-        .filter { (value, _) -> OdometerReader.pickPlausible(listOf(value), lastOdometerKm, maxDistanceKm) != null }
-        .maxWithOrNull(compareBy({ it.second }, { it.first.toString().length }))
-        ?.first
+    ): Int? = readPanel(image, lastOdometerKm, maxDistanceKm).totalKm
+
+    fun readPanel(
+        image: LumaImage,
+        lastOdometerKm: Int?,
+        maxDistanceKm: Int = OdometerReader.DEFAULT_MAX_DISTANCE_KM,
+    ): PanelReading = choosePanel(readNumbers(image), lastOdometerKm, maxDistanceKm)
+
+    /**
+     * Escolhe o total e o parcial entre os números lidos. O painel mostra sempre os dois: o parcial
+     * em cima, com vírgula, e o total em baixo, que é o maior. Como o parcial é posto a zeros a cada
+     * abastecimento, ao abastecer total ≈ odómetro anterior + parcial.
+     *
+     * 1. Parcial: o número com vírgula mais votado.
+     * 2. Totais: sem vírgula, 4 a 7 algarismos, plausíveis face a [lastOdometerKm], maiores do que o
+     *    parcial e diferentes dele (o parcial lido sem a vírgula não conta).
+     * 3. Com odómetro anterior e parcial, ganha o total que bate com anterior + parcial; senão, entre
+     *    os bem votados (≥ metade dos votos do melhor), o maior.
+     */
+    internal fun choosePanel(numbers: List<SegmentNumber>, lastOdometerKm: Int?, maxDistanceKm: Int): PanelReading {
+        val trip = numbers.filter { it.hasDecimal && it.digits.length in 2..6 }.maxByOrNull { it.votes }
+        val tripTenths = trip?.digits?.toIntOrNull()
+        val totals = odometerVotes(numbers)
+            .filter { (value, _) -> OdometerReader.pickPlausible(listOf(value), lastOdometerKm, maxDistanceKm) != null }
+            .filter { (value, _) -> value.toString() != trip?.digits && (tripTenths == null || value * 10L > tripTenths) }
+        if (totals.isEmpty()) return PanelReading(null, tripTenths, null)
+
+        val expectedTenths = if (lastOdometerKm != null && tripTenths != null) lastOdometerKm * 10L + tripTenths else null
+        fun consistent(value: Int) = expectedTenths != null && abs(value * 10L - expectedTenths) <= TRIP_TOLERANCE_KM * 10L
+        val matching = totals.filter { consistent(it.first) }.maxByOrNull { it.second }
+        val total = matching?.first ?: run {
+            val bestVotes = totals.maxOf { it.second }
+            totals.filter { it.second * 2 >= bestVotes }.maxOf { it.first }
+        }
+        return PanelReading(total, tripTenths, if (expectedTenths == null) null else consistent(total))
+    }
 
     private fun odometerVotes(numbers: List<SegmentNumber>): List<Pair<Int, Int>> =
         numbers.filter { !it.hasDecimal && it.digits.length in OdometerReader.MIN_DIGITS..OdometerReader.MAX_DIGITS }

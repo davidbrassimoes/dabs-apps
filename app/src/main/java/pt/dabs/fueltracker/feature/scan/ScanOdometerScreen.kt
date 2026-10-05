@@ -62,13 +62,14 @@ import pt.dabs.fueltracker.core.scanning.LumaImage
 import pt.dabs.fueltracker.core.scanning.OdometerStabilizer
 import pt.dabs.fueltracker.core.scanning.SevenSegmentReader
 import pt.dabs.fueltracker.core.scanning.StillImageScanner
+import pt.dabs.fueltracker.core.domain.NumberInput
 import pt.dabs.fueltracker.core.ui.format.PtFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-/** Fração do pré-visualizador ocupada pela moldura onde se enquadram os dígitos. */
+/** Fração do pré-visualizador ocupada pela moldura onde se enquadra o visor (parcial e total). */
 private const val FRAME_WIDTH_FRACTION = 0.8f
-private const val FRAME_HEIGHT_FRACTION = 0.18f
+private const val FRAME_HEIGHT_FRACTION = 0.26f
 private const val REQUIRED_STABLE_FRAMES = 3
 
 /**
@@ -92,6 +93,7 @@ fun ScanOdometerScreen(
     var permissionAsked by remember { mutableStateOf(false) }
     var candidate by remember { mutableStateOf<Int?>(null) }
     var progress by remember { mutableFloatStateOf(0f) }
+    var panel by remember { mutableStateOf<SevenSegmentReader.PanelReading?>(null) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionGranted = granted
         permissionAsked = true
@@ -138,7 +140,7 @@ fun ScanOdometerScreen(
             if (permissionGranted) {
                 OdometerCameraPreview(
                     lastOdometerKm = lastOdometerKm,
-                    onProgress = { value, fraction -> candidate = value; progress = fraction },
+                    onProgress = { value, fraction, reading -> candidate = value; progress = fraction; if (reading?.tripTenthsKm != null) panel = reading },
                     onResult = onResult,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -180,6 +182,21 @@ fun ScanOdometerScreen(
                         Spacer(Modifier.height(8.dp))
                         LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
                     }
+                    panel?.tripTenthsKm?.let { tenths ->
+                        // O parcial é posto a zeros a cada abastecimento: deve ser a distância desde o anterior.
+                        val trip = NumberInput.formatScaled(tenths.toLong(), 1) + " km"
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = when (panel?.consistentWithTrip) {
+                                true -> stringResource(R.string.scan_odometer_trip_ok, trip)
+                                false -> stringResource(R.string.scan_odometer_trip_mismatch, trip)
+                                null -> stringResource(R.string.scan_odometer_trip, trip)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (panel?.consistentWithTrip == false) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                     if (lastOdometerKm != null || predictedKm != null) {
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -213,7 +230,7 @@ fun ScanOdometerScreen(
 @Composable
 private fun OdometerCameraPreview(
     lastOdometerKm: Int?,
-    onProgress: (candidate: Int?, progress: Float) -> Unit,
+    onProgress: (candidate: Int?, progress: Float, panel: SevenSegmentReader.PanelReading?) -> Unit,
     onResult: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -246,12 +263,12 @@ private fun OdometerCameraPreview(
                 // Com folga: o leitor encontra os dígitos sozinho dentro da zona.
                 val region = frame.toUprightLuma()
                     .centerRegion(FRAME_WIDTH_FRACTION * 1.1f, FRAME_HEIGHT_FRACTION * 1.5f)
-                SevenSegmentReader.readOdometer(region, lastOdometerKm)
+                SevenSegmentReader.readPanel(region, lastOdometerKm)
             }
             mainExecutor.execute {
                 if (delivered.get()) return@execute
-                val locked = stabilizer.offer(reading)
-                currentOnProgress(stabilizer.candidate, stabilizer.progress)
+                val locked = stabilizer.offer(reading?.totalKm)
+                currentOnProgress(stabilizer.candidate, stabilizer.progress, reading)
                 if (locked != null && delivered.compareAndSet(false, true)) {
                     controller.clearImageAnalysisAnalyzer()
                     currentOnResult(locked)

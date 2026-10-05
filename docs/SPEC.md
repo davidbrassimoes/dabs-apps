@@ -90,6 +90,7 @@ Na câmara, o QR lê-se nos frames de análise; o texto lê-se numa fotografia e
 - O ML Kit não serve: na foto inteira não lê nenhum dígito do visor e no recorte confunde 6 com 5. Usa-se um leitor próprio de sete segmentos (`SevenSegmentReader`, funções puras): binarização em vários limiares (Otsu e varredura), fusão dos blocos em algarismos, segunda segmentação dentro da faixa de cada linha (o "km" deixa de fazer ponte), leitura dos 7 segmentos, deteção da vírgula decimal (exclui o parcial) e votação entre limiares.
 - Visor da câmara com moldura para enquadrar só os dígitos. Análise em tempo real (CameraX ImageAnalysis, plano Y, zona da moldura): fixar quando o mesmo número aparece estável em N frames consecutivos.
 - Fotografia da galeria: o mesmo leitor na imagem inteira; o OCR genérico só como recurso para outros visores.
+- O painel mostra sempre dois valores: o parcial em cima (uma casa decimal) e o total em baixo, que é o maior. O utilizador põe o parcial a zeros a cada abastecimento, por isso ao abastecer total ≈ odómetro anterior + parcial (±2 km): serve para escolher o total entre leituras duvidosas e é mostrado no ecrã de leitura (bate / não bate). Nunca bloqueia, porque o parcial pode não ter sido posto a zeros.
 - Validar contra o último odómetro (uma leitura implausível é rejeitada, nunca substituída por outra).
 - Fallback: teclado numérico com o valor previsto pré-preenchido.
 - Amostras de teste em `app/src/test/resources/odometer` (foto real do painel e recorte do visor).
