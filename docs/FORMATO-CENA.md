@@ -1,4 +1,4 @@
-# Formato de cena (v1)
+# Formato de cena (v2)
 
 Uma cena vive em `scenes/<id>/` e tem dois ficheiros:
 
@@ -53,7 +53,7 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 
 ```json
 {
-  "format": 1,
+  "format": 2,
   "id": "nebula",
   "name": "Nebulosa",
   "description": "Domain warping de ruído; cores da paleta.",
@@ -73,13 +73,21 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
       "default": 0.25,
       "drift": 0.15
     }
+  ],
+  "presets": [
+    {
+      "id": "dusk",
+      "name": "Crepúsculo",
+      "params": { "speed": 0.15 },
+      "palette": ["#1a1030", "#3d1e5c", "#8a3b7a", "#e0806a", "#f5d0a0"]
+    }
   ]
 }
 ```
 
 | Campo | Obrigatório | Descrição |
 |---|---|---|
-| `format` | sim | versão deste formato (`1`) |
+| `format` | sim | versão deste formato (`2`; os hosts aceitam também `1`, que não tem `presets`) |
 | `id`, `name` | sim | identificador e nome visível |
 | `description`, `tags` | não | para a página de controlo e playlists. **Convenção:** a primeira tag é o **estilo** (`ambient`, `psicadélico clássico`, `psicadélico tech`, `glitch`, `geométrico`); a autoria e a página de controlo agrupam as cenas por ela |
 | `fps` | não | limite de fps desta cena (defeito: o do perfil) |
@@ -88,6 +96,7 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 | `image` | não | `none` (defeito), `optional`, `required` |
 | `defaultPalette` | não | 5 cores hex usadas quando não há imagem nem preset |
 | `params` | sim | lista de parâmetros (pode ser vazia) |
+| `presets` | não | pontos de partida com nome (ver abaixo); exige `format: 2` |
 
 ### Parâmetros
 
@@ -101,6 +110,19 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 | `drift` | 0..1 — amplitude do vaguear lento, como fração do intervalo (0 = fixo). Não se aplica a `bool`/`color`. |
 | `group` | opcional; agrupa sliders na UI |
 
+### Presets
+
+Um preset é uma variação da cena escrita pelo autor: alguns valores de parâmetros e, opcionalmente, outra paleta. Escolhê-lo equivale a repor os parâmetros por defeito e aplicar por cima os que o preset indica. O drift continua a funcionar à volta desses valores.
+
+| Campo | Obrigatório | Descrição |
+|---|---|---|
+| `id` | sim | kebab-case, único dentro da cena |
+| `name` | sim | nome visível |
+| `params` | não | objeto `{ "<id do parâmetro>": valor }`, só com os que mudam; cada valor tem de respeitar o tipo e o intervalo (`min`..`max`) do parâmetro; `bool` em `true`/`false`, `color` em `#rrggbb` |
+| `palette` | não | 5 cores `#rrggbb`; sem ela usa-se a `defaultPalette` |
+
+O valor por defeito da cena (sem preset) é sempre uma escolha válida, por isso não é preciso repeti-lo como preset. As paletas dos presets também servem de conjunto para a variação de paleta no host (passo 0.6). Não confundir com os presets do utilizador (passo 3.3), que são guardados na box e incluem cena, valores e fonte de imagem.
+
 ## Boas práticas
 
 - **Pensar no projetor**: luminosidade média, cor saturada, formas grandes; evitar depender de pretos profundos e de detalhe fino.
@@ -108,3 +130,10 @@ Os sinais **já vêm misturados** com o sintético segundo a reatividade escolhi
 - **Custo**: preferir poucas oitavas de ruído; evitar loops longos por pixel; cenas `feedback` funcionam bem a `renderScale` baixa.
 - **Sem banding**: o passe de saída faz dithering; não é preciso repetir na cena.
 - Nada de estado global fora de `uPrev`; a cena deve poder recomeçar a qualquer momento.
+
+## Versões
+
+| Versão | Alterações |
+|---|---|
+| 1 | Versão inicial. |
+| 2 | Campo opcional `presets` (2026-10-05). |

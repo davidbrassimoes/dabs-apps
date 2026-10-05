@@ -1,4 +1,4 @@
-// Scene / profile types and loaders. Mirrors docs/FORMATO-CENA.md (format 1).
+// Scene / profile types and loaders. Mirrors docs/FORMATO-CENA.md (format 2).
 
 export type ParamType = 'float' | 'int' | 'bool' | 'color';
 
@@ -26,7 +26,19 @@ export interface SceneJson {
   image?: 'none' | 'optional' | 'required';
   defaultPalette?: string[];
   params: ParamDef[];
+  presets?: Preset[];
 }
+
+/** A named starting point: overrides some param values and/or the palette. */
+export interface Preset {
+  id: string;
+  name: string;
+  params?: Record<string, number | boolean | string>;
+  palette?: string[];
+}
+
+/** Scene format versions this loader accepts; presets need format 2. */
+export const SCENE_FORMATS = [1, 2];
 
 export interface Profile {
   format: number;
@@ -84,21 +96,31 @@ export function rgbToHex(c: Rgb): string {
   return `#${q(c[0])}${q(c[1])}${q(c[2])}`;
 }
 
-export function scenePalette(scene: SceneJson): Rgb[] {
-  const src = scene.defaultPalette && scene.defaultPalette.length === 5 ? scene.defaultPalette : FALLBACK_PALETTE;
+export function scenePalette(scene: SceneJson, preset?: Preset): Rgb[] {
+  const src =
+    preset?.palette && preset.palette.length === 5
+      ? preset.palette
+      : scene.defaultPalette && scene.defaultPalette.length === 5
+        ? scene.defaultPalette
+        : FALLBACK_PALETTE;
   return src.map(hexToRgb);
+}
+
+/** Runtime value of a param from a JSON value (its `default` or a preset override). */
+export function paramValue(p: ParamDef, raw: number | boolean | string): ParamValue {
+  switch (p.type) {
+    case 'color':
+      return hexToRgb(String(raw));
+    case 'bool':
+      return raw === true || raw === 1 || raw === 'true' ? 1 : 0;
+    default:
+      return Number(raw);
+  }
 }
 
 /** Default runtime value for a param. */
 export function paramDefault(p: ParamDef): ParamValue {
-  switch (p.type) {
-    case 'color':
-      return hexToRgb(String(p.default));
-    case 'bool':
-      return p.default === true || p.default === 1 || p.default === 'true' ? 1 : 0;
-    default:
-      return Number(p.default);
-  }
+  return paramValue(p, p.default);
 }
 
 /** Default values for all params; keeps values from `previous` when id and type still match. */
@@ -113,24 +135,83 @@ export function defaultValues(scene: SceneJson, previous?: ParamValues): ParamVa
   return out;
 }
 
+/** Values for a preset: scene defaults, overridden by the preset's params. */
+export function presetValues(scene: SceneJson, preset: Preset): ParamValues {
+  const out: ParamValues = new Map();
+  for (const p of scene.params) {
+    const raw = preset.params?.[p.id];
+    out.set(p.id, raw === undefined ? paramDefault(p) : paramValue(p, raw));
+  }
+  return out;
+}
+
+/** The current values and palette as a preset object, ready to paste into scene.json. */
+export function presetFromValues(scene: SceneJson, id: string, name: string, values: ParamValues, palette: Rgb[]): Preset {
+  const params: Record<string, number | boolean | string> = {};
+  for (const p of scene.params) {
+    const v = values.get(p.id);
+    if (v === undefined) continue;
+    if (Array.isArray(v)) params[p.id] = rgbToHex(v);
+    else if (p.type === 'bool') params[p.id] = v === 1;
+    else if (p.type === 'int') params[p.id] = Math.round(v);
+    else params[p.id] = Math.round(v * 1000) / 1000;
+  }
+  return { id, name, params, palette: palette.map(rgbToHex) };
+}
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+const PRESET_ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+function checkPalette(errs: string[], where: string, pal: unknown): void {
+  if (!Array.isArray(pal) || pal.length !== 5) errs.push(`${where} must have 5 colors`);
+  else for (const c of pal) if (typeof c !== 'string' || !HEX_RE.test(c)) errs.push(`${where}: "${String(c)}" is not #rrggbb`);
+}
+
 /** Minimal validation; returns human-readable problems (empty when fine). */
 export function validateScene(scene: SceneJson, folderId: string): string[] {
   const errs: string[] = [];
-  if (scene.format !== 1) errs.push(`format must be 1 (got ${String(scene.format)})`);
+  if (!SCENE_FORMATS.includes(scene.format))
+    errs.push(`format must be one of ${SCENE_FORMATS.join(', ')} (got ${String(scene.format)})`);
   if (scene.id !== folderId) errs.push(`id "${scene.id}" does not match folder "${folderId}"`);
   if (!scene.name) errs.push('missing name');
+  const byId = new Map<string, ParamDef>();
   if (!Array.isArray(scene.params)) errs.push('params must be an array');
   else {
-    const seen = new Set<string>();
     for (const p of scene.params) {
       if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(p.id)) errs.push(`param id "${p.id}" is not a valid identifier`);
-      if (seen.has(p.id)) errs.push(`duplicate param id "${p.id}"`);
-      seen.add(p.id);
+      if (byId.has(p.id)) errs.push(`duplicate param id "${p.id}"`);
+      byId.set(p.id, p);
       if (!['float', 'int', 'bool', 'color'].includes(p.type)) errs.push(`param "${p.id}": unknown type "${p.type}"`);
       if ((p.type === 'float' || p.type === 'int') && (p.min === undefined || p.max === undefined))
         errs.push(`param "${p.id}": min/max required`);
     }
   }
-  if (scene.defaultPalette && scene.defaultPalette.length !== 5) errs.push('defaultPalette must have 5 colors');
+  if (scene.defaultPalette) checkPalette(errs, 'defaultPalette', scene.defaultPalette);
+  if (scene.presets !== undefined) {
+    if (scene.format < 2) errs.push('presets need format 2');
+    if (!Array.isArray(scene.presets)) errs.push('presets must be an array');
+    else {
+      const seen = new Set<string>();
+      for (const pr of scene.presets) {
+        const where = `preset "${String(pr.id)}"`;
+        if (typeof pr.id !== 'string' || !PRESET_ID_RE.test(pr.id)) errs.push(`${where}: id must be kebab-case`);
+        if (seen.has(pr.id)) errs.push(`duplicate preset id "${pr.id}"`);
+        seen.add(pr.id);
+        if (!pr.name) errs.push(`${where}: missing name`);
+        if (pr.palette !== undefined) checkPalette(errs, `${where}: palette`, pr.palette);
+        for (const [k, v] of Object.entries(pr.params ?? {})) {
+          const p = byId.get(k);
+          if (!p) errs.push(`${where}: unknown param "${k}"`);
+          else if (p.type === 'color') {
+            if (typeof v !== 'string' || !HEX_RE.test(v)) errs.push(`${where}: "${k}" must be #rrggbb`);
+          } else if (p.type === 'bool') {
+            if (typeof v !== 'boolean') errs.push(`${where}: "${k}" must be true/false`);
+          } else if (typeof v !== 'number' || v < (p.min ?? -Infinity) || v > (p.max ?? Infinity))
+            errs.push(`${where}: "${k}" = ${String(v)} outside [${String(p.min)}, ${String(p.max)}]`);
+          else if (p.type === 'int' && !Number.isInteger(v)) errs.push(`${where}: "${k}" must be an integer`);
+        }
+      }
+    }
+  }
   return errs;
 }

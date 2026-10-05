@@ -4,7 +4,7 @@ Página WebGL2 **só para desenvolvimento**: iterar cenas no PC com hot reload. 
 
 - Lê `../scenes/*` e `../shared/*` diretamente do disco — nunca copia nem edita cópias.
 - Composição de shaders igual à que a `tv-app` terá de fazer (`src/compose.ts` é a implementação de referência de `docs/FORMATO-CENA.md`).
-- Painel de parâmetros gerado do `scene.json`; seletor de cena e de perfil; sinais sintéticos (LFOs ou sliders manuais, metrónomo com BPM e botão Tap).
+- Painel de parâmetros gerado do `scene.json`; seletor de cena, de **preset** (`presets` do `scene.json`, formato 2) e de perfil; editor da paleta (`uPalette`); botão **Copiar como preset**, que põe na área de transferência (e na consola) o JSON dos valores e da paleta atuais, pronto a colar em `presets`; sinais sintéticos (LFOs ou sliders manuais, metrónomo com BPM e botão Tap).
 - `feedback` (ping-pong RGBA16F, fallback RGBA8), `renderScale`, limite de fps, passe de saída (`shared/glsl/output.frag`) com os valores do perfil ajustáveis em runtime.
 - Resolução **simulada da box** (1080p por defeito) para que `uResolution` e o dithering sejam os mesmos que na TV.
 - Erros de compilação mapeados para o ficheiro e linha originais (`scene.frag`, `lib/noise.glsl`, …).
@@ -31,7 +31,7 @@ cd authoring
 npm install            # uma vez
 npm run dev            # http://localhost:5180/  (watch + hot reload)
 npm run check          # tsc --noEmit
-npm test               # testes da composição de shaders (node --test, fixtures em test/fixtures)
+npm test               # composição de shaders (fixtures em test/fixtures) e validação de todos os scene.json, presets incluídos
 npm run build          # bundle único, sem servidor
 node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chromium headless (SwiftShader),
                               # verifica que compila e renderiza, guarda capturas em %TEMP%\santa-vibes-smoke
@@ -73,7 +73,7 @@ src/
 | Ficheiro alterado | O que acontece |
 |---|---|
 | `scenes/<atual>/scene.frag`, `shared/glsl/**` | recompila o shader; mantém o tempo e os buffers de feedback; erros aparecem em overlay |
-| `scenes/<atual>/scene.json` | relê o JSON, regenera o painel mantendo os valores dos ids que existam |
+| `scenes/<atual>/scene.json` | relê o JSON e regenera o painel; com um preset escolhido volta a aplicá-lo (para ver logo as edições ao preset), senão mantém os valores dos ids que existam |
 | `shared/glsl/output.frag` | recompila o passe de saída |
 | `shared/profiles/<atual>.json` | relê o perfil |
 | pasta nova/removida em `scenes/` | atualiza a lista de cenas |

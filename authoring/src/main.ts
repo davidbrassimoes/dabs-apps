@@ -11,14 +11,33 @@ import {
   loadProfile,
   loadSceneFrag,
   loadSceneJson,
+  presetFromValues,
+  presetValues,
+  rgbToHex,
+  hexToRgb,
   scenePalette,
   validateScene,
   type ParamValues,
+  type Preset,
   type Profile,
+  type Rgb,
   type SceneJson,
 } from './scene';
 import { Signals } from './signals';
-import { button, buildParamsPanel, checkbox, el, row, section, select, slider, type Handle, type ParamsPanel } from './ui';
+import {
+  button,
+  buildParamsPanel,
+  checkbox,
+  colorInput,
+  el,
+  group,
+  row,
+  section,
+  select,
+  slider,
+  type Handle,
+  type ParamsPanel,
+} from './ui';
 
 // ---------------------------------------------------------------- DOM
 
@@ -55,6 +74,8 @@ let sceneId = '';
 let scene: SceneJson | null = null;
 let values: ParamValues = new Map();
 let paramsPanel: ParamsPanel | null = null;
+let presetId = ''; // '' = scene defaults
+let palette: Rgb[] = [];
 let profileId = 'tv';
 let profile: Profile | null = null;
 let profileFromFile: Profile | null = null;
@@ -173,9 +194,13 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   const changed = id !== sceneId;
   sceneId = id;
   scene = json;
-  values = defaultValues(json, keepValues ? values : undefined);
+  // On a hot reload of the same scene, re-apply the selected preset so edits to it show up at once.
+  const preset = changed ? undefined : findPreset(json, presetId);
+  presetId = preset?.id ?? '';
+  values = preset ? presetValues(json, preset) : defaultValues(json, keepValues ? values : undefined);
+  palette = scenePalette(json, preset);
   renderer.setParamValues(values);
-  renderer.setPalette(scenePalette(json));
+  renderer.setPalette(palette);
   if (changed) {
     delete overrides.renderScale;
     delete overrides.fps;
@@ -189,6 +214,37 @@ async function switchScene(id: string, keepValues = false): Promise<void> {
   paramsPanel = buildParamsPanel(secParams, json, values, (pid, v) => values.set(pid, v));
   sceneUi.select.set(id);
   location.hash = id;
+}
+
+function findPreset(json: SceneJson, id: string): Preset | undefined {
+  return id ? json.presets?.find((p) => p.id === id) : undefined;
+}
+
+/** Apply a preset (or the scene defaults for '') to values, palette and the panels. */
+function applyPreset(id: string): void {
+  if (!scene) return;
+  const preset = findPreset(scene, id);
+  presetId = preset?.id ?? '';
+  values = preset ? presetValues(scene, preset) : defaultValues(scene);
+  palette = scenePalette(scene, preset);
+  renderer.setParamValues(values);
+  renderer.setPalette(palette);
+  for (const [pid, v] of values) paramsPanel?.set(pid, v);
+  buildPresetPanel();
+}
+
+async function copyAsPreset(): Promise<void> {
+  if (!scene) return;
+  const current = findPreset(scene, presetId);
+  const p = presetFromValues(scene, current?.id ?? 'new-preset', current?.name ?? 'Novo preset', values, palette);
+  const text = JSON.stringify(p, null, 2);
+  try {
+    await navigator.clipboard.writeText(text);
+    sceneUi.copied.textContent = 'copiado';
+  } catch {
+    sceneUi.copied.textContent = 'sem acesso à área de transferência — ver consola';
+  }
+  console.log(text);
 }
 
 interface SceneEntry {
@@ -221,15 +277,16 @@ const sceneUi = (() => {
   const meta = el('div', 'meta');
   secScene.appendChild(meta);
   const r = row(secScene);
-  button(r, 'Repor parâmetros', () => {
-    if (!scene) return;
-    values = defaultValues(scene);
-    renderer.setParamValues(values);
-    for (const [id, v] of values) paramsPanel?.set(id, v);
-  });
+  button(r, 'Repor parâmetros', () => applyPreset(presetId));
   button(r, '◀', () => stepScene(-1));
   button(r, '▶', () => stepScene(1));
-  return { select: sel, meta };
+  const presets = el('div');
+  secScene.appendChild(presets);
+  const r2 = row(secScene);
+  button(r2, 'Copiar como preset', () => void copyAsPreset());
+  const copied = el('span', 'muted');
+  r2.appendChild(copied);
+  return { select: sel, meta, presets, copied };
 })();
 
 function buildScenePanel(): void {
@@ -242,6 +299,26 @@ function buildScenePanel(): void {
   if (scene.image && scene.image !== 'none') flags.push(`imagem: ${scene.image}`);
   if (scene.tags?.length) flags.push(...scene.tags);
   sceneUi.meta.appendChild(el('div', 'tags', flags.join(' · ')));
+  buildPresetPanel();
+}
+
+function buildPresetPanel(): void {
+  const box = sceneUi.presets;
+  box.replaceChildren();
+  sceneUi.copied.textContent = '';
+  if (!scene) return;
+  const list = scene.presets ?? [];
+  if (list.length) {
+    const opts = [{ value: '', label: '— valores da cena —' }, ...list.map((p) => ({ value: p.id, label: p.name }))];
+    select(box, 'Preset', opts, presetId, (v) => applyPreset(v));
+  }
+  const g = group(box, 'Paleta (uPalette)');
+  palette.forEach((c, i) =>
+    colorInput(g, String(i), rgbToHex(c), (hex) => {
+      palette[i] = hexToRgb(hex);
+      renderer.setPalette(palette);
+    }),
+  );
 }
 
 const signalsUi = (() => {
