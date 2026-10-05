@@ -38,6 +38,8 @@ node scripts/smoke.mjs        # com o servidor a correr: abre cada cena num Chro
 node scripts/smoke.mjs --gpu  # o mesmo com a GPU do PC (ANGLE/D3D11): fps e ms de GPU passam a ter significado
 node scripts/smoke.mjs --gpu --quick --only aurora,halo --settle 10
                               # --quick salta hot reload e overlay; --only filtra cenas; --settle N segundos antes da captura
+node scripts/smoke.mjs --gpu --quick --presets --settle 6
+                              # --presets aplica também cada preset do scene.json e guarda <cena>@<preset>.png
 ```
 
 O teste de fumo, por cena:

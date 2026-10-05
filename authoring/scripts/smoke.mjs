@@ -7,6 +7,7 @@
 //   --quick        skip the hot-reload and error-overlay checks (just load, run, screenshot)
 //   --only a,b     restrict to these scene ids
 //   --settle N     seconds to let each scene run before the screenshot (default 4)
+//   --presets      also apply each preset in scene.json and save <scene>@<preset>.png (settle N each)
 //
 // For every scene listed by /api/scenes: loads it, waits, collects console output and
 // the in-page error overlay, reads the stats line and saves a screenshot <out>/<scene>.png.
@@ -41,6 +42,7 @@ const USE_GPU = args.includes('--gpu');
 const QUICK = args.includes('--quick');
 const ONLY = opt('--only', '').split(',').filter(Boolean);
 const SETTLE = Number(opt('--settle', '4')) * 1000;
+const PRESETS = args.includes('--presets');
 if (!BROWSER) {
   console.error('No Chromium browser found; pass --browser <path>.');
   process.exit(2);
@@ -233,6 +235,18 @@ try {
     if (state?.errors) console.log(`   errors: ${state.errors.replace(/\n/g, '\n           ')}`);
     for (const l of logs) console.log(`   ${l}`);
     console.log(`   screenshot: ${file}`);
+    if (PRESETS) {
+      for (const pid of await evaluate('window.__sv.presets()')) {
+        await evaluate(`window.__sv.applyPreset(${JSON.stringify(pid)})`);
+        await sleep(SETTLE);
+        const pshot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
+        const pfile = path.join(OUT, `${id}@${pid}.png`);
+        fs.writeFileSync(pfile, Buffer.from(pshot.data, 'base64'));
+        const perr = await evaluate("document.getElementById('errors').hidden ? '' : document.getElementById('errors').innerText");
+        if (perr) failed = true;
+        console.log(`   preset ${pid}: ${perr ? 'FAIL ' + perr : pfile}`);
+      }
+    }
   }
   ws.close();
 } catch (err) {

@@ -58,8 +58,16 @@ const secRender = $('sec-render');
 const secProfile = $('sec-profile');
 const secImage = $('sec-image');
 
-// Debug hook for scripts/smoke.mjs (read-only).
-const debug = { compiles: 0, lastCompileAt: 0, lastChangeAt: 0, renderer: '', halfFloat: false };
+// Debug hook for scripts/smoke.mjs (state is read-only; applyPreset drives the preset captures).
+const debug = {
+  compiles: 0,
+  lastCompileAt: 0,
+  lastChangeAt: 0,
+  renderer: '',
+  halfFloat: false,
+  presets: (): string[] => scene?.presets?.map((p) => p.id) ?? [],
+  applyPreset: (id: string): void => applyPreset(id),
+};
 (window as unknown as { __sv: typeof debug }).__sv = debug;
 
 // ---------------------------------------------------------------- state
