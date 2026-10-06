@@ -1,11 +1,11 @@
 import { defineConfig } from 'drizzle-kit';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-
+// Only `drizzle-kit generate` is used: it writes the migration files from
+// schema.ts. The app applies them itself (src/lib/server/db/migrations.ts), to
+// D1 in production and dev and to libSQL in tests, so there is no database URL.
 export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
 	dialect: 'sqlite',
-	dbCredentials: { url: process.env.DATABASE_URL },
 	verbose: true,
 	strict: true
 });

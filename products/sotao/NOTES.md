@@ -5,12 +5,13 @@
 
 ## Para a próxima sessão
 
-- **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 114 testes. Nunca publicada.
+- **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 118 testes. Nunca publicada.
 - **Aspeto G no `main`** (2026-10-06). Visto em capturas headless a 390 e 1280 px, nos dois
   temas; atalhos de teclado, offline e telemóvel real por ver. Em ecrã largo o texto
   das cartas sobe um degrau (`DrawCard.svelte`, acima de 720 px), verificado em 8 tiragens sem scroll.
-- **Próximo: primeiro deploy (gate 3)** nas contas da Escarpa. DABS cria a base Turso e os
-  quatro secrets (`wrangler secret put`).
+- **D1 em vez de Turso** implementado no branch `sotao-d1` (decisão 8). **Próximo: primeiro deploy
+  (gate 3)**: DABS corre `wrangler d1 create sotao`, cola o `database_id` em `wrangler.jsonc` e
+  define os dois secrets (`APP_PASSWORD`, `APP_SECRET`).
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
@@ -60,19 +61,44 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 
 ## Encontrado e não resolvido
 
-- 2026-09-26: **nunca testado contra Turso real.** `wrangler deploy --dry-run` empacota o
-  cliente web do libSQL, sem binding nativo. Nada falou ainda com uma base de dados real a
-  partir de um Worker.
-- 2026-09-26: **`PRAGMA foreign_keys = ON` sobre HTTP.** `migrateDb` liga-o uma vez por
-  isolate, mas no protocolo HTTP do Turso cada pedido pode ser uma ligação nova. Se não
-  pegar, os cascades e o RESTRICT que protege material referenciado deixam de funcionar sem
-  erro. Testar no primeiro deploy: apagar material que uma carta usa tem de falhar.
+- 2026-10-06: **nunca testado contra um D1 remoto.** Só o D1 local do `vite dev` (miniflare) e um
+  D1 simulado sobre libSQL nos testes. No primeiro deploy: migrar e semear no primeiro pedido,
+  e confirmar que o `defer_foreign_keys` do lote de migrações é aceite pelo D1 real.
+- 2026-10-06: **a atomicidade do `db.batch` no D1 remoto** (importação) está só provada em
+  libSQL e no D1 local; o D1 documenta o lote como atómico, mas não foi exercitado em produção.
+- 2026-10-06: **limites do D1**: 100 parâmetros por consulta (a semente de material e `loadJoins`
+  já vão em blocos); uma consulta nova com listas longas tem de fazer o mesmo.
 - 2026-09-26: **o material não tem export.** As cartas fazem round-trip por `/api/export.yaml`;
   o material acrescentado na UI só existe na base de dados.
 - 2026-09-26: **acesso por teclado não auditado** contra os estilos atuais. Fica para o novo aspeto.
 - `docs/mockups/` usa nomes genéricos de material (da passagem pela Escarpa). Só servem para layout.
 
 ## Registo
+
+### 2026-10-06 — D1 em vez de Turso (branch `sotao-d1`)
+
+- Um módulo, dois drivers: `src/lib/server/db/index.ts` exporta `db` como proxy para a instância
+  escolhida por `migrateDb(d1?)`, que o hook chama no primeiro pedido. Com o binding `DB`
+  (produção e `vite dev`, via proxy da plataforma) usa `drizzle-orm/d1`; sem ele (Vitest) abre
+  libSQL com `DATABASE_URL`. O `@libsql/client` carrega-se por `import()` só nesse caminho.
+- `applyMigrations` recebe uma interface (`exec`, `lastWhen`, `batch`): adaptador libSQL
+  (`client.migrate`) e adaptador D1 (`d1.batch`, atómico, com `PRAGMA defer_foreign_keys`).
+  Uma só via de migração: a app migra-se; não se usa `wrangler d1 migrations apply`.
+- Chaves estrangeiras: o D1 impõe-nas sempre; o `PRAGMA foreign_keys = ON` só corre em libSQL.
+- A importação deixou de usar `db.transaction` (o D1 não suporta): é um `db.batch`, atómico nos
+  dois drivers. Teste novo: uma carta inválida no lote não deixa nada escrito.
+- `DATABASE_URL` e `DATABASE_AUTH_TOKEN` saíram do `.env.example`, do `drizzle.config.ts` e dos
+  scripts `db:push`/`db:migrate`/`db:studio` (já não há URL). Só os testes usam `DATABASE_URL`
+  (posto por `vite.config.ts`). O D1 local fica em `.wrangler/state`.
+- **Dependência nova:** `@cloudflare/workers-types` 5.20261006.1 (devDependency, tipos de
+  `D1Database`; licença MIT/Apache-2.0; alternativa: uma interface mínima escrita à mão, que
+  deixaria de acompanhar a API do D1). Importada só como tipo, sem tipos globais.
+- Encontrado ao testar contra o D1 local: 100 parâmetros por consulta. A semente do material
+  (47 linhas x 6 colunas) e `loadJoins` passaram a inserir/consultar em blocos.
+- Verificado: `scripts/check`; `vite dev` com `.wrangler/state` vazio (migrações e semente
+  correram: 47 itens de material, 32 cartas); tiragens; importação por `/import` (pré-visualizar e
+  gravar: 33 cartas); apagar material usado por uma carta é recusado (`FOREIGN KEY constraint
+failed`); `wrangler deploy --dry-run`.
 
 ### 2026-10-06 — aspeto G implementado (branch `sotao-look-g`)
 
