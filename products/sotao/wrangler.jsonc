@@ -1,12 +1,12 @@
-// Sótão on Cloudflare Workers, the database on Turso. It uses the same Cloudflare
-// and Turso accounts as Escarpa Audio, in a Worker of its own (projects/sotao.md).
+// Sótão on Cloudflare Workers, the database on Cloudflare D1 (projects/sotao.md,
+// decision 8). A Worker of its own, in the same account as Escarpa Audio.
 //
 // Deploy from DABS's machine, with `npm run deploy`, so the build carries the
-// real seed files (seed/*.local.*, gitignored). Secrets are set once with
-// `npx wrangler secret put <NAME>` and never live in this file:
+// real seed files (seed/*.local.*, gitignored). The app migrates and seeds the
+// database itself on its first request; do not also run `wrangler d1 migrations
+// apply`. Secrets are set once with `npx wrangler secret put <NAME>` and never
+// live in this file:
 //
-//   DATABASE_URL         libsql://… — the Turso database
-//   DATABASE_AUTH_TOKEN  Turso token for it
 //   APP_PASSWORD         the one password (§10)
 //   APP_SECRET           32+ random bytes, signs the session cookie
 {
@@ -23,6 +23,16 @@
 	},
 	// Reached at sotao.<account>.workers.dev for now. A custom domain is a
 	// decision, not a default — nothing here is public but the login page.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "sotao",
+			// Placeholder until `wrangler d1 create sotao` is run; paste its id here.
+			// Local dev (vite dev, miniflare) accepts any string.
+			"database_id": "REPLACE_WITH_wrangler_d1_create_sotao",
+			"migrations_dir": "drizzle"
+		}
+	],
 	"workers_dev": true,
 	"preview_urls": false
 }
