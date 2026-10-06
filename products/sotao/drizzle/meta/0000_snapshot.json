@@ -1,0 +1,471 @@
+{
+	"version": "6",
+	"dialect": "sqlite",
+	"id": "2555fd40-56f0-4e44-b57c-d3a43aa3c609",
+	"prevId": "00000000-0000-0000-0000-000000000000",
+	"tables": {
+		"card_gear": {
+			"name": "card_gear",
+			"columns": {
+				"card_id": {
+					"name": "card_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"gear_id": {
+					"name": "gear_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"idx_card_gear_gear": {
+					"name": "idx_card_gear_gear",
+					"columns": ["gear_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				"card_gear_card_id_cards_id_fk": {
+					"name": "card_gear_card_id_cards_id_fk",
+					"tableFrom": "card_gear",
+					"tableTo": "cards",
+					"columnsFrom": ["card_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"card_gear_gear_id_gear_id_fk": {
+					"name": "card_gear_gear_id_gear_id_fk",
+					"tableFrom": "card_gear",
+					"tableTo": "gear",
+					"columnsFrom": ["gear_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"card_gear_card_id_gear_id_pk": {
+					"columns": ["card_id", "gear_id"],
+					"name": "card_gear_card_id_gear_id_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"card_kinds": {
+			"name": "card_kinds",
+			"columns": {
+				"card_id": {
+					"name": "card_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"kind": {
+					"name": "kind",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"idx_card_kinds_kind": {
+					"name": "idx_card_kinds_kind",
+					"columns": ["kind"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				"card_kinds_card_id_cards_id_fk": {
+					"name": "card_kinds_card_id_cards_id_fk",
+					"tableFrom": "card_kinds",
+					"tableTo": "cards",
+					"columnsFrom": ["card_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"card_kinds_card_id_kind_pk": {
+					"columns": ["card_id", "kind"],
+					"name": "card_kinds_card_id_kind_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"card_kinds_kind_check": {
+					"name": "card_kinds_kind_check",
+					"value": "\"card_kinds\".\"kind\" IN ('idea','source','treatment','technique','constraint','arrangement')"
+				}
+			}
+		},
+		"card_tags": {
+			"name": "card_tags",
+			"columns": {
+				"card_id": {
+					"name": "card_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tag": {
+					"name": "tag",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"card_tags_card_id_cards_id_fk": {
+					"name": "card_tags_card_id_cards_id_fk",
+					"tableFrom": "card_tags",
+					"tableTo": "cards",
+					"columnsFrom": ["card_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"card_tags_card_id_tag_pk": {
+					"columns": ["card_id", "tag"],
+					"name": "card_tags_card_id_tag_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"cards": {
+			"name": "cards",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"text": {
+					"name": "text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"favorite": {
+					"name": "favorite",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'active'"
+				},
+				"author": {
+					"name": "author",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"draw_count": {
+					"name": "draw_count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 0
+				},
+				"last_drawn_at": {
+					"name": "last_drawn_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"idx_cards_status": {
+					"name": "idx_cards_status",
+					"columns": ["status"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"cards_status_check": {
+					"name": "cards_status_check",
+					"value": "\"cards\".\"status\" IN ('active','archived')"
+				},
+				"cards_author_check": {
+					"name": "cards_author_check",
+					"value": "\"cards\".\"author\" IN ('david','claude')"
+				}
+			}
+		},
+		"draw_cards": {
+			"name": "draw_cards",
+			"columns": {
+				"draw_id": {
+					"name": "draw_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"slot": {
+					"name": "slot",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"slot_kind": {
+					"name": "slot_kind",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"card_id": {
+					"name": "card_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"idx_draw_cards_card": {
+					"name": "idx_draw_cards_card",
+					"columns": ["card_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				"draw_cards_draw_id_draws_id_fk": {
+					"name": "draw_cards_draw_id_draws_id_fk",
+					"tableFrom": "draw_cards",
+					"tableTo": "draws",
+					"columnsFrom": ["draw_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"draw_cards_card_id_cards_id_fk": {
+					"name": "draw_cards_card_id_cards_id_fk",
+					"tableFrom": "draw_cards",
+					"tableTo": "cards",
+					"columnsFrom": ["card_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"draw_cards_draw_id_slot_pk": {
+					"columns": ["draw_id", "slot"],
+					"name": "draw_cards_draw_id_slot_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"draw_cards_slot_kind_check": {
+					"name": "draw_cards_slot_kind_check",
+					"value": "\"draw_cards\".\"slot_kind\" IS NULL OR \"draw_cards\".\"slot_kind\" IN ('idea','source','treatment','technique','constraint','arrangement')"
+				}
+			}
+		},
+		"draws": {
+			"name": "draws",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"drawn_at": {
+					"name": "drawn_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mode": {
+					"name": "mode",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"draws_uuid_unique": {
+					"name": "draws_uuid_unique",
+					"columns": ["uuid"],
+					"isUnique": true
+				},
+				"idx_draws_drawn_at": {
+					"name": "idx_draws_drawn_at",
+					"columns": ["\"drawn_at\" DESC"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"draws_mode_check": {
+					"name": "draws_mode_check",
+					"value": "\"draws\".\"mode\" IN ('single','spread')"
+				}
+			}
+		},
+		"gear": {
+			"name": "gear",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"category": {
+					"name": "category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"owned": {
+					"name": "owned",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": true
+				},
+				"in_rack": {
+					"name": "in_rack",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": false
+				},
+				"sort": {
+					"name": "sort",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 0
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"gear_category_check": {
+					"name": "gear_category_check",
+					"value": "\"gear\".\"category\" IN ('strings','keys','amps','pedals','mics','small')"
+				}
+			}
+		},
+		"settings": {
+			"name": "settings",
+			"columns": {
+				"key": {
+					"name": "key",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"value": {
+					"name": "value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		}
+	},
+	"views": {},
+	"enums": {},
+	"_meta": {
+		"schemas": {},
+		"tables": {},
+		"columns": {}
+	},
+	"internal": {
+		"indexes": {
+			"idx_draws_drawn_at": {
+				"columns": {
+					"\"drawn_at\" DESC": {
+						"isExpression": true
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sótão — screen mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 56px 24px; background: #101722; color: #ECE4D6;
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  h1 { font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 34px; font-weight: 700; margin: 0 0 6px;
+    letter-spacing: -0.015em; }
+  .lede { margin: 0 0 8px; font-size: 14.5px; line-height: 1.55; color: #98A4B4;
+    max-width: 62ch; }
+  .note { margin: 0 0 36px; font-size: 13px; line-height: 1.55; color: #6C7A8C;
+    max-width: 62ch; }
+  .rows { display: flex; flex-direction: column; border-top: 1px solid #2C3A4E; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px;
+    padding: 18px 2px; border-bottom: 1px solid #1B2533; text-decoration: none;
+    color: inherit; }
+  .row:hover { background: #18212F; }
+  .t { font-family: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 17px; font-weight: 600; }
+  .s { font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10.5px; letter-spacing: 0.12em;
+    color: #6C7A8C; text-align: right; font-variant-numeric: tabular-nums; }
+  .d { grid-column: 1 / -1; font-size: 13px; line-height: 1.5; color: #98A4B4; }
+  footer { margin-top: 40px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #5F6D80; }
+  @media (max-width: 560px) {
+    body { padding: 32px 16px; }
+    .s { text-align: left; grid-column: 1; }
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sótão — screens</h1>
+  <p class="lede">Static mockups for the app specified in <code>IMPLEMENTATION.md</code>.
+  These are the layout reference: spacing, type scale, colour roles and copy are all
+  intended as drawn.</p>
+  <p class="note">They are flat HTML with no behaviour — the controls do not work, and the
+  content is fixed sample data. Where a mockup and the specification disagree about
+  <em>behaviour</em>, the specification wins; where they disagree about <em>layout</em>,
+  the mockup wins.</p>
+  <div class="rows">
+  <a class="row" href="draw-spread.html">
+    <span class="t">Draw — spread</span>
+    <span class="s">1280 × 800</span>
+    <span class="d">Three slots filled from the source, treatment and constraint pools. Lock keeps a slot; Reroll replaces one.</span>
+  </a>
+  <a class="row" href="draw-single.html">
+    <span class="t">Draw — single</span>
+    <span class="s">1280 × 800</span>
+    <span class="d">One complete idea, set large. The favourite button is a marker only.</span>
+  </a>
+  <a class="row" href="draw-single-light.html">
+    <span class="t">Draw — single, light</span>
+    <span class="s">1280 × 800</span>
+    <span class="d">The same screen in the light theme. Token values are in §12 of the spec.</span>
+  </a>
+  <a class="row" href="draw-phone.html">
+    <span class="t">Draw — phone</span>
+    <span class="s">390 × 844</span>
+    <span class="d">Phone layout. Touch targets ≥ 44 px, draw button full width.</span>
+  </a>
+  <a class="row" href="cards.html">
+    <span class="t">Card manager</span>
+    <span class="s">1280 × 1020</span>
+    <span class="d">Dense table. Kinds column shows every kind a card holds.</span>
+  </a>
+  <a class="row" href="editor.html">
+    <span class="t">Card editor</span>
+    <span class="s">640 × 880</span>
+    <span class="d">Drawer. Kinds are checkboxes; the sentence below them explains the combination.</span>
+  </a>
+  <a class="row" href="gear.html">
+    <span class="t">Gear inventory</span>
+    <span class="s">900 × 1020</span>
+    <span class="d">In-rack toggles, wishlist items disabled, always-on gear absent by design.</span>
+  </a>
+  <a class="row" href="import.html">
+    <span class="t">Bulk import</span>
+    <span class="s">1280 × 860</span>
+    <span class="d">Source with line numbers, four-count preview, per-card classes, error detail.</span>
+  </a>
+  </div>
+  <footer>8 screens · dark default, light theme tokens in §12</footer>
+</div>
+</body>
+</html>

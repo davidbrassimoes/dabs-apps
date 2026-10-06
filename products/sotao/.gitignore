@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# database
+local.db
+local.db-journal
+local.db-shm
+local.db-wal
+
+# build output
+.svelte-kit/
+build/
+dist/
+
+# misc
+.DS_Store
+Thumbs.db
+*.log
+
+# SQLite
+*.db
+
+# generated card imports
+imports/
+
+# The real rig and starter cards. They name real products, which rule H1 keeps
+# out of the repository (ADR-027); seed/index.ts falls back to the examples.
+seed/*.local.*
+
+# Cloudflare
+.wrangler/
+test-results.json

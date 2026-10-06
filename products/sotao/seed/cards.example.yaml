@@ -1,0 +1,169 @@
+# The starter cards, written against the example rig in gear.example.ts. The
+# real set is cards.local.yaml, gitignored (seed/index.ts, ADR-027).
+version: 1
+defaults:
+  author: claude
+cards:
+  - text: >-
+      Play the stage piano through the pitch shifter at plus one octave, reamp it into
+      the valve combo, and mic the amp from the staircase opening.
+    kinds: [idea]
+    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
+    tags: [reamping, room]
+
+  - text: >-
+      Sample yourself whistling into the toy sampler, pitch it down two octaves, and
+      build the bass line out of that.
+    kinds: [idea, source]
+    gear: [toy-sampler]
+    tags: [sampling, lo-fi]
+    favorite: true
+
+  - text: >-
+      Record the bandolim with the condenser up close and the handheld recorder at the
+      bottom of the stairs. Blend until the room is half the sound.
+    kinds: [idea, technique]
+    gear: [bandolim, condenser, handheld-recorder]
+    tags: [room, stereo]
+
+  - text: >-
+      Loop a djembé pattern on the drum groovebox, then play guitarra
+      portuguesa over it in one take. Keep the take where you lost the thread.
+    kinds: [idea]
+    gear: [drum-groovebox, guitarra-portuguesa, djembes]
+    tags: [one-take]
+
+  - text: >-
+      Run the mini synth into the octave fuzz, then into the practice combo
+      turned up past where it stays clean. One microphone, three metres back.
+    kinds: [idea, treatment]
+    gear: [mini-synth, octave-fuzz, practice-amp, dynamic-mic]
+    tags: [saturation, room]
+
+  - text: >-
+      Play the ocarina and the melodica at the same time, one in each hand,
+      into the condenser. Do not fix the timing afterwards.
+    kinds: [idea, technique]
+    gear: [ocarina, melodica, condenser]
+    tags: [one-take, winds]
+
+  - text: The toy sampler, sampled from something already in the room.
+    kinds: [source]
+    gear: [toy-sampler]
+    tags: [sampling, lo-fi]
+    favorite: true
+
+  - text: The 12-string, tuned down until it rattles.
+    kinds: [source]
+    gear: [twelve-string]
+    tags: [strings]
+
+  - text: Melodica, into a microphone — never a DI.
+    kinds: [source, technique]
+    gear: [melodica, dynamic-mic]
+    tags: [winds]
+
+  - text: A rack synth patch you would never choose on purpose.
+    kinds: [source]
+    gear: [rack-synth]
+    tags: [presets]
+
+  - text: Kalimba, close-miked, one metre off the slab.
+    kinds: [source]
+    gear: [kalimba, condenser]
+    tags: [small]
+
+  - text: The tube. Whatever it is doing today.
+    kinds: [source]
+    gear: [the-tube]
+    tags: [found]
+
+  - text: Guitarra portuguesa, played like a percussion instrument.
+    kinds: [source, technique]
+    gear: [guitarra-portuguesa]
+    tags: [strings]
+
+  - text: Pitch shifter at minus twelve, wet only.
+    kinds: [treatment]
+    gear: [pitch-shifter]
+    tags: [octave]
+    favorite: true
+
+  - text: Octave fuzz into the overdrive, gain staged wrong on purpose.
+    kinds: [treatment]
+    gear: [octave-fuzz, overdrive]
+    tags: [fuzz]
+
+  - text: Reverb pedal before the amp, not after.
+    kinds: [treatment]
+    gear: [reverb, valve-combo]
+    tags: [reverb]
+
+  - text: Delay with the mix pinned at 100%.
+    kinds: [treatment]
+    gear: [delay]
+    tags: [delay]
+
+  - text: Envelope filter on a source that is not a guitar.
+    kinds: [treatment, constraint]
+    gear: [envelope-filter]
+    tags: [filter]
+
+  - text: Multi-effect, first preset, no editing allowed.
+    kinds: [treatment, constraint]
+    gear: [multi-effect]
+    tags: [lo-fi]
+
+  - text: Flanger on the way in, bass combo on the way out.
+    kinds: [treatment]
+    gear: [flanger, bass-practice-amp]
+    tags: [phaser]
+
+  - text: Mono. All of it.
+    kinds: [constraint]
+    tags: [mono]
+    favorite: true
+
+  - text: Nothing quantised.
+    kinds: [constraint]
+    tags: [feel]
+
+  - text: Four tracks maximum.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: Nothing added after the desk.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: Three minutes, then you stop and listen back once.
+    kinds: [constraint]
+    tags: [limits]
+
+  - text: One microphone. Move it instead of reaching for another.
+    kinds: [constraint, technique]
+    tags: [mics]
+
+  - text: Play it at half speed, then double the session tempo afterwards.
+    kinds: [technique]
+    tags: [lo-fi]
+
+  - text: Mic it from three metres away and commit to that take.
+    kinds: [technique]
+    tags: [room]
+
+  - text: Two instruments at once, one hand each.
+    kinds: [technique]
+    tags: [one-take]
+
+  - text: Use it as the intro only. Everything else gets built after.
+    kinds: [arrangement]
+    tags: [structure]
+
+  - text: The loudest thing in the mix is the quietest instrument you own.
+    kinds: [arrangement]
+    tags: [structure]
+
+  - text: Build the whole thing from one bar.
+    kinds: [arrangement]
+    tags: [structure]

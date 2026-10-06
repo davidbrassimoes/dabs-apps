@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gear inventory — Sótão mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+  html { background: #2A2A28; }
+  body { margin: 0; padding: 28px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; }
+  .caption { max-width: 900px; margin: 0 auto 14px; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #8C8C86; display: flex; gap: 14px; align-items: baseline; }
+  .caption b { color: #E6E4DC; font-weight: 600; letter-spacing: 0.18em; }
+  .caption a { color: #8C8C86; text-decoration: none; margin-left: auto; }
+  .caption a:hover { color: #E6E4DC; }
+  .board { width: 900px; height: 1020px; margin: 0 auto;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45); overflow: hidden; }
+  @media (max-width: 960px) {
+    body { padding: 12px; }
+    .caption, .board { width: 100%; max-width: 100%; }
+    .board { height: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="caption"><b>Gear inventory</b><span>900 × 1020</span><span>42 owned · 5 wishlist · in-rack toggles</span><a href="index.html">All screens</a></div>
+<div class="board">
+<div style="width: 900px; height: 1020px; box-sizing: border-box; background: #101722; color: #ECE4D6; display: flex; flex-direction: column;">
+  <div style="height: 58px; flex-shrink: 0; box-sizing: border-box; padding: 0 30px; border-bottom: 1px solid #2C3A4E; display: flex; align-items: center; gap: 22px;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #ECE4D6;">Sótão Cards</span>
+    <div style="display: flex; gap: 18px; align-items: center;">
+      <a href="draw-spread.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Draw</a>
+      <a href="cards.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Cards</a>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #ECE4D6; border-bottom: 2px solid #D9A44A; padding-bottom: 3px;">Gear</span>
+      <a href="import.html" style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #98A4B4; text-decoration: none;">Import</a>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #74A79A; font-variant-numeric: tabular-nums;">In the rack · 16 of 42</span>
+  </div>
+
+  <div style="flex-shrink: 0; box-sizing: border-box; padding: 18px 30px 14px; border-bottom: 1px solid #22303F; display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 7px; max-width: 520px;">
+      <p style="margin: 0; font-size: 12.5px; line-height: 1.45; color: #5F6D80;">Tick what is patched and reachable tonight. Draws are limited to cards whose gear is all ticked, so a card never asks you to re-cable the room.</p>
+      <p style="margin: 0; font-size: 12px; line-height: 1.45; color: #5F6D80; opacity: .85;">The desk, the monitors pair, headphones and the laptop are always in the chain, so they are not listed here and never gate a draw. Cards can still name them in their text.</p>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <button type="button" style="background: none; border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 9px 13px;">Everything</button>
+    <button type="button" style="background: none; border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 9px 13px;">Clear</button>
+  </div>
+
+  <div style="flex-grow: 1; box-sizing: border-box; padding: 22px 30px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; overflow: hidden;">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Strings</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">3/8</span>
+          </div>
+            <label for="g-single-coil" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-single-coil" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Single-coil electric</span>
+              
+            </label>
+            <label for="g-spare-single-coil" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-spare-single-coil"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Spare single-coil electric</span>
+              
+            </label>
+            <label for="g-humbucker" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-humbucker" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Humbucker electric</span>
+              
+            </label>
+            <label for="g-twelve-string" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-twelve-string"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">12-string</span>
+              
+            </label>
+            <label for="g-nylon-classical" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-nylon-classical"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Nylon classical</span>
+              
+            </label>
+            <label for="g-bandolim" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-bandolim"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Bandolim</span>
+              
+            </label>
+            <label for="g-guitarra-portuguesa" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-guitarra-portuguesa"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Guitarra portuguesa</span>
+              
+            </label>
+            <label for="g-electric-bass" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-electric-bass" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Electric bass</span>
+              
+            </label>
+            <label for="g-flamenca" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-flamenca"  disabled style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #6C7A8C;">Flamenca</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8E9BD4; border: 1px solid #35406B; border-radius: 2px; padding: 2px 5px;">Wishlist</span>
+            </label>
+            <label for="g-steel-string" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-steel-string"  disabled style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #6C7A8C;">Steel-string acoustic</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8E9BD4; border: 1px solid #35406B; border-radius: 2px; padding: 2px 5px;">Wishlist</span>
+            </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Keys &amp; synths</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">5/7</span>
+          </div>
+            <label for="g-stage-piano" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-stage-piano" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Stage piano</span>
+              
+            </label>
+            <label for="g-rack-synth" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-rack-synth" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Rack synth module</span>
+              
+            </label>
+            <label for="g-pad-sampler" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-pad-sampler" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Pad sampler</span>
+              
+            </label>
+            <label for="g-synth-groovebox" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-synth-groovebox" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">synth groovebox</span>
+              
+            </label>
+            <label for="g-drum-groovebox" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-drum-groovebox"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">drum groovebox</span>
+              
+            </label>
+            <label for="g-mini-synth" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-mini-synth"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">mini synth</span>
+              
+            </label>
+            <label for="g-toy-sampler" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-toy-sampler" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">toy sampler</span>
+              
+            </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Amps</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">1/3</span>
+          </div>
+            <label for="g-valve-combo" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-valve-combo" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">2×12 valve combo</span>
+              
+            </label>
+            <label for="g-practice-amp" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-practice-amp"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">practice combo</span>
+              
+            </label>
+            <label for="g-bass-practice-amp" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-bass-practice-amp"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">bass combo</span>
+              
+            </label>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Pedals</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">3/14</span>
+          </div>
+            <label for="g-fuzz" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-fuzz" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Fuzz (custom)</span>
+              
+            </label>
+            <label for="g-compact-fuzz" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-compact-fuzz"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Compact fuzz</span>
+              
+            </label>
+            <label for="g-octave-fuzz" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-octave-fuzz"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Octave fuzz</span>
+              
+            </label>
+            <label for="g-overdrive" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-overdrive"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Overdrive</span>
+              
+            </label>
+            <label for="g-phaser" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-phaser"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Phaser</span>
+              
+            </label>
+            <label for="g-flanger" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-flanger"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Flanger</span>
+              
+            </label>
+            <label for="g-pitch-shifter" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-pitch-shifter" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Pitch shifter</span>
+              
+            </label>
+            <label for="g-volume-pedal" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-volume-pedal"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Volume pedal</span>
+              
+            </label>
+            <label for="g-delay" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-delay"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Delay</span>
+              
+            </label>
+            <label for="g-reverb" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-reverb" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Reverb</span>
+              
+            </label>
+            <label for="g-envelope-filter" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-envelope-filter"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Envelope filter</span>
+              
+            </label>
+            <label for="g-octaver" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-octaver"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Octaver</span>
+              
+            </label>
+            <label for="g-parametric-eq" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-parametric-eq"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Parametric EQ</span>
+              
+            </label>
+            <label for="g-multi-effect" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-multi-effect"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Multi-effect</span>
+              
+            </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Mics &amp; recorders</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">3/3</span>
+          </div>
+            <label for="g-dynamic-mic" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-dynamic-mic" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Dynamic vocal mic</span>
+              
+            </label>
+            <label for="g-condenser" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-condenser" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Large-diaphragm condenser</span>
+              
+            </label>
+            <label for="g-handheld-recorder" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-handheld-recorder" checked  style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #ECE4D6;">Handheld recorder</span>
+              
+            </label>
+            <label for="g-instrument-dynamic" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-instrument-dynamic"  disabled style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #6C7A8C;">Instrument dynamic</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8E9BD4; border: 1px solid #35406B; border-radius: 2px; padding: 2px 5px;">Wishlist</span>
+            </label>
+            <label for="g-ribbon" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-ribbon"  disabled style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #6C7A8C;">Ribbon mic</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8E9BD4; border: 1px solid #35406B; border-radius: 2px; padding: 2px 5px;">Wishlist</span>
+            </label>
+            <label for="g-pencil-pair" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-pencil-pair"  disabled style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #6C7A8C;">Pencil condenser pair</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8E9BD4; border: 1px solid #35406B; border-radius: 2px; padding: 2px 5px;">Wishlist</span>
+            </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 9px; padding-bottom: 7px; border-bottom: 1px solid #22303F; margin-bottom: 4px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A44A;">Small &amp; found</span>
+            <div style="flex-grow: 1;"></div>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9.5px; letter-spacing: 0.08em; color: #5F6D80; font-variant-numeric: tabular-nums;">0/7</span>
+          </div>
+            <label for="g-harmonicas" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-harmonicas"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Harmonicas</span>
+              
+            </label>
+            <label for="g-melodica" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-melodica"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Melodica</span>
+              
+            </label>
+            <label for="g-djembes" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-djembes"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Djembés</span>
+              
+            </label>
+            <label for="g-kalimba" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-kalimba"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Kalimba</span>
+              
+            </label>
+            <label for="g-flutes" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-flutes"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Flutes</span>
+              
+            </label>
+            <label for="g-ocarina" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-ocarina"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">Ocarina</span>
+              
+            </label>
+            <label for="g-the-tube" style="display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer;">
+              <input type="checkbox" id="g-the-tube"   style="margin: 0; width: 14px; height: 14px; accent-color: #74A79A; flex-shrink: 0;">
+              <span style="font-size: 13px; color: #8B98A9;">The tube</span>
+              
+            </label>
+        </div>
+      </div>
+  </div>
+
+  <div style="height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 0 30px; background: #131C28; border-top: 1px solid #2C3A4E; display: flex; align-items: center; gap: 14px;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: #6C7A8C;">Wishlist gear can be written into cards now — those cards stay out of draws until you own it</span>
+    <div style="flex-grow: 1;"></div>
+    <button type="button" style="background: none; border: 1px solid #2C3A4E; border-radius: 2px; color: #98A4B4; font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 9px 13px;">Add gear</button>
+  </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" %sotao.theme%>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<!-- The browser chrome follows the device; the haze is each theme's ground. -->
+		<meta name="theme-color" content="#dce2e2" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#151d23" media="(prefers-color-scheme: dark)" />
+		<link rel="icon" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Sótão" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

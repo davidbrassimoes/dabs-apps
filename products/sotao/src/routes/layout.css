@@ -1,0 +1,219 @@
+@import 'tailwindcss';
+
+/*
+  Theme tokens — sea fog (ADR-012; ADR-027 for how Sótão takes it). Every colour
+  is a custom property, and the themes redefine the tokens, never the components.
+
+  Morning fog is on :root, so it is what shows when nothing else applies — the
+  company's fallback. Night fog applies on an explicit [data-theme="night"], or
+  under Auto (no attribute) when the device prefers dark.
+
+  A tool takes from brand/tokens.md the marks, the three faces, one accent, and
+  both themes' ground and ink (ADR-004), and keeps its own palette architecture.
+  So: the grounds and inks are Derrocada's sea fog values, which are points on
+  the brand's haze and brand inks, measured there. The kind colours keep the hues
+  §12 gave them, moved by lightness alone until each reaches 4.5:1 on every
+  surface text sits on — ground, panel, rail and chip — in both themes. The
+  tints (favourite, author, status, tag and danger borders) are the kind colour
+  mixed into the panel. The worst cases are in NOTES.md, "Palette".
+
+  --accent is the brand's pointer: what indicates on a panel indicates here —
+  focus, selection, the active tab. --lamp is the product's accent, Ochre, and
+  it is a lamp only: the About block, nowhere in the working UI.
+*/
+
+@theme {
+	--font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+	--font-sans: 'Jost', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'DM Mono', ui-monospace, SFMono-Regular, 'Cascadia Mono', monospace;
+}
+
+:root {
+	color-scheme: light;
+
+	--ground: #dce2e2;
+	--panel: #e9eced;
+	--rail: #d6ddde;
+	--line: #a9b4b7;
+	--line-soft: #c0cacc;
+	--text: #1f292c;
+	--text-dim: #37434a;
+	--text-faint: #4d595f;
+	--accent: #1f292c;
+	--lamp: #795a1f;
+
+	--kind-idea: #1f292c;
+	--kind-source: #42685f;
+	--kind-treatment: #7f5a1b;
+	--kind-technique: #455ab5;
+	--kind-constraint: #b43022;
+	--kind-arrangement: #7b4f93;
+
+	--fav-bg: #deddd8;
+	--fav-line: #b9aa8f;
+	--fav-star: #947745;
+	--chip-line: #a9b4b7;
+
+	--row-line: #c9d1d3;
+	--text-muted: #56626a;
+	--chip-bg: #e2e7e8;
+	--tag-line: #9eb1ad;
+	--author-claude-bg: #d9dde7;
+	--author-claude-line: #9faad4;
+	--status-active-bg: #d8dfdf;
+	--danger-line: #d19792;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='morning']) {
+		color-scheme: dark;
+
+		--ground: #151d23;
+		--panel: #1b242c;
+		--rail: #202b34;
+		--line: #3e4c58;
+		--line-soft: #27343e;
+		--text: #dde5ea;
+		--text-dim: #aebac2;
+		--text-faint: #9aa6b0;
+		--accent: #e8eef1;
+		--lamp: #cb9633;
+
+		--kind-idea: #dde5ea;
+		--kind-source: #74a79a;
+		--kind-treatment: #d9a44a;
+		--kind-technique: #8e9bd4;
+		--kind-constraint: #e47c70;
+		--kind-arrangement: #b99bc9;
+
+		--fav-bg: #2e312f;
+		--fav-line: #715e3a;
+		--fav-star: #a07e41;
+		--chip-line: #3e4c58;
+
+		--row-line: #222d36;
+		--text-muted: #919ea8;
+		--chip-bg: #27343e;
+		--tag-line: #435f5e;
+		--author-claude-bg: #27303d;
+		--author-claude-line: #4f5a78;
+		--status-active-bg: #243137;
+		--danger-line: #754c4b;
+	}
+}
+
+:root[data-theme='night'] {
+	color-scheme: dark;
+
+	--ground: #151d23;
+	--panel: #1b242c;
+	--rail: #202b34;
+	--line: #3e4c58;
+	--line-soft: #27343e;
+	--text: #dde5ea;
+	--text-dim: #aebac2;
+	--text-faint: #9aa6b0;
+	--accent: #e8eef1;
+	--lamp: #cb9633;
+
+	--kind-idea: #dde5ea;
+	--kind-source: #74a79a;
+	--kind-treatment: #d9a44a;
+	--kind-technique: #8e9bd4;
+	--kind-constraint: #e47c70;
+	--kind-arrangement: #b99bc9;
+
+	--fav-bg: #2e312f;
+	--fav-line: #715e3a;
+	--fav-star: #a07e41;
+	--chip-line: #3e4c58;
+
+	--row-line: #222d36;
+	--text-muted: #919ea8;
+	--chip-bg: #27343e;
+	--tag-line: #435f5e;
+	--author-claude-bg: #27303d;
+	--author-claude-line: #4f5a78;
+	--status-active-bg: #243137;
+	--danger-line: #754c4b;
+}
+
+html {
+	background: var(--ground);
+}
+
+body {
+	margin: 0;
+	background: var(--ground);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-weight: 400;
+	-webkit-font-smoothing: antialiased;
+	/* DM Mono has no 600; ask for it and get 500, never a smeared fake bold. */
+	font-synthesis-weight: none;
+}
+
+/*
+  Shared primitives. The monospace labelling is what gives the app its
+  equipment-panel character — it is not decoration (§12).
+*/
+
+.label {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+}
+
+.meta {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+.display {
+	font-family: var(--font-display);
+	/* Cormorant defaults to old-style figures; gear names are full of numbers. */
+	font-variant-numeric: lining-nums;
+	font-weight: 600;
+	letter-spacing: -0.012em;
+}
+
+/* A bordered monospace control: the header chips, the small buttons. */
+.panel-button {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	background: none;
+	border: 1px solid var(--line);
+	border-radius: 2px;
+	padding: 9px 14px;
+	cursor: pointer;
+}
+
+.panel-button:hover {
+	color: var(--text);
+}
+
+:where(a) {
+	color: inherit;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--ground);
+}

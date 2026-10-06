@@ -1,0 +1,29 @@
+// Sótão on Cloudflare Workers, the database on Turso (ADR-027). The same
+// account as escarpaaudio.com (ADR-010), and a separate Worker: the site and
+// this app deploy on their own schedules.
+//
+// Deploy from DABS's machine, with `npm run deploy`, so the build carries the
+// real seed files (seed/*.local.*, gitignored). Secrets are set once with
+// `npx wrangler secret put <NAME>` and never live in this file:
+//
+//   DATABASE_URL         libsql://… — the Turso database
+//   DATABASE_AUTH_TOKEN  Turso token for it
+//   APP_PASSWORD         the one password (§10)
+//   APP_SECRET           32+ random bytes, signs the session cookie
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "sotao",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-09-01",
+	// node:crypto, for signing the session cookie (src/lib/server/auth.ts).
+	"compatibility_flags": ["nodejs_compat"],
+	"send_metrics": false,
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	// Reached at sotao.<account>.workers.dev for now. A custom domain is a
+	// decision, not a default — nothing here is public but the login page.
+	"workers_dev": true,
+	"preview_urls": false
+}
