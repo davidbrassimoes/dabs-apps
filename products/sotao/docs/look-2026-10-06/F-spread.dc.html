@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fichário — draw three</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&amp;family=Libre+Franklin:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Libre Franklin', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: baseline; justify-content: space-between; padding: 20px 16px 6px">
+    <span style="font-weight: 700; font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase">Sótão</span>
+    <a href="#gear" style="text-decoration: none; font-size: 13px; color: {{c.dim}}; padding: 12px 0">18 of 42 in the rack</a>
+  </header>
+
+  <div style="display: flex; margin: 6px 16px 0; border-bottom: 2px solid {{c.text}}">
+    <a href="#single" style="text-decoration: none; padding: 12px 16px; font-weight: 500; font-size: 14px; color: {{c.dim}}">One card</a>
+    <a href="#spread" aria-current="page" style="text-decoration: none; padding: 12px 16px; font-weight: 700; font-size: 14px; background: {{c.text}}; color: {{c.ground}}; border-radius: 6px 6px 0 0">Three</a>
+    <span style="margin-left: auto; align-self: center; font-size: 13px; color: {{c.dim}}">Offline · cached</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 14px 16px 0; display: flex; flex-direction: column; gap: 6px">
+    <sc-for list="{{slots}}" as="s" hint-placeholder-count="3">
+      <div style="flex: 1 1 0; display: flex; flex-direction: column">
+        <div style="align-self: flex-start; margin-left: {{s.tabX}}; height: 26px; padding: 0 14px; background: {{s.tab}}; color: #1E1B18; border-radius: 6px 6px 0 0; display: flex; align-items: center; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 12px; letter-spacing: 0.16em">{{s.kind}}</div>
+        <article style="flex-grow: 1; background: {{c.card}}; border: 1px solid {{c.cardLine}}; border-top: 3px solid {{s.tab}}; border-radius: 0 6px 6px 6px; box-shadow: 0 8px 18px rgba(40,30,15,0.14); padding: 6px 14px 12px 16px; display: flex; flex-direction: column; color: #1E1B18">
+          <div style="display: flex; justify-content: flex-end">
+            <button aria-label="{{s.lockLabel}}" aria-pressed="{{s.lockedAttr}}" style="height: 40px; min-width: 44px; border: 0; background: transparent; color: #1E1B18; display: flex; align-items: center; gap: 6px; padding: 0; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 13px">
+              <span>{{s.lockText}}</span>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="{{s.lockFill}}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none"></path></svg>
+            </button>
+          </div>
+          <p style="margin: 0; font-family: 'Courier Prime', monospace; font-size: 21px; line-height: 28px">{{s.text}}</p>
+        </article>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 16px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 56px; height: 72px; border: 2px solid {{c.text}}; border-radius: 8px; background: transparent; color: {{c.text}}; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 72px; border: 0; border-radius: 8px; background: {{c.text}}; color: {{c.ground}}; font-weight: 700; font-size: 20px; letter-spacing: 0.14em; text-transform: uppercase">Draw two</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid {{c.line}}">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; font-weight: 700; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const light = {
+      ground: '#E6DCC8', line: '#C7B99E', text: '#221D16', dim: '#5A4F40',
+      card: '#FDFBF5', cardLine: '#CDBFA6'
+    };
+    const dark = {
+      ground: '#1A1712', line: '#3A3329', text: '#F0E9DC', dim: '#B4A892',
+      card: '#F6F1E6', cardLine: '#8E836F'
+    };
+    const c = (this.props.theme ?? 'light') === 'dark' ? dark : light;
+    const slot = (kind, tab, tabX, text, locked) => ({
+      kind, tab, tabX, text,
+      lockedAttr: locked ? 'true' : 'false',
+      lockText: locked ? 'Kept' : 'Keep',
+      lockLabel: (locked ? 'Unlock ' : 'Keep ') + kind.toLowerCase(),
+      lockFill: locked ? '#1E1B18' : 'none'
+    });
+    return {
+      c,
+      slots: [
+        slot('SOURCE', '#A9D4C2', '0px', 'Gretsch 12-string, tuned down until it rattles.', true),
+        slot('TREATMENT', '#F3BE84', '110px', 'Pitch Fork+ at minus twelve, wet only.', false),
+        slot('CONSTRAINT', '#EFA08E', '220px', 'Three minutes, then you stop and listen back once.', false)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

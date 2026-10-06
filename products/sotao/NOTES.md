@@ -38,6 +38,12 @@ Cartas, material e histórico de tiragens não são dados pessoais de terceiros.
 
 ### 2026-10-06 — propostas de aspeto (gate 2 pendente)
 
+- **Segunda ronda** (DABS gostou mais de A e C e pediu mais hipóteses): **D · Cartolina** (a ficha
+  da A em cartolina de cor por tipo), **E · Carta de jogar** (carta branca, índice nos cantos,
+  cor só no naipe), **F · Fichário** (ficha de catálogo com separadores por tipo, claro por
+  defeito), **G · Baralho suave** (a C com cores baixas e o fundo quente da A). Só os dois
+  ecrãs de tirar, no mesmo canvas.
+
 - Três direções, cada uma com tirar uma, tirar três e a lista de cartas, para telemóvel, com
   ajuste escuro/claro: **A · Lamparina** (ficha de cartolina, Courier Prime + Archivo, botão
   âmbar), **B · Fita-cola** (fita de papel numa mesa de mistura, Permanent Marker + Chivo),

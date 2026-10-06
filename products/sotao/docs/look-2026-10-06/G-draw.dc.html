@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Baralho suave — draw one</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;family=Courier+Prime:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Bricolage Grotesque', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 6px">
+    <span style="font-weight: 800; font-size: 24px; letter-spacing: -0.02em">sótão</span>
+    <div style="display: flex; gap: 4px; background: {{c.panel}}; border-radius: 999px; padding: 4px">
+      <a href="#single" aria-current="page" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; background: {{c.text}}; color: {{c.ground}}; font-weight: 600; font-size: 14px">One</a>
+      <a href="#spread" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; color: {{c.dim}}; font-weight: 600; font-size: 14px">Three</a>
+    </div>
+  </header>
+
+  <div style="padding: 6px 16px 0; display: flex; justify-content: space-between; font-family: 'Courier Prime', monospace; font-size: 13px; color: {{c.dim}}">
+    <a href="#gear" style="text-decoration: none; padding: 12px 0">18 of 42 in the rack</a>
+    <span style="padding: 12px 0">3 / 7 tonight</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 4px 16px 0; display: flex">
+    <article style="flex-grow: 1; border-radius: 18px; background: {{c.card}}; color: {{c.cardInk}}; padding: 20px 22px 22px; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span style="font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 14px; letter-spacing: 0.2em">IDEA</span>
+        <button aria-label="Favourite" aria-pressed="false" style="width: 44px; height: 44px; margin: -10px -10px -10px 0; border: 0; background: transparent; color: {{c.cardInk}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+        </button>
+      </div>
+      <p style="margin: auto 0; font-weight: 700; font-size: 32px; line-height: 36px; letter-spacing: -0.015em">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.</p>
+      <p style="margin: 0; font-family: 'Courier Prime', monospace; font-size: 14px; line-height: 20px; opacity: 0.8">rd-08 · pitch-fork-plus · ac30 · cm25</p>
+    </article>
+  </div>
+
+  <div style="padding: 14px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 64px; height: 76px; border-radius: 18px; border: 0; background: {{c.panel}}; color: {{c.text}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 76px; border-radius: 18px; border: 0; background: {{c.lamp}}; color: {{c.lampInk}}; font-weight: 800; font-size: 30px">Draw</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0 8px 10px">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 800; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = {
+      ground: '#17130F', panel: '#26201A', text: '#F1EADD', dim: '#B3A897',
+      card: '#E9DFC9', cardInk: '#1C1814', lamp: '#E3A23F', lampInk: '#1B1307'
+    };
+    const light = {
+      ground: '#EFE9DE', panel: '#E1D9CA', text: '#1C1814', dim: '#5B5146',
+      card: '#1C1814', cardInk: '#F1EADD', lamp: '#8F5410', lampInk: '#FFFFFF'
+    };
+    return { c: (this.props.theme ?? 'dark') === 'light' ? light : dark };
+  }
+}
+</script>
+</body>
+</html>

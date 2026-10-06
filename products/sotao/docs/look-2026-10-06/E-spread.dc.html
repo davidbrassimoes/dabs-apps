@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Carta de jogar — draw three</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;600&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Bricolage Grotesque', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 6px">
+    <span style="font-weight: 800; font-size: 24px; letter-spacing: -0.02em">sótão</span>
+    <div style="display: flex; gap: 4px; border: 1px solid {{c.line}}; border-radius: 999px; padding: 3px">
+      <a href="#single" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; color: {{c.dim}}; font-weight: 600; font-size: 14px">One</a>
+      <a href="#spread" aria-current="page" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; background: {{c.text}}; color: {{c.ground}}; font-weight: 600; font-size: 14px">Three</a>
+    </div>
+  </header>
+
+  <div style="padding: 4px 16px 0; display: flex; justify-content: space-between; font-family: 'Azeret Mono', monospace; font-size: 12px; color: {{c.dim}}">
+    <a href="#gear" style="text-decoration: none; padding: 12px 0">18 of 42 in the rack</a>
+    <span style="padding: 12px 0">Offline · cached</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 6px 16px 0; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{slots}}" as="s" hint-placeholder-count="3">
+      <article style="flex: 1 1 0; border-radius: 18px; background: {{c.card}}; color: #141416; box-shadow: 0 10px 26px rgba(0,0,0,0.35); padding: 12px 10px 14px 12px; display: flex; gap: 12px">
+        <div style="flex: none; width: 30px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: {{s.suit}}">
+          <span style="font-weight: 800; font-size: 24px; line-height: 1">{{s.letter}}</span>
+          <sc-if value="{{s.isSource}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l10 18H2z"></path></svg></sc-if>
+          <sc-if value="{{s.isTreatment}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg></sc-if>
+          <sc-if value="{{s.isConstraint}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"></path></svg></sc-if>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-family: 'Azeret Mono', monospace; font-weight: 600; font-size: 11px; letter-spacing: 0.14em; color: {{s.suit}}">{{s.kind}}</span>
+            <button aria-label="{{s.lockLabel}}" aria-pressed="{{s.lockedAttr}}" style="height: 44px; margin: -10px 0 -10px 0; padding: 0 12px; border-radius: 999px; border: 1.5px solid {{s.lockBorder}}; background: {{s.lockBg}}; color: {{s.lockFg}}; font-family: 'Azeret Mono', monospace; font-size: 12px; display: flex; align-items: center; gap: 6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>{{s.lockText}}
+            </button>
+          </div>
+          <p style="margin: auto 0; padding-top: 8px; font-weight: 700; font-size: 23px; line-height: 27px; letter-spacing: -0.01em">{{s.text}}</p>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+
+  <div style="padding: 14px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 64px; height: 76px; border-radius: 20px; border: 1px solid {{c.line}}; background: transparent; color: {{c.text}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 76px; border-radius: 20px; border: 0; background: {{c.accent}}; color: {{c.accentInk}}; font-weight: 800; font-size: 28px">Draw two</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0 8px 10px">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 800; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = {
+      ground: '#0E1A17', line: '#2C3B37', text: '#F2EFE8', dim: '#A5B0AC', card: '#FBFAF6',
+      accent: '#F2EFE8', accentInk: '#0E1A17'
+    };
+    const light = {
+      ground: '#E7E9E4', line: '#BFC5BF', text: '#141416', dim: '#555A57', card: '#FFFFFF',
+      accent: '#0E1A17', accentInk: '#F2EFE8'
+    };
+    const c = (this.props.theme ?? 'dark') === 'light' ? light : dark;
+    const slot = (kind, letter, suit, text, locked) => ({
+      kind, letter, suit, text,
+      isSource: kind === 'SOURCE', isTreatment: kind === 'TREATMENT', isConstraint: kind === 'CONSTRAINT',
+      lockedAttr: locked ? 'true' : 'false',
+      lockText: locked ? 'Kept' : 'Keep',
+      lockLabel: (locked ? 'Unlock ' : 'Keep ') + kind.toLowerCase(),
+      lockBorder: locked ? '#141416' : '#C9CBC6',
+      lockBg: locked ? '#141416' : 'transparent',
+      lockFg: locked ? '#FBFAF6' : '#141416'
+    });
+    return {
+      c,
+      slots: [
+        slot('SOURCE', 'S', '#1F7A64', 'Gretsch 12-string, tuned down until it rattles.', true),
+        slot('TREATMENT', 'T', '#9A5E08', 'Pitch Fork+ at minus twelve, wet only.', false),
+        slot('CONSTRAINT', 'C', '#B8361F', 'Three minutes, then you stop and listen back once.', false)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

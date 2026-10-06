@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fichário — draw one</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&amp;family=Libre+Franklin:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Libre Franklin', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: baseline; justify-content: space-between; padding: 20px 16px 6px">
+    <span style="font-weight: 700; font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase">Sótão</span>
+    <a href="#gear" style="text-decoration: none; font-size: 13px; color: {{c.dim}}; padding: 12px 0">18 of 42 in the rack</a>
+  </header>
+
+  <div style="display: flex; gap: 0; padding: 6px 16px 0; border-bottom: 2px solid {{c.text}}; margin: 0 16px; padding-left: 0; padding-right: 0">
+    <a href="#single" aria-current="page" style="text-decoration: none; padding: 12px 16px; font-weight: 700; font-size: 14px; background: {{c.text}}; color: {{c.ground}}; border-radius: 6px 6px 0 0">One card</a>
+    <a href="#spread" style="text-decoration: none; padding: 12px 16px; font-weight: 500; font-size: 14px; color: {{c.dim}}">Three</a>
+    <span style="margin-left: auto; align-self: center; font-size: 13px; color: {{c.dim}}">No. 3 of 7</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 26px 16px 0; display: flex; flex-direction: column; position: relative">
+    <div style="position: absolute; left: 22px; right: 22px; top: 12px; height: 30px; background: {{c.cardBack}}; border-radius: 4px 4px 0 0; border: 1px solid {{c.cardLine}}"></div>
+    <div style="position: absolute; left: 30px; top: 0; width: 110px; height: 30px; background: {{c.cardBack}}; border: 1px solid {{c.cardLine}}; border-bottom: 0; border-radius: 6px 6px 0 0"></div>
+    <div style="position: relative; display: flex; flex-direction: column; flex-grow: 1">
+      <div style="align-self: flex-start; margin-left: 150px; height: 28px; padding: 0 16px; background: {{c.tab}}; color: {{c.tabInk}}; border-radius: 6px 6px 0 0; display: flex; align-items: center; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 13px; letter-spacing: 0.16em">IDEA</div>
+      <article style="flex-grow: 1; background: {{c.card}}; border: 1px solid {{c.cardLine}}; border-radius: 0 6px 6px 6px; box-shadow: 0 14px 30px rgba(40,30,15,0.18); padding: 20px 22px 22px; display: flex; flex-direction: column; color: #1E1B18; position: relative">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'Courier Prime', monospace; font-size: 13px; color: #5C554C; border-bottom: 1px solid #D9CFBF; padding-bottom: 6px">
+          <span>by claude</span>
+          <button aria-label="Favourite" aria-pressed="false" style="width: 44px; height: 44px; margin: -10px -12px -10px 0; border: 0; background: transparent; color: #5C554C; display: flex; align-items: center; justify-content: center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+          </button>
+        </div>
+        <p style="margin: 18px 0 0; font-family: 'Courier Prime', monospace; font-size: 26px; line-height: 36px">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.</p>
+        <dl style="margin: auto 0 0; padding-top: 14px; display: grid; grid-template-columns: 52px minmax(0, 1fr); row-gap: 4px; font-family: 'Courier Prime', monospace; font-size: 14px">
+          <dt style="color: #5C554C">gear</dt><dd style="margin: 0">rd-08, pitch-fork-plus, ac30, cm25</dd>
+          <dt style="color: #5C554C">tags</dt><dd style="margin: 0">reamping, room</dd>
+        </dl>
+        <span style="position: absolute; bottom: 10px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: {{c.ground}}; border: 1px solid {{c.cardLine}}"></span>
+      </article>
+    </div>
+  </div>
+
+  <div style="padding: 18px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 56px; height: 72px; border: 2px solid {{c.text}}; border-radius: 8px; background: transparent; color: {{c.text}}; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 72px; border: 0; border-radius: 8px; background: {{c.text}}; color: {{c.ground}}; font-weight: 700; font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase">Draw</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid {{c.line}}">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; font-weight: 700; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const light = {
+      ground: '#E6DCC8', line: '#C7B99E', text: '#221D16', dim: '#5A4F40',
+      card: '#FDFBF5', cardBack: '#F3EEE2', cardLine: '#CDBFA6',
+      tab: '#F1DE9C', tabInk: '#1E1B18'
+    };
+    const dark = {
+      ground: '#1A1712', line: '#3A3329', text: '#F0E9DC', dim: '#B4A892',
+      card: '#F6F1E6', cardBack: '#CFC6B5', cardLine: '#8E836F',
+      tab: '#F1DE9C', tabInk: '#1E1B18'
+    };
+    return { c: (this.props.theme ?? 'light') === 'dark' ? dark : light };
+  }
+}
+</script>
+</body>
+</html>

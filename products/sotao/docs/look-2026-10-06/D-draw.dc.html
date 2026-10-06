@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cartolina — draw one</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=Courier+Prime:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Archivo', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 10px">
+    <span style="font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 22px">Sótão</span>
+    <a href="#gear" style="text-decoration: none; font-size: 13px; color: {{c.dim}}; border: 1px solid {{c.line}}; border-radius: 999px; padding: 8px 12px">In the rack · 18 of 42</a>
+  </header>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 14px">
+    <div role="group" aria-label="Mode" style="display: flex; background: {{c.rail}}; border-radius: 10px; padding: 3px">
+      <a href="#single" aria-current="page" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 8px; background: {{c.panel}}; color: {{c.text}}">One card</a>
+      <a href="#spread" style="text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: 8px; color: {{c.dim}}">Three</a>
+    </div>
+    <span style="font-size: 13px; color: {{c.dim}}">3 of 7 tonight</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 6px 16px 0; display: flex; flex-direction: column; position: relative">
+    <div style="position: absolute; left: 30px; right: 30px; top: 0; height: 40px; background: {{c.stockBehind}}; border-radius: 4px; transform: rotate(-1.5deg)"></div>
+    <article style="position: relative; flex-grow: 1; background-color: {{c.stock}}; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 37px, rgba(30,27,24,0.10) 37px, rgba(30,27,24,0.10) 38px); background-position: 0 72px; border-radius: 4px; box-shadow: 0 18px 40px rgba(0,0,0,0.35); padding: 18px 20px 20px; display: flex; flex-direction: column; color: #1E1B18">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; border-bottom: 2px solid rgba(30,27,24,0.55)">
+        <span style="font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase">Idea</span>
+        <button aria-label="Favourite" aria-pressed="false" style="width: 44px; height: 44px; border: 0; background: transparent; color: #1E1B18; display: flex; align-items: center; justify-content: flex-end; padding: 0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+        </button>
+      </div>
+      <p style="margin: 18px 0 0; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 27px; line-height: 38px">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.</p>
+      <p style="margin: auto 0 0; padding-top: 16px; font-family: 'Courier Prime', monospace; font-size: 14px; line-height: 20px">rd-08 · pitch-fork-plus · ac30 · cm25</p>
+    </article>
+  </div>
+
+  <div style="padding: 16px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 56px; height: 76px; border: 1px solid {{c.line}}; border-radius: 14px; background: transparent; color: {{c.dim}}; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 76px; border: 0; border-radius: 14px; background: {{c.lamp}}; color: {{c.lampInk}}; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 28px; letter-spacing: 0.06em">Draw</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid {{c.line}}; background: {{c.rail}}">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; font-weight: 600; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = {
+      ground: '#15120F', rail: '#1C1814', panel: '#2A241E', line: '#3A332B',
+      text: '#EFE8DC', dim: '#B3A797',
+      lamp: '#E3A23F', lampInk: '#1B1307'
+    };
+    const light = {
+      ground: '#E8E2D6', rail: '#DDD6C8', panel: '#FBF9F4', line: '#C8BFAE',
+      text: '#1F1B17', dim: '#554C42',
+      lamp: '#8F5410', lampInk: '#FFFFFF'
+    };
+    const c = (this.props.theme ?? 'dark') === 'light' ? light : dark;
+    return { c: Object.assign({}, c, { stock: '#F1DE9C', stockBehind: '#A9D4C2' }) };
+  }
+}
+</script>
+</body>
+</html>
