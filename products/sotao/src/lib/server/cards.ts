@@ -37,15 +37,26 @@ async function loadJoins(ids: string[]): Promise<Joined> {
 	const empty: Joined = { kinds: new Map(), gear: new Map(), tags: new Map(), unowned: new Set() };
 	if (ids.length === 0) return empty;
 
-	const [kindRows, gearRows, tagRows] = await Promise.all([
-		db.select().from(cardKinds).where(inArray(cardKinds.cardId, ids)),
-		db
-			.select({ cardId: cardGear.cardId, gearId: cardGear.gearId, owned: gear.owned })
-			.from(cardGear)
-			.innerJoin(gear, eq(cardGear.gearId, gear.id))
-			.where(inArray(cardGear.cardId, ids)),
-		db.select().from(cardTags).where(inArray(cardTags.cardId, ids))
-	]);
+	// D1 allows 100 bound parameters per query, so the ids go in chunks.
+	const chunks: string[][] = [];
+	for (let i = 0; i < ids.length; i += 90) chunks.push(ids.slice(i, i + 90));
+
+	const results = await Promise.all(
+		chunks.map((chunk) =>
+			Promise.all([
+				db.select().from(cardKinds).where(inArray(cardKinds.cardId, chunk)),
+				db
+					.select({ cardId: cardGear.cardId, gearId: cardGear.gearId, owned: gear.owned })
+					.from(cardGear)
+					.innerJoin(gear, eq(cardGear.gearId, gear.id))
+					.where(inArray(cardGear.cardId, chunk)),
+				db.select().from(cardTags).where(inArray(cardTags.cardId, chunk))
+			])
+		)
+	);
+	const kindRows = results.flatMap((r) => r[0]);
+	const gearRows = results.flatMap((r) => r[1]);
+	const tagRows = results.flatMap((r) => r[2]);
 
 	const push = <T>(map: Map<string, T[]>, key: string, value: T) => {
 		const list = map.get(key);

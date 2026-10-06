@@ -1,42 +1,74 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
-import { building } from '$app/environment';
+import type { D1Database } from '@cloudflare/workers-types';
+import type { LibSQLDatabase } from 'drizzle-orm/libsql';
+import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
+import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { env } from '$env/dynamic/private';
-import { applyMigrations } from './migrations';
+import { applyMigrations, d1Target, libsqlTarget, type MigrationTarget } from './migrations';
 import * as schema from './schema';
 
-// `vite build` imports server modules to analyse them, with no secrets set and
-// no query run. Only then does the client get a placeholder; a server that
-// starts without DATABASE_URL still stops here.
-const url = building ? ':memory:' : env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL is not set');
+/**
+ * The one database type the app sees: drizzle's async SQLite, plus `batch`,
+ * which both drivers have and which is how the app writes atomically (D1 has
+ * no transactions).
+ */
+export type Db = BaseSQLiteDatabase<'async', unknown, typeof schema> &
+	Pick<LibSQLDatabase<typeof schema>, 'batch'>;
 
-const client = createClient({
-	url,
-	authToken: env.DATABASE_AUTH_TOKEN || undefined
+// Which driver backs `db` is only known on the first request: D1 arrives as a
+// binding on the request's platform, libSQL is opened from DATABASE_URL (tests).
+// So every importer keeps `import { db }`, and `db` is a thin proxy onto the
+// instance chosen by migrateDb(), which the hook awaits before anything else
+// runs. Nothing is opened at import time, so `vite build` needs neither.
+let active: Db | undefined;
+let target: MigrationTarget | undefined;
+let driver: 'd1' | 'libsql' | undefined;
+
+export const db: Db = new Proxy({} as Db, {
+	get(_, property) {
+		if (!active) throw new Error('The database is not ready: migrateDb() runs in the hook first');
+		const value = Reflect.get(active, property);
+		return typeof value === 'function' ? value.bind(active) : value;
+	}
 });
-
-export const db = drizzle(client, { schema });
 
 let ready: Promise<void> | undefined;
 
+async function open(d1: D1Database | undefined): Promise<void> {
+	if (d1) {
+		active = drizzleD1(d1, { schema }) as unknown as Db;
+		target = d1Target(d1);
+		driver = 'd1';
+		return;
+	}
+	if (!env.DATABASE_URL) {
+		throw new Error('No D1 binding "DB" and no DATABASE_URL: there is no database to open');
+	}
+	const { createClient } = await import('@libsql/client');
+	const { drizzle } = await import('drizzle-orm/libsql');
+	const client = createClient({ url: env.DATABASE_URL });
+	active = drizzle(client, { schema }) as unknown as Db;
+	target = libsqlTarget(client);
+	driver = 'libsql';
+}
+
 /**
- * Runs pending migrations once per process (per isolate, on a Worker), turns foreign keys on, and seeds
- * the §7 gear inventory and Appendix B's starter cards if their tables are
- * empty.
+ * Opens the database on first use (once per isolate on a Worker), runs pending
+ * migrations, and seeds the §7 gear inventory and Appendix B's starter cards if
+ * their tables are empty.
  *
- * SQLite defaults `foreign_keys` to off, which would quietly disable both the
- * cascades on card_kinds/card_gear/card_tags and the RESTRICT that stops gear
- * being deleted while cards still reference it. Migrations run with it off
- * because drizzle-kit rebuilds tables, so the pragma goes on afterwards.
+ * Foreign keys: D1 enforces them always. SQLite via libSQL defaults them off,
+ * which would quietly disable the cascades on card_kinds/card_gear/card_tags
+ * and the RESTRICT that stops gear being deleted while cards use it, so on
+ * that path they go on after the migrations (which rebuild tables with them off).
  *
  * The migrations are bundled rather than read from drizzle/, because a Worker
  * has no filesystem; see ./migrations.ts.
  */
-export function migrateDb(): Promise<void> {
+export function migrateDb(d1?: D1Database): Promise<void> {
 	ready ??= (async () => {
-		await applyMigrations(client);
-		await client.execute('PRAGMA foreign_keys = ON');
+		await open(d1);
+		await applyMigrations(target!);
+		if (driver === 'libsql') await target!.exec('PRAGMA foreign_keys = ON');
 		const { seedGearIfEmpty, seedCardsIfEmpty } = await import('./seed');
 		await seedGearIfEmpty();
 		// Cards after gear: the starter set references gear slugs by id.

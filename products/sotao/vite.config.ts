@@ -3,10 +3,10 @@ import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-// The server modules open a database client at import time. No test touches a
-// database, so under Vitest none gets a real one — and CI, which has no .env,
-// needs no secrets to run the suite. Set on the process because that is where
-// $env/dynamic/private reads from; vitest's own test.env does not reach it.
+// Under Vitest there is no D1 binding, so the database module opens libSQL in
+// memory. CI has no .env and needs no secrets to run the suite. Set on the
+// process because that is where $env/dynamic/private reads from; vitest's own
+// test.env does not reach it.
 if (process.env.VITEST) process.env.DATABASE_URL = 'file::memory:';
 
 export default defineConfig({

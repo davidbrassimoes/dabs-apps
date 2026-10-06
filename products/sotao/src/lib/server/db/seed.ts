@@ -25,7 +25,10 @@ export async function seedGearIfEmpty(): Promise<number> {
 		sort: index
 	}));
 
-	await db.insert(gear).values(rows);
+	// D1 allows 100 bound parameters per query: 16 rows of 6 columns at a time.
+	for (let i = 0; i < rows.length; i += 16) {
+		await db.insert(gear).values(rows.slice(i, i + 16));
+	}
 	return rows.length;
 }
 

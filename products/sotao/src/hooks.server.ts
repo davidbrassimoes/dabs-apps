@@ -13,7 +13,7 @@ function isPublic(pathname: string): boolean {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
-	await migrateDb();
+	await migrateDb(event.platform?.env?.DB);
 	await ensureSchemaVersion();
 
 	if (!env.APP_SECRET) throw new Error('APP_SECRET is not set');
