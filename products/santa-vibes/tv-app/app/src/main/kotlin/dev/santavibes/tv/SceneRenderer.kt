@@ -8,6 +8,7 @@ import dev.santavibes.core.OutputGrade
 import dev.santavibes.core.PaletteVariation
 import dev.santavibes.core.Profile
 import dev.santavibes.core.SceneFormat
+import dev.santavibes.core.SignalMixer
 import dev.santavibes.core.Synth
 import java.util.concurrent.atomic.AtomicInteger
 import javax.microedition.khronos.egl.EGLConfig
@@ -76,6 +77,13 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var out: SceneSlot? = null // outgoing scene during a transition
     private var fadeS = 0.0
     private val synth = Synth()
+    /** Real signals blended into the Synth (step 1.3); reactivity is set from the UI thread. */
+    val mixer = SignalMixer()
+    /** Set by the activity; null = Synth only. */
+    @Volatile var hub: SignalHub? = null
+    /** Source fed to the mixer at the last frame (SignPacket.SOURCE_*, 0 = none) and its weight. */
+    @Volatile var signalSource = 0; private set
+    @Volatile var signalWeight = 0.0; private set
     private val palette = FloatArray(15)
     private val imageInfo = floatArrayOf(0f, 1f, 0f, 0f)
     private var lastFrameNs = 0L
@@ -162,6 +170,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         sceneTime = slot.time
         driftTime += dt * driftSpeed
         synth.update(dt, slot.time)
+        signalSource = hub?.drain(mixer, now) ?: 0
+        mixer.update(dt, synth)
+        signalWeight = mixer.realWeight
         paletteVariation.write(palette, driftTime)
 
         // --- scene passes -> FBOs at renderScale (skipped while benchmarking the output pass alone)
@@ -171,7 +182,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         if (skipScenePass) {
             dst = slot.latest() // same texture fetch cost as a real frame
         } else {
-            dst = slot.render(synth, palette, imageInfo, black, noise, true, driftTime, driftAmount)
+            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, true, driftTime, driftAmount)
             val o = out
             if (o != null) {
                 val f = if (fadeS > 0) minOf(1.0, transition + dt / fadeS) else 1.0
@@ -182,7 +193,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
                     o.time += dt
                     val every = fadeEvery
                     prev = if (every > 0 && fadeFrames % every == 0) {
-                        o.render(synth, palette, imageInfo, black, noise, false, driftTime, driftAmount)
+                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, false, driftTime, driftAmount)
                     } else {
                         o.latest()
                     }

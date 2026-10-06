@@ -4,7 +4,6 @@ import android.opengl.GLES30
 import dev.santavibes.core.Drift
 import dev.santavibes.core.ParamType
 import dev.santavibes.core.SceneDef
-import dev.santavibes.core.Synth
 
 /**
  * One scene on the GL thread: program, uniform locations, render targets at its own
@@ -65,7 +64,7 @@ internal class SceneSlot private constructor(
      * gets time, resolution and signals.
      */
     fun render(
-        synth: Synth, palette: FloatArray, imageInfo: FloatArray, black: Int, noise: Int,
+        bands: FloatArray, mood: FloatArray, beat: FloatArray, palette: FloatArray, imageInfo: FloatArray, black: Int, noise: Int,
         full: Boolean, driftTime: Double, driftAmount: Double,
     ): Gl.Target? {
         if (targetCount == 0) return null
@@ -76,9 +75,9 @@ internal class SceneSlot private constructor(
         GLES30.glUseProgram(program)
         GLES30.glUniform1f(uTime, time.toFloat())
         GLES30.glUniform2f(uResolution, dst.width.toFloat(), dst.height.toFloat())
-        GLES30.glUniform4fv(uBands, 1, synth.bands, 0)
-        GLES30.glUniform4fv(uMood, 1, synth.mood, 0)
-        GLES30.glUniform4fv(uBeat, 1, synth.beat, 0)
+        GLES30.glUniform4fv(uBands, 1, bands, 0)
+        GLES30.glUniform4fv(uMood, 1, mood, 0)
+        GLES30.glUniform4fv(uBeat, 1, beat, 0)
         GLES30.glUniform4fv(uImageInfo, 1, imageInfo, 0)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, black)
