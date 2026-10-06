@@ -25,246 +25,213 @@
 		onlock,
 		onfavourite
 	}: Props = $props();
+
+	// The card is the colour of its kind, and the ink on it comes with the fill.
+	let kind = $derived(slot.kind ?? slot.card?.kinds[0] ?? 'idea');
 </script>
 
-<div class="card" class:compact class:locked>
+<article
+	class="card"
+	class:compact
+	class:locked
+	style="--fill: var(--card-{kind}); --on: var(--card-{kind}-ink)"
+>
 	<div class="top">
-		{#if slot.kind}
-			<KindTag kind={slot.kind} />
-		{:else if slot.card}
-			{#each slot.card.kinds as kind (kind)}<KindTag {kind} />{/each}
-		{/if}
+		<span class="kinds">
+			{#if slot.kind}
+				<KindTag kind={slot.kind} onCard />
+			{:else if slot.card}
+				{#each slot.card.kinds as kind (kind)}<KindTag {kind} onCard />{/each}
+			{/if}
+		</span>
 
-		{#if slot.card?.favorite}
-			<FavouriteStar filled size={11} />
+		{#if compact && slot.card}
+			<button type="button" class="pill" onclick={onreroll}>Reroll</button>
 		{/if}
-
-		{#if !compact}
-			<span class="hair"></span>
-		{/if}
-		<div class="spacer"></div>
 
 		{#if showLock}
 			<button
 				type="button"
-				class="lock"
+				class="pill lock"
 				class:on={locked}
 				aria-pressed={locked}
 				aria-label={locked ? 'Unlock this slot' : 'Lock this slot'}
 				title="{locked ? 'Unlock' : 'Lock'} — key {index + 1}"
 				onclick={onlock}
 			>
-				<svg width="11" height="12" viewBox="0 0 11 12" fill="none" aria-hidden="true">
-					<path
-						d={locked
-							? 'M2 5.2V3.6A3.1 3.1 0 0 1 5.5 1a3.1 3.1 0 0 1 3.5 2.6v1.6'
-							: 'M2 5.2V3.6A3.1 3.1 0 0 1 5.5 1a3.1 3.1 0 0 1 3.5 2.6'}
-						stroke="currentColor"
-						stroke-width="1.2"
-					/>
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 					<rect
-						x="1"
-						y="5.2"
-						width="9"
-						height="6"
-						rx="1"
+						x="5"
+						y="11"
+						width="14"
+						height="10"
+						rx="2"
 						stroke="currentColor"
-						stroke-width="1.2"
+						stroke-width="2.2"
+					/>
+					<path
+						d={locked ? 'M8 11V8a4 4 0 0 1 8 0v3' : 'M8 11V8a4 4 0 0 1 7.5-2'}
+						stroke="currentColor"
+						stroke-width="2.2"
+						stroke-linecap="round"
 					/>
 				</svg>
-				{locked ? 'Locked' : 'Lock'}
+				{locked ? 'Kept' : 'Keep'}
+			</button>
+		{:else if slot.card}
+			<button
+				type="button"
+				class="star"
+				aria-label="Favourite"
+				aria-pressed={slot.card.favorite}
+				onclick={() => onfavourite?.(slot.card!.id)}
+			>
+				<FavouriteStar filled={slot.card.favorite} size={22} />
 			</button>
 		{/if}
 	</div>
 
 	{#if slot.card}
-		<p class="text" class:compact>{slot.card.text}</p>
-
-		<div class="chips">
-			{#each slot.card.gear as item (item)}
-				<span class="gear">{item}</span>
-			{/each}
-			<div class="spacer"></div>
-			{#each slot.card.tags as tag (tag)}
-				<span class="tag">#{tag}</span>
-			{/each}
-		</div>
+		<p class="text">{slot.card.text}</p>
 
 		<div class="foot">
-			{#if compact}
-				<button type="button" class="panel-button" onclick={onreroll}>Reroll</button>
-			{:else}
-				<a class="panel-button" href={resolve('/cards/[id]', { id: slot.card.id })}>Edit card</a>
-				<div class="spacer"></div>
-				<button
-					type="button"
-					class="fav"
-					class:on={slot.card.favorite}
-					onclick={() => onfavourite?.(slot.card!.id)}
-				>
-					<FavouriteStar filled={slot.card.favorite} size={12} />
-					Favourite
-				</button>
+			<p class="slugs">
+				{slot.card.gear.join(' · ')}{#if slot.card.gear.length && slot.card.tags.length}
+					<br />{/if}{slot.card.tags.map((t) => `#${t}`).join(' ')}
+			</p>
+			{#if !compact}
+				<a class="pill" href={resolve('/cards/[id]', { id: slot.card.id })}>Edit card</a>
 			{/if}
 		</div>
 	{:else}
 		<div class="empty">
 			<p class="message">{slot.problem?.message ?? 'Nothing to draw.'}</p>
 			{#if slot.problem?.filter === 'inRack'}
-				<a class="panel-button" href={resolve('/gear')}>Open the gear screen</a>
+				<a class="pill" href={resolve('/gear')}>Open the gear screen</a>
 			{:else if slot.problem?.filter === 'kind'}
-				<a class="panel-button" href={resolve('/cards/new')}>Write one</a>
+				<a class="pill" href={resolve('/cards/new')}>Write one</a>
 			{:else}
-				<a class="panel-button" href={resolve('/settings')}>Change the filters</a>
+				<a class="pill" href={resolve('/settings')}>Change the filters</a>
 			{/if}
 		</div>
 	{/if}
-</div>
+</article>
 
 <style>
 	.card {
 		box-sizing: border-box;
-		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 3px;
-		padding: 44px 48px;
+		flex: 1 1 0;
+		min-height: 0;
+		background: var(--fill);
+		color: var(--on);
+		border-radius: 18px;
+		padding: 20px 22px 22px;
 		display: flex;
 		flex-direction: column;
-		gap: 26px;
-		width: 880px;
-		max-width: 100%;
+		gap: 12px;
 	}
 
 	.card.compact {
-		width: auto;
-		padding: 22px;
-		gap: 18px;
-	}
-
-	.card.locked {
-		border-color: var(--kind-treatment);
+		padding: 12px 18px 16px;
+		gap: 8px;
 	}
 
 	.top {
 		display: flex;
 		align-items: center;
+		gap: 8px;
+	}
+
+	.kinds {
+		flex-grow: 1;
+		display: flex;
 		gap: 10px;
 	}
 
-	.hair {
-		flex-grow: 1;
-		height: 1px;
-		background: var(--line);
-		display: block;
-	}
-
-	.spacer {
-		flex-grow: 1;
-	}
-
-	.lock {
+	.star {
+		width: 44px;
+		height: 44px;
+		margin: -10px -10px -10px 0;
 		display: flex;
 		align-items: center;
-		gap: 6px;
-		background: none;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 4px 8px;
-		color: var(--text-muted);
-		font-family: var(--font-mono);
-		font-size: 9px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
+		justify-content: center;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: inherit;
 		cursor: pointer;
 	}
 
+	/* A pill with a contour in the card's ink; Kept fills it. */
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		box-sizing: border-box;
+		min-height: 44px;
+		margin: -8px 0;
+		padding: 0 14px;
+		border: 1.5px solid currentColor;
+		border-radius: 999px;
+		background: transparent;
+		color: inherit;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 700;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.top .lock {
+		margin-right: -8px;
+	}
+
 	.lock.on {
-		color: var(--kind-treatment);
-		border-color: var(--fav-line);
-		background: var(--fav-bg);
+		background: var(--ink);
+		border-color: var(--ink);
+		color: var(--fill);
 	}
 
 	.text {
-		margin: 0;
-		flex-grow: 1;
-		display: flex;
-		align-items: center;
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 42px;
-		font-weight: 600;
-		line-height: 1.2;
-		letter-spacing: -0.012em;
-		color: var(--text);
+		margin: auto 0;
+		font-weight: 700;
+		font-size: 32px;
+		line-height: 36px;
+		letter-spacing: -0.015em;
 		text-wrap: balance;
 	}
 
-	.text.compact {
-		display: block;
-		font-size: 25px;
-		line-height: 1.28;
-	}
-
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 7px;
-		align-items: center;
-	}
-
-	.gear {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--text-dim);
-		border: 1px solid var(--chip-line);
-		border-radius: 2px;
-		padding: 4px 7px;
-	}
-
-	.tag {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		color: var(--kind-source);
-		padding: 5px 2px;
+	.compact .text {
+		margin: auto 0 0;
+		font-size: 24px;
+		line-height: 28px;
+		letter-spacing: -0.01em;
 	}
 
 	.foot {
 		display: flex;
-		align-items: center;
-		gap: 10px;
-		border-top: 1px solid var(--line-soft);
-		padding-top: 22px;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 12px;
 	}
 
-	.card.compact .foot {
-		padding-top: 14px;
+	.foot .pill {
+		margin: 0;
+		flex: none;
 	}
 
-	.fav {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		background: none;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		color: var(--text-dim);
+	.slugs {
+		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 9px 14px;
-		cursor: pointer;
+		font-size: 14px;
+		line-height: 20px;
+		opacity: 0.8;
 	}
 
-	.fav.on {
-		background: var(--fav-bg);
-		border-color: var(--fav-line);
-		color: var(--kind-treatment);
+	.compact .slugs {
+		font-size: 13px;
+		line-height: 18px;
 	}
 
 	.empty {
@@ -278,39 +245,13 @@
 
 	.message {
 		margin: 0;
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 20px;
-		font-weight: 500;
-		line-height: 1.3;
-		color: var(--text-muted);
+		font-size: 22px;
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
 	}
 
-	:global(.card .panel-button) {
-		text-decoration: none;
-	}
-
-	@media (max-width: 860px) {
-		.card,
-		.card.compact {
-			width: auto;
-			padding: 18px;
-			gap: 12px;
-		}
-
-		.text {
-			font-size: 29px;
-			line-height: 1.24;
-			display: block;
-		}
-
-		.text.compact {
-			font-size: 22px;
-		}
-
-		.lock {
-			min-height: 44px;
-			padding: 4px 12px;
-		}
+	.empty .pill {
+		margin: 0;
 	}
 </style>

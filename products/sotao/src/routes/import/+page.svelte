@@ -233,16 +233,17 @@ cards:
 
 				{#if firstError}
 					<div class="issue">
-						<svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-							<path d="M7.5 5v4" stroke="var(--kind-constraint)" stroke-width="1.4" />
-							<circle cx="7.5" cy="11.2" r="0.9" fill="var(--kind-constraint)" />
-							<circle
-								cx="7.5"
-								cy="7.5"
-								r="6.5"
-								stroke="var(--kind-constraint)"
-								stroke-width="1.2"
-							/>
+						<svg
+							width="15"
+							height="15"
+							viewBox="0 0 15 15"
+							fill="none"
+							aria-hidden="true"
+							class="issue-icon"
+						>
+							<path d="M7.5 5v4" stroke="currentColor" stroke-width="1.4" />
+							<circle cx="7.5" cy="11.2" r="0.9" fill="currentColor" />
+							<circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.2" />
 						</svg>
 						<div class="issue-body">
 							<span class="label">Line {firstError.line} · card {firstError.cardIndex}</span>
@@ -273,44 +274,52 @@ cards:
 <style>
 	.screen {
 		flex-grow: 1;
+		width: 100%;
+		max-width: 960px;
+		margin: 0 auto;
+		box-sizing: border-box;
+		padding: 0 16px 24px;
 		display: flex;
 		flex-direction: column;
-		min-height: 0;
+		gap: 16px;
 	}
 
 	.split {
-		flex-grow: 1;
-		box-sizing: border-box;
 		display: grid;
-		grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
-		overflow: hidden;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
 	}
 
-	.source-pane {
-		box-sizing: border-box;
-		border-right: 1px solid var(--line);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
+	@media (min-width: 901px) {
+		.split {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
 	}
 
+	.source-pane,
 	.preview-pane {
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
+		background: var(--panel);
+		border-radius: 18px;
+		min-height: 280px;
 		overflow: hidden;
 	}
 
 	.pane-head {
-		height: 44px;
 		flex-shrink: 0;
 		box-sizing: border-box;
-		padding: 0 24px;
-		background: var(--rail);
-		border-bottom: 1px solid var(--line-soft);
+		padding: 8px 16px;
+		min-height: 60px;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 10px;
+		gap: 8px 10px;
+	}
+
+	.pane-head .panel-button {
+		background: var(--ground);
 	}
 
 	.spacer {
@@ -326,7 +335,8 @@ cards:
 		box-sizing: border-box;
 		display: flex;
 		overflow: auto;
-		padding: 16px 0;
+		padding: 8px 0 16px;
+		min-height: 240px;
 		position: relative;
 	}
 
@@ -334,15 +344,15 @@ cards:
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
-		padding: 0 14px 0 24px;
+		padding: 0 12px 0 16px;
 		user-select: none;
 	}
 
 	.line-no {
 		font-family: var(--font-mono);
-		font-size: 11px;
-		line-height: 1.85;
-		color: var(--text-faint);
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-dim);
 		text-align: right;
 		font-variant-numeric: tabular-nums;
 		display: block;
@@ -354,11 +364,11 @@ cards:
 		box-sizing: border-box;
 		border: none;
 		background: none;
-		color: var(--text-dim);
+		color: var(--text);
 		font-family: var(--font-mono);
-		font-size: 11.5px;
-		line-height: 1.85;
-		padding: 0 24px 0 0;
+		font-size: 13px;
+		line-height: 1.7;
+		padding: 0 16px 0 0;
 		resize: none;
 		white-space: pre;
 		min-height: 100%;
@@ -371,8 +381,7 @@ cards:
 	.source-foot {
 		flex-shrink: 0;
 		box-sizing: border-box;
-		padding: 12px 24px;
-		border-top: 1px solid var(--line-soft);
+		padding: 12px 16px;
 		display: flex;
 		justify-content: flex-end;
 	}
@@ -386,59 +395,52 @@ cards:
 		justify-content: center;
 		gap: 10px;
 		text-align: center;
-		padding: 40px;
+		padding: 32px;
 	}
 
 	.file-error {
 		align-items: flex-start;
 		text-align: left;
 		justify-content: flex-start;
-		padding: 24px;
+		padding: 16px;
 	}
 
 	.file-error p {
 		margin: 0;
 		color: var(--kind-constraint);
-		font-size: 14px;
+		font-size: 16px;
 		line-height: 1.5;
 	}
 
 	.tiles {
 		flex-shrink: 0;
 		box-sizing: border-box;
-		padding: 20px 24px;
+		padding: 4px 16px 12px;
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 12px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
+	}
+
+	@media (min-width: 521px) {
+		.tiles {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
 	}
 
 	.tile {
 		box-sizing: border-box;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 13px 14px;
+		background: var(--ground);
+		border-radius: 14px;
+		padding: 12px 14px;
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
 	}
 
-	.tile.new {
-		border-color: var(--tag-line);
-	}
-
-	.tile.updated {
-		border-color: var(--fav-line);
-	}
-
-	.tile.error {
-		border-color: var(--danger-line);
-	}
-
 	.count {
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 27px;
-		font-weight: 700;
+		font-size: 28px;
+		font-weight: 800;
+		letter-spacing: -0.02em;
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
@@ -461,9 +463,9 @@ cards:
 
 	.tile-label {
 		font-family: var(--font-mono);
-		font-size: 9px;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: var(--text-dim);
 	}
@@ -471,8 +473,9 @@ cards:
 	.rows {
 		flex-grow: 1;
 		box-sizing: border-box;
-		padding: 4px 24px 0;
+		padding: 0 16px;
 		overflow-y: auto;
+		max-height: 420px;
 		min-height: 0;
 	}
 
@@ -480,46 +483,40 @@ cards:
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		height: 42px;
-		border-bottom: 1px solid var(--row-line);
+		min-height: 48px;
+		border-top: 1px solid var(--line);
 	}
 
 	.class-badge {
-		width: 74px;
+		width: 84px;
 		flex-shrink: 0;
 		font-family: var(--font-mono);
-		font-size: 8.5px;
-		font-weight: 600;
-		letter-spacing: 0.1em;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		border-radius: 2px;
-		padding: 4px 0;
-		text-align: center;
 	}
 
 	.class-badge.new {
 		color: var(--kind-source);
-		border: 1px solid var(--tag-line);
 	}
 
 	.class-badge.updated {
 		color: var(--kind-treatment);
-		border: 1px solid var(--fav-line);
 	}
 
 	.class-badge.unchanged {
 		color: var(--text-dim);
-		border: 1px solid var(--line);
 	}
 
 	.class-badge.error {
 		color: var(--kind-constraint);
-		border: 1px solid var(--danger-line);
 	}
 
 	.row-text {
 		flex-grow: 1;
-		font-size: 13px;
+		font-size: 15px;
+		font-weight: 600;
 		color: var(--text);
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -527,24 +524,24 @@ cards:
 	}
 
 	.row-text.dim {
-		color: var(--text-muted);
+		color: var(--text-dim);
 	}
 
 	.issue {
 		flex-shrink: 0;
 		box-sizing: border-box;
-		margin: 16px 24px 20px;
-		background: var(--fav-bg);
-		border: 1px solid var(--danger-line);
-		border-radius: 2px;
-		padding: 15px 16px;
+		margin: 12px 16px 16px;
+		background: var(--ground);
+		border-radius: 14px;
+		padding: 14px 16px;
 		display: flex;
-		gap: 13px;
+		gap: 12px;
 	}
 
-	.issue svg {
+	.issue-icon {
 		flex-shrink: 0;
 		margin-top: 2px;
+		color: var(--kind-constraint);
 	}
 
 	.issue-body {
@@ -559,83 +556,26 @@ cards:
 
 	.issue-body p {
 		margin: 0;
-		font-size: 13px;
+		font-size: 15px;
 		line-height: 1.5;
 		color: var(--text);
 	}
 
 	.committed {
 		flex-shrink: 0;
-		margin: 0 24px 20px;
+		margin: 0 16px 16px;
 		padding: 12px 16px;
-		background: var(--status-active-bg);
-		border: 1px solid var(--tag-line);
-		border-radius: 2px;
+		background: var(--ground);
+		border-radius: 14px;
 		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.05em;
+		font-size: 14px;
 		color: var(--kind-source);
 	}
 
 	.rail {
-		height: 76px;
-		flex-shrink: 0;
-		box-sizing: border-box;
-		padding: 0 36px;
-		background: var(--rail);
-		border-top: 1px solid var(--line);
 		display: flex;
 		align-items: center;
-		gap: 14px;
-	}
-
-	.primary {
-		background: var(--text);
-		border: none;
-		border-radius: 2px;
-		color: var(--ground);
-		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 12px 17px;
-		cursor: pointer;
-		text-decoration: none;
-	}
-
-	.primary:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	@media (max-width: 900px) {
-		.split {
-			grid-template-columns: minmax(0, 1fr);
-			grid-auto-rows: minmax(280px, auto);
-			overflow-y: auto;
-		}
-
-		.source-pane {
-			border-right: none;
-			border-bottom: 1px solid var(--line);
-		}
-
-		.pane-head,
-		.tiles,
-		.rows {
-			padding-left: 16px;
-			padding-right: 16px;
-		}
-
-		.tiles {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-
-		.rail {
-			height: auto;
-			padding: 12px 16px;
-			flex-wrap: wrap;
-		}
+		gap: 12px;
+		flex-wrap: wrap;
 	}
 </style>

@@ -187,38 +187,41 @@
 <style>
 	.screen {
 		flex-grow: 1;
+		width: 100%;
+		max-width: 960px;
+		margin: 0 auto;
+		box-sizing: border-box;
+		padding: 0 16px 24px;
 		display: flex;
 		flex-direction: column;
-		min-height: 0;
+		gap: 16px;
 	}
 
 	.intro {
-		flex-shrink: 0;
-		box-sizing: border-box;
-		padding: 18px 30px 14px;
-		border-bottom: 1px solid var(--line-soft);
 		display: flex;
-		align-items: center;
-		gap: 12px;
+		align-items: flex-start;
+		gap: 10px;
+		flex-wrap: wrap;
 	}
 
 	.copy {
 		display: flex;
 		flex-direction: column;
-		gap: 7px;
+		gap: 8px;
 		max-width: 520px;
+		flex-basis: 100%;
 	}
 
 	.copy p {
 		margin: 0;
-		font-size: 12.5px;
+		font-size: 15px;
 		line-height: 1.45;
-		color: var(--text-faint);
+		color: var(--text);
 	}
 
 	.copy .quieter {
-		font-size: 12px;
-		opacity: 0.85;
+		font-size: 14px;
+		color: var(--text-dim);
 	}
 
 	.spacer {
@@ -227,12 +230,11 @@
 
 	.banner {
 		margin: 0;
-		padding: 10px 30px;
+		padding: 12px 16px;
+		border-radius: 16px;
+		background: var(--panel);
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		border-bottom: 1px solid var(--line-soft);
+		font-size: 13px;
 	}
 
 	.banner.error {
@@ -240,71 +242,73 @@
 	}
 
 	.banner.notice {
-		color: var(--kind-treatment);
+		color: var(--text);
 		display: flex;
 		align-items: center;
 		gap: 12px;
 	}
 
 	.undo button {
+		min-height: 44px;
 		background: none;
-		border: 1px solid currentColor;
-		border-radius: 2px;
+		border: 1.5px solid currentColor;
+		border-radius: 999px;
 		color: inherit;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 4px 9px;
+		font-size: 13px;
+		font-weight: 700;
+		padding: 0 14px;
 		cursor: pointer;
 	}
 
 	.board {
 		flex-grow: 1;
-		box-sizing: border-box;
-		padding: 22px 30px;
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 26px;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
 		align-content: start;
+	}
+
+	@media (min-width: 721px) {
+		.board {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
 	.column {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
+		gap: 16px;
 	}
 
 	section {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		background: var(--panel);
+		border-radius: 18px;
+		padding: 12px 16px 8px;
 	}
 
 	.group-head {
 		display: flex;
 		align-items: center;
 		gap: 9px;
-		padding-bottom: 7px;
-		border-bottom: 1px solid var(--line-soft);
-		margin-bottom: 4px;
+		padding-bottom: 4px;
 	}
 
 	.group-name {
 		font-family: var(--font-mono);
-		font-size: 9.5px;
-		font-weight: 600;
+		font-size: 13px;
+		font-weight: 700;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: var(--kind-treatment);
+		color: var(--text);
 	}
 
 	.group-count {
 		font-family: var(--font-mono);
-		font-size: 9.5px;
-		letter-spacing: 0.08em;
-		color: var(--text-faint);
+		font-size: 13px;
+		color: var(--text-dim);
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -312,6 +316,7 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
+		border-top: 1px solid var(--line);
 	}
 
 	.toggle {
@@ -322,8 +327,8 @@
 	.toggle label {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		padding: 5px 0;
+		gap: 12px;
+		min-height: 48px;
 		cursor: pointer;
 	}
 
@@ -333,14 +338,15 @@
 
 	input[type='checkbox'] {
 		margin: 0;
-		width: 14px;
-		height: 14px;
-		accent-color: var(--kind-source);
+		width: 20px;
+		height: 20px;
+		accent-color: var(--lamp);
 		flex-shrink: 0;
 	}
 
 	.name {
-		font-size: 13px;
+		font-size: 16px;
+		font-weight: 600;
 		color: var(--text-dim);
 	}
 
@@ -349,35 +355,28 @@
 	}
 
 	.row.wishlist .name {
-		color: var(--text-faint);
+		font-weight: 400;
 	}
 
 	.badge {
+		min-height: 44px;
 		background: none;
 		font-family: var(--font-mono);
-		font-size: 8.5px;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--kind-technique);
-		border: 1px solid var(--kind-technique);
-		border-radius: 2px;
-		padding: 2px 5px;
+		border: 0;
+		padding: 0 4px;
 		cursor: pointer;
 	}
 
 	.badge:hover {
 		color: var(--text);
-		border-color: var(--text);
 	}
 
 	.rail {
-		flex-shrink: 0;
-		box-sizing: border-box;
-		min-height: 56px;
-		padding: 10px 30px;
-		background: var(--rail);
-		border-top: 1px solid var(--line);
 		display: flex;
 		align-items: center;
 		gap: 14px;
@@ -386,10 +385,9 @@
 
 	.rail-note {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--text-faint);
+		font-size: 13px;
+		color: var(--text-dim);
+		max-width: 52ch;
 	}
 
 	.add-form {
@@ -407,48 +405,21 @@
 
 	.add-form input:not([type]),
 	.add-form select {
-		background: var(--ground);
-		border: 1px solid var(--line);
-		border-radius: 2px;
+		background: var(--panel);
+		border: 0;
+		border-radius: 16px;
 		color: var(--text);
 		font-family: var(--font-sans);
-		font-size: 13px;
-		padding: 8px 10px;
-		min-height: 36px;
+		font-size: 16px;
+		padding: 0 14px;
+		min-height: 48px;
 		box-sizing: border-box;
 	}
 
 	.owned-check {
 		flex-direction: row !important;
 		align-items: center;
-		gap: 7px !important;
-		min-height: 36px;
-	}
-
-	@media (max-width: 860px) {
-		.intro {
-			padding: 16px;
-			flex-wrap: wrap;
-		}
-
-		.board {
-			padding: 18px 16px;
-			grid-template-columns: minmax(0, 1fr);
-			gap: 20px;
-		}
-
-		.rail {
-			padding: 10px 16px;
-		}
-
-		.toggle label {
-			min-height: 44px;
-			padding: 0;
-		}
-
-		input[type='checkbox'] {
-			width: 18px;
-			height: 18px;
-		}
+		gap: 8px !important;
+		min-height: 44px;
 	}
 </style>

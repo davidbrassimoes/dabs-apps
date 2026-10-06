@@ -109,7 +109,12 @@
 			<span class="label">Kinds — pick as many as fit</span>
 			<div class="kind-grid">
 				{#each ALL_KINDS as kind (kind)}
-					<label class="kind-box" class:on={kinds.includes(kind)} for="kind-{kind}">
+					<label
+						class="kind-box"
+						class:on={kinds.includes(kind)}
+						for="kind-{kind}"
+						style="--fill: var(--card-{kind}); --on: var(--card-{kind}-ink); --dot: var(--kind-{kind})"
+					>
 						<input
 							type="checkbox"
 							id="kind-{kind}"
@@ -118,7 +123,8 @@
 							checked={kinds.includes(kind)}
 							onchange={() => toggleKind(kind)}
 						/>
-						<span style="color: var(--kind-{kind})">{kind}</span>
+						<span class="dot"></span>
+						<span class="kind-name">{kind}</span>
 					</label>
 				{/each}
 			</div>
@@ -210,7 +216,7 @@
 					checked={favorite}
 					onchange={() => (favorite = !favorite)}
 				/>
-				<FavouriteStar filled={favorite} />
+				<FavouriteStar filled={favorite} size={20} />
 				<span>A marker only — it does not change how often the card comes up</span>
 			</label>
 		</div>
@@ -305,30 +311,25 @@
 		max-width: 640px;
 		margin: 0 auto;
 		box-sizing: border-box;
-		border-left: 1px solid var(--line);
-		border-right: 1px solid var(--line);
+		padding: 0 16px 24px;
 	}
 
 	.top {
-		height: 58px;
 		flex-shrink: 0;
-		box-sizing: border-box;
-		padding: 0 26px;
-		border-bottom: 1px solid var(--line);
+		padding: 10px 0 6px;
 		display: flex;
 		align-items: center;
 		gap: 12px;
 	}
 
 	.title {
-		font-size: 17px;
+		font-size: 32px;
 	}
 
 	.id {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		color: var(--text-muted);
+		font-size: 13px;
+		color: var(--text-dim);
 	}
 
 	.spacer {
@@ -336,127 +337,139 @@
 	}
 
 	.icon {
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		color: var(--text-dim);
-		padding: 9px 10px;
-		line-height: 0;
-		display: block;
+		width: 44px;
+		height: 44px;
+		border-radius: 999px;
+		background: var(--panel);
+		color: var(--text);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.body {
 		flex-grow: 1;
 		box-sizing: border-box;
-		padding: 24px 26px;
+		padding: 12px 0 20px;
 		display: flex;
 		flex-direction: column;
-		gap: 22px;
-		overflow-y: auto;
+		gap: 24px;
 		min-height: 0;
 	}
 
 	.banner {
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		font-size: 14px;
 		color: var(--kind-constraint);
-		border: 1px solid var(--danger-line);
-		border-radius: 2px;
-		padding: 10px 12px;
+		background: var(--panel);
+		border-radius: 14px;
+		padding: 12px 14px;
 	}
 
 	.field {
 		display: flex;
 		flex-direction: column;
-		gap: 9px;
+		gap: 10px;
 	}
 
 	textarea {
 		box-sizing: border-box;
 		width: 100%;
 		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 2px;
+		border: 0;
+		border-radius: 18px;
 		color: var(--text);
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 18px;
-		font-weight: 500;
-		line-height: 1.35;
-		padding: 13px 14px;
+		font-family: var(--font-sans);
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		line-height: 1.3;
+		padding: 16px 18px;
 		resize: vertical;
 	}
 
 	.hint,
-	.problem {
+	.problem,
+	.sentence {
 		margin: 0;
-		font-size: 12px;
+		font-size: 14px;
 		line-height: 1.45;
-		color: var(--text-muted);
+		color: var(--text-dim);
 	}
 
 	.problem {
 		color: var(--kind-constraint);
 	}
 
+	.sentence strong {
+		color: var(--text);
+		font-weight: 700;
+	}
+
 	.kind-grid {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
 	}
 
-	.kind-box {
+	@media (min-width: 721px) {
+		.kind-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	.kind-box,
+	.radio,
+	.fav-box {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 10px;
 		box-sizing: border-box;
-		background: transparent;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 9px 10px;
+		min-height: 48px;
+		padding: 0 14px;
+		background: var(--panel);
+		color: var(--text);
+		border-radius: 999px;
 		cursor: pointer;
-		min-height: 38px;
 	}
 
 	.kind-box.on {
-		background: var(--chip-bg);
-		border-color: var(--fav-line);
+		background: var(--fill);
+		color: var(--on);
 	}
 
-	.kind-box span {
+	.dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--dot);
+		flex-shrink: 0;
+	}
+
+	.kind-box.on .dot {
+		background: var(--on);
+	}
+
+	.kind-name {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
+		font-size: 13px;
+		font-weight: 700;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		opacity: 0.55;
-	}
-
-	.kind-box.on span {
-		opacity: 1;
 	}
 
 	input[type='checkbox'],
 	input[type='radio'] {
 		margin: 0;
-		accent-color: var(--kind-treatment);
-		width: 13px;
-		height: 13px;
+		accent-color: var(--lamp);
+		width: 18px;
+		height: 18px;
 		flex-shrink: 0;
 	}
 
-	.sentence {
-		margin: 0;
-		font-size: 12px;
-		line-height: 1.45;
-		color: var(--text-muted);
-	}
-
-	.sentence strong {
-		color: var(--text);
-		font-weight: 500;
+	.kind-box.on input {
+		accent-color: var(--on);
 	}
 
 	.chip-row {
@@ -470,80 +483,74 @@
 	.tag-chip {
 		display: flex;
 		align-items: center;
-		gap: 7px;
+		gap: 4px;
+		min-height: 44px;
+		box-sizing: border-box;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		border-radius: 2px;
-		padding: 6px 8px;
-	}
-
-	.gear-chip {
+		font-size: 14px;
+		background: var(--panel);
+		border-radius: 999px;
+		padding: 0 4px 0 14px;
 		color: var(--text);
-		background: var(--chip-bg);
-		border: 1px solid var(--line);
-	}
-
-	.tag-chip {
-		color: var(--kind-source);
-		border: 1px solid var(--tag-line);
 	}
 
 	.gear-chip button,
 	.tag-chip button {
+		width: 36px;
+		height: 36px;
+		border: 0;
+		border-radius: 999px;
 		background: none;
-		border: none;
-		color: inherit;
-		opacity: 0.6;
+		color: var(--text-dim);
 		cursor: pointer;
-		font-size: 12px;
+		font-size: 18px;
 		line-height: 1;
-		padding: 0;
 	}
 
 	.gear-chip button:hover,
 	.tag-chip button:hover {
-		opacity: 1;
+		color: var(--text);
 	}
 
 	.chip-row input[type='text'] {
 		flex-grow: 1;
-		min-width: 120px;
+		min-width: 140px;
 		box-sizing: border-box;
 		background: var(--panel);
-		border: 1px dashed var(--line);
-		border-radius: 2px;
+		border: 0;
+		border-radius: 999px;
 		color: var(--text);
 		font-family: var(--font-mono);
-		font-size: 11px;
-		padding: 7px 9px;
-		min-height: 32px;
+		font-size: 14px;
+		padding: 0 16px;
+		min-height: 44px;
 	}
 
 	.fav-box {
-		display: flex;
-		align-items: center;
-		gap: 11px;
-		box-sizing: border-box;
-		background: transparent;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 12px 13px;
-		cursor: pointer;
-		font-size: 13px;
+		border-radius: 18px;
+		padding: 12px 16px;
+		font-size: 15px;
 		color: var(--text-dim);
 	}
 
 	.fav-box.on {
-		background: var(--fav-bg);
-		border-color: var(--fav-line);
 		color: var(--text);
+	}
+
+	.fav-box.on :global(svg) {
+		color: var(--lamp);
 	}
 
 	.pair {
 		display: flex;
-		gap: 22px;
+		flex-direction: column;
+		gap: 24px;
+	}
+
+	@media (min-width: 721px) {
+		.pair {
+			flex-direction: row;
+		}
 	}
 
 	.pair .field {
@@ -556,62 +563,28 @@
 	}
 
 	.radio {
-		display: flex;
-		align-items: center;
-		gap: 8px;
 		flex-grow: 1;
-		box-sizing: border-box;
-		background: transparent;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 10px;
-		cursor: pointer;
-		min-height: 40px;
 	}
 
 	.radio span {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--text-dim);
-	}
-
-	.radio.on span {
-		color: var(--kind-source);
 	}
 
 	.radio.on {
-		background: var(--status-active-bg);
-		border-color: var(--tag-line);
+		background: var(--text);
+		color: var(--ground);
 	}
 
-	.radio.claude.on {
-		background: var(--author-claude-bg);
-		border-color: var(--author-claude-line);
-	}
-
-	.radio.claude.on span {
-		color: var(--kind-technique);
-	}
-
-	.radio.on:not(.active):not(.claude) {
-		background: var(--chip-bg);
-		border-color: var(--line);
-	}
-
-	.radio.on:not(.active):not(.claude) span {
-		color: var(--text-dim);
+	.radio.on input {
+		accent-color: var(--ground);
 	}
 
 	.rail {
 		flex-shrink: 0;
-		box-sizing: border-box;
-		min-height: 76px;
-		padding: 12px 26px;
-		background: var(--rail);
-		border-top: 1px solid var(--line);
 		display: flex;
 		align-items: center;
 		gap: 12px;
@@ -620,64 +593,20 @@
 
 	.confirm {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		font-size: 13px;
 		color: var(--kind-constraint);
 	}
 
 	.danger {
+		min-height: 44px;
 		background: none;
-		border: 1px solid var(--danger-line);
-		border-radius: 2px;
+		border: 1.5px solid currentColor;
+		border-radius: 999px;
 		color: var(--kind-constraint);
-		font-family: var(--font-mono);
-		font-size: 10px;
+		font-family: var(--font-sans);
+		font-size: 14px;
 		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 11px 14px;
+		padding: 0 18px;
 		cursor: pointer;
-	}
-
-	.primary {
-		background: var(--text);
-		border: none;
-		border-radius: 2px;
-		color: var(--ground);
-		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 12px 17px;
-		cursor: pointer;
-	}
-
-	.primary:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	@media (max-width: 720px) {
-		.drawer {
-			border: none;
-		}
-
-		.top,
-		.body,
-		.rail {
-			padding-left: 16px;
-			padding-right: 16px;
-		}
-
-		.kind-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-
-		.pair {
-			flex-direction: column;
-			gap: 22px;
-		}
 	}
 </style>

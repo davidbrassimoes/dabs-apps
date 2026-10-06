@@ -3,8 +3,7 @@
 	import { page } from '$app/state';
 
 	// SvelteKit's own default (a bare <h1>404</h1><p>…</p>, no theme at all)
-	// rendered inside the app shell — jarring against the rest of the app's
-	// equipment-panel character. This replaces it for any thrown error(),
+	// rendered inside the app shell. This replaces it for any thrown error(),
 	// most often a card or gear id that no longer exists.
 	let is404 = $derived(page.status === 404);
 </script>
@@ -26,7 +25,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 14px;
-		padding: 60px 36px;
+		padding: 48px 16px;
 		text-align: center;
 	}
 
@@ -37,14 +36,13 @@
 
 	.note {
 		margin: 0;
-		font-size: 14px;
-		line-height: 1.6;
+		font-size: 16px;
+		line-height: 1.5;
 		color: var(--text-dim);
 		max-width: 46ch;
 	}
 
 	.panel-button {
 		margin-top: 10px;
-		text-decoration: none;
 	}
 </style>

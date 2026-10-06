@@ -12,9 +12,9 @@
 <style>
 	span {
 		font-family: var(--font-mono);
-		font-size: 9.5px;
-		font-weight: 400;
-		letter-spacing: 0.1em;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
 </style>

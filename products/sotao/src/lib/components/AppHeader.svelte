@@ -31,11 +31,16 @@
 </script>
 
 <header>
-	<span class="wordmark">Sótão</span>
+	<span class="wordmark">sótão</span>
 
-	<nav>
+	<nav aria-label="Sections">
 		{#each links as link (link.href)}
-			<a href={link.href} class="nav-link" class:active={isActive(link.href)}>{link.label}</a>
+			<a
+				href={link.href}
+				class="nav-link"
+				class:active={isActive(link.href)}
+				aria-current={isActive(link.href) ? 'page' : undefined}>{link.label}</a
+			>
 		{/each}
 	</nav>
 
@@ -50,58 +55,28 @@
 					href={resolve(`/draw?mode=${option}`)}
 					class="mode"
 					class:on={drawMode === option}
-					aria-current={drawMode === option ? 'page' : undefined}>{option}</a
+					aria-current={drawMode === option ? 'page' : undefined}
+					>{option === 'single' ? 'One' : 'Three'}</a
 				>
 			{/each}
 		</div>
-	{/if}
-
-	{#if onGear}
-		<span class="rack-plain">In the rack · {rack.inRack} of {rack.owned}</span>
+	{:else if onGear}
+		<span class="rack rack-plain">{rack.inRack} of {rack.owned} in the rack</span>
 	{:else}
-		<a href={resolve('/gear')} class="rack-chip">
-			<span class="dot"></span>
-			<span>In the rack · {rack.inRack} of {rack.owned}</span>
-		</a>
+		<a href={resolve('/gear')} class="rack">{rack.inRack} of {rack.owned} in the rack</a>
 	{/if}
 
-	<!--
-		The mockups draw no settings control, but §10 asks for logout to live in a
-		settings menu rather than the header. This cog is the smallest thing that
-		gives it a home without disturbing the drawn layout.
-	-->
-	<a href={resolve('/settings')} class="theme-button" aria-label="Settings" title="Settings">
-		<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+	<a href={resolve('/settings')} class="icon-button" aria-label="Settings" title="Settings">
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 			<path
-				d="M0.8 3.2h12.4M0.8 7h12.4M0.8 10.8h12.4"
+				d="M3 6h18M3 12h18M3 18h18"
 				stroke="currentColor"
-				stroke-width="1.2"
+				stroke-width="2"
 				stroke-linecap="round"
 			/>
-			<circle
-				cx="4.4"
-				cy="3.2"
-				r="1.5"
-				fill="var(--ground)"
-				stroke="currentColor"
-				stroke-width="1.2"
-			/>
-			<circle
-				cx="9.6"
-				cy="7"
-				r="1.5"
-				fill="var(--ground)"
-				stroke="currentColor"
-				stroke-width="1.2"
-			/>
-			<circle
-				cx="5.6"
-				cy="10.8"
-				r="1.5"
-				fill="var(--ground)"
-				stroke="currentColor"
-				stroke-width="1.2"
-			/>
+			<circle cx="8" cy="6" r="2.2" fill="var(--ground)" stroke="currentColor" stroke-width="2" />
+			<circle cx="16" cy="12" r="2.2" fill="var(--ground)" stroke="currentColor" stroke-width="2" />
+			<circle cx="10" cy="18" r="2.2" fill="var(--ground)" stroke="currentColor" stroke-width="2" />
 		</svg>
 	</a>
 
@@ -110,40 +85,41 @@
 		<input type="hidden" name="from" value={page.url.pathname + page.url.search} />
 		<button
 			type="submit"
-			class="theme-button"
+			class="icon-button"
 			aria-label="Switch theme — currently {themeLabel(theme)}"
 			title="Theme: {themeLabel(theme)}"
 		>
-			{#if theme === 'night'}
-				<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-					<circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.2" />
+			{#if theme === 'dark'}
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 					<path
-						d="M7 0.6v1.7M7 11.7v1.7M13.4 7h-1.7M2.3 7H0.6M11.5 2.5l-1.2 1.2M3.7 10.3l-1.2 1.2M11.5 11.5l-1.2-1.2M3.7 3.7L2.5 2.5"
+						d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"
 						stroke="currentColor"
-						stroke-width="1.2"
-					/>
-				</svg>
-			{:else if theme === 'morning'}
-				<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-					<path
-						d="M12.2 8.6A5.6 5.6 0 0 1 5.4 1.8a5.6 5.6 0 1 0 6.8 6.8z"
-						stroke="currentColor"
-						stroke-width="1.2"
+						stroke-width="2"
 						stroke-linejoin="round"
 					/>
 				</svg>
-			{:else}
-				<svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-					<rect
-						x="0.9"
-						y="2.2"
-						width="12.2"
-						height="8.4"
-						rx="1"
+			{:else if theme === 'light'}
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2" />
+					<path
+						d="M12 2v2.5M12 19.5V22M22 12h-2.5M4.5 12H2M19 5l-1.8 1.8M6.8 17.2L5 19M19 19l-1.8-1.8M6.8 6.8L5 5"
 						stroke="currentColor"
-						stroke-width="1.2"
+						stroke-width="2"
+						stroke-linecap="round"
 					/>
-					<path d="M4.6 12.6h4.8" stroke="currentColor" stroke-width="1.2" />
+				</svg>
+			{:else}
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<rect
+						x="3"
+						y="4.5"
+						width="18"
+						height="12.5"
+						rx="2"
+						stroke="currentColor"
+						stroke-width="2"
+					/>
+					<path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 				</svg>
 			{/if}
 		</button>
@@ -152,168 +128,162 @@
 
 <style>
 	header {
-		height: 58px;
 		flex-shrink: 0;
 		box-sizing: border-box;
-		padding: 0 36px;
-		border-bottom: 1px solid var(--line);
+		padding: 12px 16px 6px;
 		display: flex;
 		align-items: center;
-		gap: 26px;
+		gap: 8px;
 	}
 
-	/* The product-name role: Cormorant Garamond 600, uppercase, tracked .20em. */
 	.wordmark {
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 19px;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
+		font-weight: 800;
+		font-size: 24px;
+		letter-spacing: -0.02em;
 		color: var(--text);
 		white-space: nowrap;
-	}
-
-	nav {
-		display: flex;
-		gap: 20px;
-		align-items: center;
-	}
-
-	.nav-link {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--text-dim);
-		text-decoration: none;
-		padding-bottom: 3px;
-		border-bottom: 2px solid transparent;
-	}
-
-	.nav-link:hover {
-		color: var(--text);
-	}
-
-	.nav-link.active {
-		color: var(--text);
-		border-bottom-color: var(--accent);
 	}
 
 	.spacer {
 		flex-grow: 1;
 	}
 
+	/* A phone: the sections are a tab bar at the bottom. */
+	nav {
+		position: fixed;
+		z-index: 10;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		padding: 0 8px calc(8px + env(safe-area-inset-bottom));
+		background: var(--ground);
+		border-top: 1px solid var(--line);
+	}
+
+	.nav-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--text-dim);
+		text-decoration: none;
+	}
+
+	.nav-link.active {
+		font-weight: 800;
+		color: var(--text);
+	}
+
 	.modes {
 		display: flex;
-		padding: 3px;
-		border: 1px solid var(--line);
-		border-radius: 3px;
-		gap: 3px;
+		gap: 4px;
+		padding: 4px;
+		background: var(--panel);
+		border-radius: 999px;
 	}
 
 	.mode {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		box-sizing: border-box;
+		padding: 0 16px;
+		border-radius: 999px;
+		font-size: 14px;
+		font-weight: 600;
 		color: var(--text-dim);
 		text-decoration: none;
-		padding: 7px 16px;
-		border-radius: 2px;
 	}
 
 	.mode.on {
-		color: var(--ground);
 		background: var(--text);
-		font-weight: 600;
+		color: var(--ground);
 	}
 
-	.rack-chip {
-		display: flex;
+	.rack {
+		display: none;
 		align-items: center;
-		gap: 8px;
-		border: 1px solid var(--line);
-		border-radius: 3px;
-		padding: 7px 12px;
+		min-height: 44px;
 		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		font-size: 13px;
 		color: var(--text-dim);
 		text-decoration: none;
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
 
-	.rack-chip:hover {
-		color: var(--text);
-	}
-
-	.dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: var(--kind-source);
-		display: block;
-		flex-shrink: 0;
-	}
-
 	.rack-plain {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--kind-source);
-		white-space: nowrap;
-		font-variant-numeric: tabular-nums;
+		color: var(--text);
+		font-weight: 700;
 	}
 
 	.theme-form {
-		display: flex;
+		display: none;
 	}
 
-	.theme-button {
+	.icon-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 999px;
 		background: none;
-		border: 1px solid var(--line);
-		border-radius: 3px;
 		color: var(--text-dim);
-		padding: 9px 10px;
-		line-height: 0;
 		cursor: pointer;
 	}
 
-	.theme-button:hover {
+	.icon-button:hover {
 		color: var(--text);
+		background: var(--panel);
 	}
 
-	@media (max-width: 720px) {
+	/* Wider than a phone: the sections move up into the header. */
+	@media (min-width: 721px) {
 		header {
-			height: auto;
-			padding: 10px 16px;
-			flex-wrap: wrap;
-			gap: 12px 16px;
+			padding: 12px 36px;
+			gap: 12px;
+		}
+
+		.wordmark {
+			margin-right: 20px;
 		}
 
 		nav {
-			gap: 16px;
-			order: 3;
-			width: 100%;
+			position: static;
+			display: flex;
+			gap: 4px;
+			padding: 0;
+			background: none;
+			border: 0;
 		}
 
 		.nav-link {
 			min-height: 44px;
-			display: flex;
-			align-items: center;
+			padding: 0 14px;
+			border-radius: 999px;
 		}
 
-		.theme-button {
-			min-height: 44px;
-			min-width: 44px;
+		.nav-link:hover {
+			color: var(--text);
+		}
+
+		.nav-link.active {
+			background: var(--panel);
+		}
+
+		.rack {
 			display: flex;
-			align-items: center;
-			justify-content: center;
+		}
+
+		.theme-form {
+			display: flex;
 		}
 	}
 </style>

@@ -79,418 +79,371 @@
 <svelte:head><title>Cards — Sótão</title></svelte:head>
 
 <div class="screen">
-	<div class="filters">
-		<div class="line">
-			<label class="label" for="card-search">Search</label>
-			<input
-				id="card-search"
-				type="search"
-				value={search}
-				oninput={(e) => onSearch(e.currentTarget.value)}
-				placeholder="card text…"
-			/>
-			<span class="meta">{data.items.length} {data.items.length === 1 ? 'match' : 'matches'}</span>
-			<div class="spacer"></div>
+	<header class="top">
+		<h1 class="display">
+			Cards
+			<span class="count">{data.items.length} {data.items.length === 1 ? 'match' : 'matches'}</span>
+		</h1>
+		<div class="actions">
 			<a class="panel-button" href={resolve('/api/export.yaml')} download>Export</a>
-			<a class="primary" href={resolve('/cards/new')}>New card</a>
-		</div>
-
-		<div class="chips">
-			<button
-				type="button"
-				class="chip"
-				class:on={data.filters.kinds.length === 0}
-				onclick={() => apply({ kind: [] })}>All kinds</button
-			>
-			{#each ALL_KINDS as kind (kind)}
-				<button
-					type="button"
-					class="chip kind"
-					class:on={data.filters.kinds.includes(kind)}
-					style="--chip-ink: var(--kind-{kind})"
-					onclick={() => toggleKind(kind)}
-				>
-					{kind}
-					{data.counts[kind] ?? 0}
-				</button>
-			{/each}
-
-			<span class="divider"></span>
-
-			<button type="button" class="chip" onclick={cycleAuthor}>{authorLabel}</button>
-			<button
-				type="button"
-				class="chip status"
-				class:on={data.filters.status !== null}
-				onclick={cycleStatus}>{statusLabel}</button
-			>
-			<select
-				class="chip select"
-				value={data.filters.gear ?? ''}
-				onchange={(e) => apply({ gear: e.currentTarget.value || null })}
-				aria-label="Filter by gear"
-			>
-				<option value="">Gear: any</option>
-				{#each data.gear as item (item.id)}
-					<option value={item.id}>{item.id}</option>
-				{/each}
-			</select>
-			<button
-				type="button"
-				class="chip fav"
-				class:on={data.filters.favouritesOnly}
-				onclick={() => apply({ fav: data.filters.favouritesOnly ? null : '1' })}
-			>
-				<FavouriteStar filled={data.filters.favouritesOnly} size={11} />
-				Favourites
-			</button>
-		</div>
-	</div>
-
-	<div class="head">
-		<span class="col-card">Card</span>
-		<span class="col-kinds">Kinds</span>
-		<span class="col-gear">Gear</span>
-		<span class="col-tags">Tags</span>
-		<span class="col-fav">Fav</span>
-		<span class="col-drawn">Drawn</span>
-		<span class="col-by">By</span>
-	</div>
-
-	<div class="rows">
-		{#each data.items as card (card.id)}
-			<a class="row" class:dim={card.hasUnownedGear} href={resolve('/cards/[id]', { id: card.id })}>
-				<span class="col-card">{card.text}</span>
-				<span class="col-kinds">
-					{#each card.kinds as kind (kind)}<KindTag {kind} />{/each}
-				</span>
-				<span class="col-gear">{card.gear.length ? card.gear.join(' · ') : '—'}</span>
-				<span class="col-tags">{card.tags.length ? card.tags.join(', ') : ''}</span>
-				<span class="col-fav"><FavouriteStar filled={card.favorite} /></span>
-				<span class="col-drawn">{card.drawCount > 0 ? `${card.drawCount}×` : '—'}</span>
-				<span class="col-by" class:claude={card.author === 'claude'}>{card.author}</span>
+			<a class="new" href={resolve('/cards/new')} aria-label="New card" title="New card">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path
+						d="M12 5v14M5 12h14"
+						stroke="currentColor"
+						stroke-width="2.4"
+						stroke-linecap="round"
+					/>
+				</svg>
 			</a>
+		</div>
+	</header>
+
+	<div class="search">
+		<label class="sr-only" for="card-search">Search</label>
+		<input
+			id="card-search"
+			type="search"
+			value={search}
+			oninput={(e) => onSearch(e.currentTarget.value)}
+			placeholder="Search card text"
+		/>
+	</div>
+
+	<div class="chips">
+		<button
+			type="button"
+			class="chip"
+			class:on={data.filters.kinds.length === 0}
+			aria-pressed={data.filters.kinds.length === 0}
+			onclick={() => apply({ kind: [] })}>All kinds</button
+		>
+		{#each ALL_KINDS as kind (kind)}
+			<button
+				type="button"
+				class="chip kind"
+				class:on={data.filters.kinds.includes(kind)}
+				aria-pressed={data.filters.kinds.includes(kind)}
+				style="--fill: var(--card-{kind}); --on: var(--card-{kind}-ink); --dot: var(--kind-{kind})"
+				onclick={() => toggleKind(kind)}
+			>
+				<span class="dot"></span>
+				{kind}
+				<span class="n">{data.counts[kind] ?? 0}</span>
+			</button>
+		{/each}
+
+		<button type="button" class="chip" onclick={cycleAuthor}>{authorLabel}</button>
+		<button type="button" class="chip" class:on={data.filters.status !== null} onclick={cycleStatus}
+			>{statusLabel}</button
+		>
+		<select
+			class="chip select"
+			value={data.filters.gear ?? ''}
+			onchange={(e) => apply({ gear: e.currentTarget.value || null })}
+			aria-label="Filter by gear"
+		>
+			<option value="">Gear: any</option>
+			{#each data.gear as item (item.id)}
+				<option value={item.id}>{item.id}</option>
+			{/each}
+		</select>
+		<button
+			type="button"
+			class="chip fav"
+			class:on={data.filters.favouritesOnly}
+			aria-pressed={data.filters.favouritesOnly}
+			onclick={() => apply({ fav: data.filters.favouritesOnly ? null : '1' })}
+		>
+			<FavouriteStar filled={data.filters.favouritesOnly} size={16} />
+			Favourites
+		</button>
+	</div>
+
+	<ul class="rows">
+		{#each data.items as card (card.id)}
+			<li>
+				<a
+					class="row"
+					class:dim={card.hasUnownedGear}
+					href={resolve('/cards/[id]', { id: card.id })}
+				>
+					<span
+						class="swatch"
+						style="--fill: var(--card-{card.kinds[0] ?? 'idea'}); --on: var(--card-{card.kinds[0] ??
+							'idea'}-ink)"
+						aria-hidden="true">{(card.kinds[0] ?? 'idea').charAt(0)}</span
+					>
+					<span class="body">
+						<span class="text">{card.text}</span>
+						<span class="meta line">
+							<span class="kinds">
+								{#each card.kinds as kind (kind)}<KindTag {kind} />{/each}
+							</span>
+							<span class="gear">{card.gear.length ? card.gear.join(' · ') : '—'}</span>
+							{#if card.tags.length}<span class="tags">#{card.tags.join(' #')}</span>{/if}
+							<span class="grow"></span>
+							{#if card.favorite}<span class="fav-mark" role="img" aria-label="Favourite"
+									><FavouriteStar filled size={14} /></span
+								>{/if}
+							<span>{card.drawCount > 0 ? `${card.drawCount}×` : '—'}</span>
+							<span class="by" class:claude={card.author === 'claude'}>{card.author}</span>
+						</span>
+					</span>
+				</a>
+			</li>
 		{:else}
-			<p class="empty">
+			<li class="empty">
 				{#if data.filters.search || data.filters.kinds.length || data.filters.gear || data.filters.favouritesOnly || data.filters.author}
 					Nothing matches those filters.
 				{:else}
 					No cards yet. Write one, or paste a batch into Import.
 				{/if}
-			</p>
+			</li>
 		{/each}
-	</div>
+	</ul>
 
-	<div class="rail">
-		<span class="meta">Click a row to edit</span>
-		<div class="spacer"></div>
-		<span class="meta strong">Sorted by least recently drawn</span>
-	</div>
+	<p class="meta foot">Tap a card to edit · Sorted by least recently drawn</p>
 </div>
 
 <style>
 	.screen {
 		flex-grow: 1;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-	}
-
-	.filters {
-		flex-shrink: 0;
+		width: 100%;
+		max-width: 960px;
+		margin: 0 auto;
 		box-sizing: border-box;
-		padding: 20px 36px 16px;
+		padding: 0 16px 24px;
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
-		border-bottom: 1px solid var(--line-soft);
 	}
 
-	.line {
+	.top {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: 12px;
+		padding: 10px 0 6px;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: 32px;
+	}
+
+	.count {
+		font-family: var(--font-sans);
+		font-weight: 400;
+		font-size: 18px;
+		letter-spacing: 0;
+		color: var(--text-dim);
+	}
+
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.new {
+		width: 52px;
+		height: 52px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 18px;
+		background: var(--text);
+		color: var(--ground);
+	}
+
+	.sr-only {
+		position: absolute;
+		left: -9999px;
 	}
 
 	input[type='search'] {
-		width: 320px;
+		width: 100%;
 		box-sizing: border-box;
+		height: 48px;
+		border: 0;
+		border-radius: 16px;
 		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 2px;
 		color: var(--text);
 		font-family: var(--font-sans);
-		font-size: 13px;
-		padding: 10px 12px;
-		min-height: 40px;
+		font-size: 16px;
+		padding: 0 16px;
 	}
 
-	.spacer {
-		flex-grow: 1;
+	input[type='search']::placeholder {
+		color: var(--text-dim);
 	}
 
-	.primary {
-		background: var(--text);
-		border: none;
-		border-radius: 2px;
-		color: var(--ground);
-		font-family: var(--font-mono);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		padding: 12px 17px;
-		text-decoration: none;
+	.search {
+		padding-top: 8px;
 	}
 
 	.chips {
 		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex-wrap: wrap;
+		gap: 6px;
+		padding: 12px 0;
+		overflow-x: auto;
+		flex-wrap: nowrap;
+	}
+
+	@media (min-width: 721px) {
+		.chips {
+			flex-wrap: wrap;
+			overflow: visible;
+		}
 	}
 
 	.chip {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--text-dim);
-		background: transparent;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 6px 10px;
+		flex: none;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-height: 44px;
+		box-sizing: border-box;
+		padding: 0 14px;
+		border: 0;
+		border-radius: 999px;
+		background: var(--panel);
+		color: var(--text);
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 600;
+		text-transform: capitalize;
 		cursor: pointer;
-		min-height: 28px;
-	}
-
-	.chip.kind {
-		color: var(--chip-ink);
 	}
 
 	.chip.on {
-		color: var(--ground);
 		background: var(--text);
-		border-color: var(--text);
-		font-weight: 600;
+		color: var(--ground);
 	}
 
 	.chip.kind.on {
-		background: var(--chip-ink);
-		border-color: var(--chip-ink);
-		color: var(--ground);
+		background: var(--fill);
+		color: var(--on);
 	}
 
-	.chip.status.on {
-		background: var(--kind-source);
-		border-color: var(--kind-source);
-		color: var(--ground);
+	.dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--dot);
 	}
 
-	.chip.fav {
-		display: flex;
-		align-items: center;
-		gap: 6px;
+	.chip.kind.on .dot {
+		background: var(--on);
 	}
 
-	.chip.select {
+	.n {
 		font-family: var(--font-mono);
-	}
-
-	.divider {
-		width: 1px;
-		height: 22px;
-		background: var(--line);
-		display: block;
-		margin: 0 6px;
-	}
-
-	.head,
-	.row {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		box-sizing: border-box;
-		padding: 0 36px;
-	}
-
-	.head {
-		flex-shrink: 0;
-		height: 34px;
-		background: var(--rail);
-		border-bottom: 1px solid var(--line-soft);
-		font-family: var(--font-mono);
-		font-size: 9px;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		color: var(--text-faint);
-	}
-
-	.rows {
-		flex-grow: 1;
-		overflow-y: auto;
-		min-height: 0;
-	}
-
-	.row {
-		height: 54px;
-		border-bottom: 1px solid var(--row-line);
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.row:hover {
-		background: var(--panel);
-	}
-
-	.col-card {
-		width: 452px;
-		font-size: 13.5px;
-		line-height: 1.35;
-		color: var(--text);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	/* Cards referencing gear that is not owned render dimmed (§9). */
-	.row.dim .col-card {
-		color: var(--text-muted);
-	}
-
-	.col-kinds {
-		width: 152px;
-		display: flex;
-		gap: 6px;
-		overflow: hidden;
-	}
-
-	.col-gear {
-		width: 226px;
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.04em;
-		color: var(--text-dim);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.col-tags {
-		width: 110px;
-		font-family: var(--font-mono);
-		font-size: 10px;
-		color: var(--kind-source);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.col-fav {
-		width: 26px;
-		line-height: 0;
-	}
-
-	.col-drawn {
-		width: 58px;
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--text-dim);
-		text-align: right;
+		font-weight: 400;
 		font-variant-numeric: tabular-nums;
 	}
 
-	.col-by {
-		flex-grow: 1;
-		font-family: var(--font-mono);
-		font-size: 9.5px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--kind-source);
-		text-align: right;
+	.rows {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
-	.col-by.claude {
-		color: var(--kind-technique);
+	.row {
+		display: flex;
+		gap: 12px;
+		align-items: stretch;
+		min-height: 44px;
+		background: var(--panel);
+		border-radius: 16px;
+		padding: 10px 12px 10px 10px;
+		text-decoration: none;
+		color: var(--text);
+	}
+
+	.row:hover {
+		background: var(--ground);
+	}
+
+	.swatch {
+		flex: none;
+		width: 34px;
+		border-radius: 10px;
+		background: var(--fill);
+		color: var(--on);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 14px;
+		text-transform: uppercase;
+	}
+
+	.body {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		min-width: 0;
+		flex-grow: 1;
+	}
+
+	.text {
+		font-weight: 600;
+		font-size: 16px;
+		line-height: 21px;
+	}
+
+	/* Cards referencing gear that is not owned render dimmed (§9). */
+	.row.dim .text {
+		color: var(--text-dim);
+	}
+
+	.line {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 2px 12px;
+		font-size: 12px;
+	}
+
+	.kinds {
+		display: flex;
+		gap: 8px;
+	}
+
+	.kinds :global(.tag) {
+		font-size: 11px;
+		letter-spacing: 0.12em;
+	}
+
+	.tags {
+		color: var(--text-dim);
+	}
+
+	.grow {
+		flex-grow: 1;
+	}
+
+	.fav-mark {
+		display: flex;
+		color: var(--lamp);
+	}
+
+	.by.claude {
+		color: var(--text);
 	}
 
 	.empty {
-		margin: 0;
-		padding: 48px 36px;
-		font-size: 14px;
+		padding: 48px 0;
+		font-size: 16px;
 		color: var(--text-dim);
 	}
 
-	.rail {
-		flex-shrink: 0;
-		box-sizing: border-box;
-		height: 54px;
-		padding: 0 36px;
-		background: var(--rail);
-		border-top: 1px solid var(--line);
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.meta.strong {
-		color: var(--text-dim);
-	}
-
-	@media (max-width: 900px) {
-		.filters {
-			padding: 16px;
-		}
-
-		input[type='search'] {
-			width: 100%;
-		}
-
-		.line {
-			flex-wrap: wrap;
-		}
-
-		.head {
-			display: none;
-		}
-
-		.row {
-			height: auto;
-			padding: 12px 16px;
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 6px 12px;
-			align-items: start;
-		}
-
-		.col-card {
-			width: auto;
-			grid-column: 1 / -1;
-			white-space: normal;
-		}
-
-		.col-kinds,
-		.col-gear,
-		.col-tags {
-			width: auto;
-		}
-
-		.col-gear,
-		.col-tags {
-			grid-column: 1;
-		}
-
-		.col-fav,
-		.col-drawn,
-		.col-by {
-			width: auto;
-			grid-column: 2;
-			text-align: right;
-		}
-
-		.rail {
-			padding: 0 16px;
-		}
+	.foot {
+		margin: 16px 0 0;
 	}
 </style>

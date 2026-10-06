@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { invalidateAll } from '$app/navigation';
 	import {
 		RELAXATION_LADDER,
@@ -270,6 +271,13 @@
 			.join(' · ')
 	);
 
+	// Three mode: a locked slot keeps its card, so the button says how many are drawn.
+	let drawLabel = $derived.by(() => {
+		if (mode !== 'spread') return 'Draw';
+		const kept = locked.filter((id) => id !== null).length;
+		return kept === 1 ? 'Draw two' : kept === 2 ? 'Draw one' : 'Draw';
+	});
+
 	let showFilters = $state(false);
 	let availableTags = $derived([...new Set(pool.cards.flatMap((c) => c.tags))].sort());
 
@@ -317,27 +325,31 @@
 <svelte:window onkeydown={onKey} />
 
 <div class="screen">
+	<div class="info">
+		<a href={resolve('/gear')} class="rack">{data.rack.inRack} of {data.rack.owned} in the rack</a>
+		{#if offline || cached}
+			<span class="status">{offline ? 'Offline · cached' : 'Cached'}</span>
+		{:else if history.length > 0}
+			<span class="status">{Math.max(historyIndex, 0) + 1} / {history.length} tonight</span>
+		{/if}
+	</div>
+
 	<div class="strip">
 		<span class="label">{mode === 'spread' ? 'Recipe' : 'Pool'}</span>
 		{#if mode === 'spread'}
-			<div class="recipe">
+			<span class="recipe">
 				{#each SPREAD_SLOTS as slot (slot)}
-					<span class="slot-chip" style="--ink: var(--kind-{slot})">{slot}</span>
+					<span class="slot-chip" style="--slot: var(--kind-{slot})">{slot}</span>
 				{/each}
-			</div>
+			</span>
 			<span class="meta">{poolCount} cards</span>
 		{:else}
-			<span class="pool-chip">Ideas · {poolCount} cards</span>
+			<span class="meta">Ideas · {poolCount} cards</span>
 		{/if}
-		<span class="meta">{filterSummary}</span>
+		<span class="meta">{filterSummary} · Last 30 draws suppressed</span>
 		<button type="button" class="panel-button" onclick={() => (showFilters = !showFilters)}>
 			Edit filters
 		</button>
-		<div class="spacer"></div>
-		{#if offline || cached}
-			<span class="meta warn">{offline ? 'Offline · cached' : 'Cached'}</span>
-		{/if}
-		<span class="meta">Last 30 draws suppressed</span>
 
 		{#if showFilters}
 			<DrawFiltersPanel
@@ -353,7 +365,7 @@
 		<p class="relaxed" role="status">{relaxationNote}</p>
 	{/if}
 
-	<div class="board" class:spread={mode === 'spread'}>
+	<div class="board">
 		{#if !current}
 			<div class="idle">
 				<p class="display">
@@ -377,21 +389,7 @@
 		{/if}
 	</div>
 
-	<div class="rail">
-		<div class="keys">
-			<div>
-				<kbd>Space</kbd><span class="meta">{mode === 'spread' ? 'Draw all' : 'Draw again'}</span>
-			</div>
-			<div>
-				<kbd>{mode === 'spread' ? '1 2 3' : '← →'}</kbd>
-				<span class="meta">{mode === 'spread' ? 'Lock a slot' : "Tonight's history"}</span>
-			</div>
-		</div>
-
-		<div class="big">
-			<button type="button" class="draw" onclick={draw}>Draw</button>
-		</div>
-
+	<div class="controls">
 		<div class="history">
 			<button
 				type="button"
@@ -400,23 +398,43 @@
 				disabled={historyIndex <= 0}
 				onclick={() => step(-1)}
 			>
-				<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-					<path d="M6.5 1 2.5 5l4 4" stroke="currentColor" stroke-width="1.3" />
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path
+						d="M15 5l-7 7 7 7"
+						stroke="currentColor"
+						stroke-width="2.2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
 			</button>
 			<button
 				type="button"
 				aria-label="Next draw"
-				class="step"
+				class="step next"
 				disabled={historyIndex >= history.length - 1}
 				onclick={() => step(1)}
 			>
-				<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-					<path d="M3.5 1l4 4-4 4" stroke="currentColor" stroke-width="1.3" />
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path
+						d="M9 5l7 7-7 7"
+						stroke="currentColor"
+						stroke-width="2.2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
 			</button>
-			<span class="meta">{historyIndex >= 0 ? `Draw ${historyIndex + 1}` : 'No draws yet'}</span>
 		</div>
+		<button type="button" class="draw" onclick={draw}>{drawLabel}</button>
+	</div>
+
+	<div class="keys">
+		<span class="meta"><kbd>Space</kbd> {mode === 'spread' ? 'Draw' : 'Draw again'}</span>
+		<span class="meta">
+			<kbd>{mode === 'spread' ? '1 2 3' : '← →'}</kbd>
+			{mode === 'spread' ? 'Keep a slot' : "Tonight's history"}
+		</span>
 	</div>
 </div>
 
@@ -426,91 +444,82 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+		width: 100%;
+		max-width: 560px;
+		margin: 0 auto;
+		box-sizing: border-box;
+		padding: 0 16px;
+	}
+
+	.info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-dim);
+	}
+
+	.rack,
+	.status {
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		font-variant-numeric: tabular-nums;
+		text-decoration: none;
 	}
 
 	.strip {
 		position: relative;
-		height: 46px;
-		flex-shrink: 0;
-		box-sizing: border-box;
-		padding: 0 36px;
-		background: var(--rail);
-		border-bottom: 1px solid var(--line-soft);
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 14px;
+		gap: 6px 12px;
+		padding-bottom: 8px;
 	}
 
 	.recipe {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 6px;
 	}
 
 	.slot-chip {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.14em;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--ink);
-		border: 1px solid var(--tag-line);
-		border-radius: 2px;
-		padding: 4px 9px;
+		color: var(--slot);
+		background: var(--panel);
+		border-radius: 999px;
+		padding: 4px 10px;
 	}
 
-	.pool-chip {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--text);
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 4px 9px;
-	}
-
-	.panel-button {
-		padding: 5px 10px;
-		text-decoration: none;
-	}
-
-	.spacer {
-		flex-grow: 1;
-	}
-
-	.warn {
-		color: var(--kind-treatment);
+	.strip .panel-button {
+		font-size: 13px;
 	}
 
 	.relaxed {
-		margin: 0;
-		padding: 8px 36px;
+		margin: 0 0 8px;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--kind-treatment);
-		border-bottom: 1px solid var(--line-soft);
+		font-size: 13px;
+		color: var(--text);
 	}
 
 	.board {
 		flex-grow: 1;
-		box-sizing: border-box;
-		padding: 44px 36px;
+		min-height: 0;
 		display: flex;
-		justify-content: center;
-		align-items: stretch;
-	}
-
-	.board.spread {
-		padding: 34px 36px;
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 22px;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 4px;
 	}
 
 	.idle {
 		align-self: center;
+		margin: auto 0;
 		text-align: center;
 		display: flex;
 		flex-direction: column;
@@ -519,138 +528,86 @@
 
 	.idle .display {
 		margin: 0;
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 34px;
-		font-weight: 600;
-		color: var(--text-muted);
-	}
-
-	.rail {
-		height: 96px;
-		flex-shrink: 0;
-		box-sizing: border-box;
-		padding: 0 36px;
-		background: var(--rail);
-		border-top: 1px solid var(--line);
-		display: flex;
-		align-items: center;
-		gap: 24px;
-	}
-
-	.keys {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-		width: 210px;
-	}
-
-	.keys div {
-		display: flex;
-		align-items: center;
-		gap: 9px;
-	}
-
-	kbd {
-		font-family: var(--font-mono);
-		font-size: 9px;
-		font-weight: 600;
-		letter-spacing: 0.1em;
+		font-size: 32px;
+		line-height: 1.1;
 		color: var(--text-dim);
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		padding: 3px 8px;
 	}
 
-	.big {
-		flex-grow: 1;
+	.controls {
 		display: flex;
-		justify-content: center;
-	}
-
-	.draw {
-		background: var(--text);
-		border: none;
-		border-radius: 3px;
-		color: var(--ground);
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 17px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		padding: 17px 52px;
-		cursor: pointer;
+		gap: 10px;
+		padding: 14px 0 12px;
 	}
 
 	.history {
-		width: 210px;
 		display: flex;
-		align-items: center;
-		justify-content: flex-end;
 		gap: 10px;
 	}
 
 	.step {
-		background: none;
-		border: 1px solid var(--line);
-		border-radius: 2px;
-		color: var(--text-dim);
-		padding: 8px 10px;
-		line-height: 0;
+		width: 64px;
+		height: 76px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 0;
+		border-radius: 18px;
+		background: var(--panel);
+		color: var(--text);
 		cursor: pointer;
 	}
 
 	.step:disabled {
-		border-color: var(--line-soft);
-		color: var(--text-muted);
+		color: var(--text-dim);
+		opacity: 0.6;
 		cursor: not-allowed;
 	}
 
-	@media (max-width: 860px) {
-		.strip {
-			height: auto;
-			padding: 10px 16px;
-			flex-wrap: wrap;
-			gap: 8px 12px;
+	/* Forward is for tonight's history; a phone has the room for Draw alone. */
+	.step.next {
+		display: none;
+	}
+
+	.draw {
+		flex-grow: 1;
+		height: 76px;
+		border: 0;
+		border-radius: 18px;
+		background: var(--lamp);
+		color: var(--lamp-ink);
+		font-family: var(--font-sans);
+		font-size: 30px;
+		font-weight: 800;
+		cursor: pointer;
+	}
+
+	.keys {
+		display: none;
+	}
+
+	@media (min-width: 721px) {
+		.screen {
+			padding-bottom: 24px;
 		}
 
-		.board,
-		.board.spread {
-			padding: 16px;
+		.step.next {
 			display: flex;
-			flex-direction: column;
-			gap: 12px;
-		}
-
-		.relaxed {
-			padding: 8px 16px;
-		}
-
-		.rail {
-			height: auto;
-			padding: 16px 16px 24px;
-			flex-direction: column;
-			align-items: stretch;
-			gap: 12px;
 		}
 
 		.keys {
-			display: none;
+			display: flex;
+			justify-content: center;
+			gap: 24px;
 		}
+	}
 
-		.draw {
-			width: 100%;
-			padding: 18px 20px;
-		}
-
-		.history {
-			width: auto;
-			justify-content: space-between;
-		}
-
-		.step {
-			padding: 12px 15px;
-		}
+	kbd {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--text);
+		background: var(--panel);
+		border-radius: 6px;
+		padding: 2px 8px;
 	}
 </style>

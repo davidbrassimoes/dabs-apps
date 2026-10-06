@@ -7,7 +7,7 @@
 <div class="ground">
 	<form method="POST" class="panel">
 		<div class="name">
-			<span class="wordmark">Sótão</span>
+			<span class="wordmark">sótão</span>
 			<span class="subtitle">studio cards</span>
 		</div>
 		<p class="lede">One password. It stays signed in for a year.</p>
@@ -43,7 +43,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 24px;
+		padding: 16px;
 		box-sizing: border-box;
 	}
 
@@ -52,15 +52,13 @@
 		max-width: 380px;
 		box-sizing: border-box;
 		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 3px;
-		padding: 40px 36px;
+		border-radius: 18px;
+		padding: 32px 24px;
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
 	}
 
-	/* Product name over its function line, as on a faceplate. */
 	.name {
 		display: flex;
 		flex-direction: column;
@@ -68,28 +66,23 @@
 	}
 
 	.wordmark {
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 30px;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
+		font-size: 32px;
+		font-weight: 800;
+		letter-spacing: -0.02em;
 		color: var(--text);
 		line-height: 1;
 	}
 
 	.subtitle {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.29em;
-		text-transform: uppercase;
-		color: var(--text-faint);
+		font-size: 13px;
+		color: var(--text-dim);
 	}
 
 	.lede {
-		margin: -10px 0 4px;
-		font-size: 13.5px;
-		line-height: 1.55;
+		margin: -8px 0 4px;
+		font-size: 16px;
+		line-height: 1.5;
 		color: var(--text-dim);
 	}
 
@@ -101,13 +94,13 @@
 
 	input[type='password'] {
 		background: var(--ground);
-		border: 1px solid var(--line);
-		border-radius: 2px;
+		border: 2px solid transparent;
+		border-radius: 16px;
 		color: var(--text);
 		font-family: var(--font-sans);
-		font-size: 15px;
-		padding: 12px 12px;
-		min-height: 44px;
+		font-size: 16px;
+		padding: 0 16px;
+		min-height: 48px;
 		box-sizing: border-box;
 	}
 
@@ -118,25 +111,19 @@
 	.error {
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 10px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		font-size: 13px;
 		color: var(--kind-constraint);
 	}
 
 	button {
-		background: var(--text);
+		background: var(--lamp);
 		border: none;
-		border-radius: 3px;
-		color: var(--ground);
-		font-family: var(--font-display);
-		font-variant-numeric: lining-nums;
-		font-size: 15px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		padding: 15px 20px;
-		min-height: 44px;
+		border-radius: 18px;
+		color: var(--lamp-ink);
+		font-family: var(--font-sans);
+		font-size: 20px;
+		font-weight: 800;
+		min-height: 56px;
 		cursor: pointer;
 	}
 </style>
