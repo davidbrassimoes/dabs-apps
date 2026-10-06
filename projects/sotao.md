@@ -23,12 +23,12 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 6. 2026-10-06, DABS: deploy nas mesmas contas Cloudflare e Turso da Escarpa Audio, num Worker próprio.
 7. 2026-10-06, DABS, gate 2: aspeto **G · Baralho suave** "por enquanto" (`products/sotao/docs/LOOK.md`).
 8. 2026-10-06, DABS: **Cloudflare D1 em vez de Turso** (substitui a parte Turso da decisão 6). Porquê: uma conta só, sem serviço nem token extra, e o D1 tem as chaves estrangeiras sempre ligadas, o que fecha o risco do `PRAGMA foreign_keys` sobre HTTP. Alternativa pesada e posta de lado por agora: VPS com Node + ficheiro SQLite (zero mudanças de código, mas operação contínua). Custo: trocar o driver e passar a única transação (importar) a `batch`.
+9. 2026-10-06, DABS: fica em `sotao.escarpa-audio.workers.dev`, sem domínio próprio. O nome da conta só aparece no URL e a app é de uso pessoal; reabre-se se a app for partilhada.
 
 ## Por decidir
 
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
-| 2 | Domínio próprio ou só `workers.dev` (o endereço atual leva o nome `escarpa-audio` da conta) | DABS | Nada |
 
 ## Próximos passos
 

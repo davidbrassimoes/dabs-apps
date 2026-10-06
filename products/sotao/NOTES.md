@@ -13,8 +13,6 @@
 - **Por verificar em produção:** login e uso real (a password do Worker não é a do `.env` local,
   por isso o agente não entrou); importação com commit no D1 remoto (atomicidade do `batch`);
   telemóvel real, atalhos de teclado, offline.
-- **Por decidir:** o endereço `workers.dev` leva o nome da conta, `escarpa-audio`. Um domínio
-  próprio tira-o (`projects/sotao.md`, por decidir 2).
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
