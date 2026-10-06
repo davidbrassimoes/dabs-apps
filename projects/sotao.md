@@ -1,7 +1,7 @@
 # sotao
 
 **Dono:** DABS
-**Estado:** em construção (fase 1 feita; aspeto G a implementar)
+**Estado:** em construção (fase 1 e aspeto G feitos; falta o primeiro deploy)
 **Destino:** pessoal. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/sotao/`
 
@@ -32,7 +32,7 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 ## Próximos passos
 
 - [x] Gate 2: aspeto G escolhido (2026-10-06)
-- [ ] Implementar o aspeto G (`products/sotao/docs/LOOK.md`)
+- [x] Aspeto G implementado e verificado em capturas, 390 e 1280 px, dois temas (2026-10-06)
 - [ ] Primeiro deploy (gate 3): criar base Turso, `wrangler secret put` para os quatro
       secrets, `npm run deploy`, testar o `PRAGMA foreign_keys` (ver `NOTES.md`)
 
@@ -41,3 +41,4 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 - 2026-09-22: fase 1 (M0–M5) construída em `davidbrassimoes/sotao-cards`.
 - 2026-09-26: trazido para o `escarpa-audio` num branch, adaptado às regras da empresa.
 - 2026-10-06: movido para o `dabs-apps`; nomes reais no git; marcas da Escarpa removidas.
+- 2026-10-06: gate 2 (aspeto G) e implementação no `main`.
