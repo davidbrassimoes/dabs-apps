@@ -64,6 +64,6 @@ Documentação em português de Portugal. Código, identificadores e commits em 
 - [x] `gota` movido para `products/gota` com história (2026-10-05)
 - [x] `santa-vibes` movido para `products/santa-vibes` com história (2026-10-06)
 - [x] `sotao` movido do branch `sotao` do `escarpa-audio` para `products/sotao` com história (2026-10-06)
-- [ ] Arquivar `davidbrassimoes/sotao-cards` no GitHub depois de a CI aqui ficar verde
+- [x] Arquivar `davidbrassimoes/sotao-cards` no GitHub depois de a CI aqui ficar verde (2026-10-06)
 - [ ] Preencher os princípios em `handbook/00-manifesto.md`
 - [x] Arquivar `davidbrassimoes/gota` e `davidbrassimoes/santa-vibes` no GitHub depois de a CI aqui ficar verde (2026-10-06)
