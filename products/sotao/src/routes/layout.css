@@ -1,141 +1,113 @@
 @import 'tailwindcss';
 
 /*
-  Theme tokens. Every colour is a custom property, and the themes redefine the
-  tokens, never the components.
+  Theme tokens (docs/LOOK.md, G). Every colour is a custom property and the
+  themes redefine the tokens, never the components.
 
-  PROVISIONAL: this is Escarpa Audio's sea fog, kept from when the app lived
-  there. A new look replaces it once its mockup passes gate 2
-  (projects/sotao.md).
+  Dark is the default: it is what shows under Auto when the device does not
+  say, and the Draw screen is used in a dark room. Light applies on an
+  explicit [data-theme='light'], or under Auto (no attribute) when the device
+  asks for light. The measured contrast of each pair is in NOTES.md, "Paleta".
 
-  Morning fog is on :root, so it is what shows when nothing else applies. Night fog applies on an explicit [data-theme="night"], or
-  under Auto (no attribute) when the device prefers dark.
-
-  The kind colours keep the hues
-  §12 gave them, moved by lightness alone until each reaches 4.5:1 on every
-  surface text sits on — ground, panel, rail and chip — in both themes. The
-  tints (favourite, author, status, tag and danger borders) are the kind colour
-  mixed into the panel. The worst cases are in NOTES.md, "Palette".
-
-  --accent is the pointer: what indicates on a panel indicates here —
-  focus, selection, the active tab. --lamp is the product's accent, Ochre, and
-  it is a lamp only: the About block, nowhere in the working UI.
+  --lamp is the pointer: the Draw button, focus, selection, the active state.
+  --kind-* is a kind as text or a dot on --ground or --panel; --card-* is the
+  same kind as a card's fill, with --card-*-ink as the text on it.
 */
 
 @theme {
-	--font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
-	--font-sans: 'Jost', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-	--font-mono: 'DM Mono', ui-monospace, SFMono-Regular, 'Cascadia Mono', monospace;
+	--font-sans:
+		'Bricolage Grotesque', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'Courier Prime', ui-monospace, SFMono-Regular, 'Cascadia Mono', monospace;
 }
 
 :root {
-	color-scheme: light;
+	color-scheme: dark;
 
-	--ground: #dce2e2;
-	--panel: #e9eced;
-	--rail: #d6ddde;
-	--line: #a9b4b7;
-	--line-soft: #c0cacc;
-	--text: #1f292c;
-	--text-dim: #37434a;
-	--text-faint: #4d595f;
-	--accent: #1f292c;
-	--lamp: #795a1f;
+	--ground: #17130f;
+	--panel: #26201a;
+	--line: #3a3229;
+	--text: #f1eadd;
+	--text-dim: #b3a897;
+	--lamp: #e3a23f;
+	--lamp-ink: #1b1307;
 
-	--kind-idea: #1f292c;
-	--kind-source: #42685f;
-	--kind-treatment: #7f5a1b;
-	--kind-technique: #455ab5;
-	--kind-constraint: #b43022;
-	--kind-arrangement: #7b4f93;
+	/* The ink on every card fill, and the locked pill's fill. The same in both themes. */
+	--ink: #1c1814;
 
-	--fav-bg: #deddd8;
-	--fav-line: #b9aa8f;
-	--fav-star: #947745;
-	--chip-line: #a9b4b7;
+	--card-idea: #e9dfc9;
+	--card-source: #8db3a4;
+	--card-treatment: #ddae63;
+	--card-technique: #a9b2d6;
+	--card-constraint: #d08a74;
+	--card-arrangement: #bfa2c9;
 
-	--row-line: #c9d1d3;
-	--text-muted: #56626a;
-	--chip-bg: #e2e7e8;
-	--tag-line: #9eb1ad;
-	--author-claude-bg: #d9dde7;
-	--author-claude-line: #9faad4;
-	--status-active-bg: #d8dfdf;
-	--danger-line: #d19792;
+	--card-idea-ink: var(--ink);
+	--card-source-ink: var(--ink);
+	--card-treatment-ink: var(--ink);
+	--card-technique-ink: var(--ink);
+	--card-constraint-ink: var(--ink);
+	--card-arrangement-ink: var(--ink);
+
+	/* A kind as text or a dot: on dark, the card's own fill. */
+	--kind-idea: var(--card-idea);
+	--kind-source: var(--card-source);
+	--kind-treatment: var(--card-treatment);
+	--kind-technique: var(--card-technique);
+	--kind-constraint: var(--card-constraint);
+	--kind-arrangement: var(--card-arrangement);
+
+	--shadow-pop: rgba(0, 0, 0, 0.5);
 }
 
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='morning']) {
-		color-scheme: dark;
+@media (prefers-color-scheme: light) {
+	:root:not([data-theme]) {
+		color-scheme: light;
 
-		--ground: #151d23;
-		--panel: #1b242c;
-		--rail: #202b34;
-		--line: #3e4c58;
-		--line-soft: #27343e;
-		--text: #dde5ea;
-		--text-dim: #aebac2;
-		--text-faint: #9aa6b0;
-		--accent: #e8eef1;
-		--lamp: #cb9633;
+		--ground: #efe9de;
+		--panel: #e1d9ca;
+		--line: #cbbfac;
+		--text: #1c1814;
+		--text-dim: #5b5146;
+		--lamp: #8f5410;
+		--lamp-ink: #ffffff;
 
-		--kind-idea: #dde5ea;
-		--kind-source: #74a79a;
-		--kind-treatment: #d9a44a;
-		--kind-technique: #8e9bd4;
-		--kind-constraint: #e47c70;
-		--kind-arrangement: #b99bc9;
+		/* The idea card inverts: bone on a light ground would not separate. */
+		--card-idea: #1c1814;
+		--card-idea-ink: #f1eadd;
 
-		--fav-bg: #2e312f;
-		--fav-line: #715e3a;
-		--fav-star: #a07e41;
-		--chip-line: #3e4c58;
+		--kind-idea: var(--text);
+		--kind-source: #3a6759;
+		--kind-treatment: #7f5611;
+		--kind-technique: #4a5590;
+		--kind-constraint: #9a4430;
+		--kind-arrangement: #6e4c7c;
 
-		--row-line: #222d36;
-		--text-muted: #919ea8;
-		--chip-bg: #27343e;
-		--tag-line: #435f5e;
-		--author-claude-bg: #27303d;
-		--author-claude-line: #4f5a78;
-		--status-active-bg: #243137;
-		--danger-line: #754c4b;
+		--shadow-pop: rgba(28, 24, 20, 0.25);
 	}
 }
 
-:root[data-theme='night'] {
-	color-scheme: dark;
+:root[data-theme='light'] {
+	color-scheme: light;
 
-	--ground: #151d23;
-	--panel: #1b242c;
-	--rail: #202b34;
-	--line: #3e4c58;
-	--line-soft: #27343e;
-	--text: #dde5ea;
-	--text-dim: #aebac2;
-	--text-faint: #9aa6b0;
-	--accent: #e8eef1;
-	--lamp: #cb9633;
+	--ground: #efe9de;
+	--panel: #e1d9ca;
+	--line: #cbbfac;
+	--text: #1c1814;
+	--text-dim: #5b5146;
+	--lamp: #8f5410;
+	--lamp-ink: #ffffff;
 
-	--kind-idea: #dde5ea;
-	--kind-source: #74a79a;
-	--kind-treatment: #d9a44a;
-	--kind-technique: #8e9bd4;
-	--kind-constraint: #e47c70;
-	--kind-arrangement: #b99bc9;
+	--card-idea: #1c1814;
+	--card-idea-ink: #f1eadd;
 
-	--fav-bg: #2e312f;
-	--fav-line: #715e3a;
-	--fav-star: #a07e41;
-	--chip-line: #3e4c58;
+	--kind-idea: var(--text);
+	--kind-source: #3a6759;
+	--kind-treatment: #7f5611;
+	--kind-technique: #4a5590;
+	--kind-constraint: #9a4430;
+	--kind-arrangement: #6e4c7c;
 
-	--row-line: #222d36;
-	--text-muted: #919ea8;
-	--chip-bg: #27343e;
-	--tag-line: #435f5e;
-	--author-claude-bg: #27303d;
-	--author-claude-line: #4f5a78;
-	--status-active-bg: #243137;
-	--danger-line: #754c4b;
+	--shadow-pop: rgba(28, 24, 20, 0.25);
 }
 
 html {
@@ -149,71 +121,97 @@ body {
 	font-family: var(--font-sans);
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
-	/* DM Mono has no 600; ask for it and get 500, never a smeared fake bold. */
+	/* Courier Prime has 400 and 700 only; never a smeared fake weight. */
 	font-synthesis-weight: none;
 }
 
-/*
-  Shared primitives. The monospace labelling is what gives the app its
-  equipment-panel character — it is not decoration (§12).
-*/
+/* Shared primitives. */
 
 .label {
 	font-family: var(--font-mono);
-	font-size: 10px;
-	font-weight: 600;
+	font-size: 12px;
+	font-weight: 700;
 	letter-spacing: 0.2em;
 	text-transform: uppercase;
-	color: var(--text-faint);
+	color: var(--text-dim);
 }
 
 .meta {
 	font-family: var(--font-mono);
-	font-size: 10px;
+	font-size: 13px;
 	font-weight: 400;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--text-faint);
+	color: var(--text-dim);
 	font-variant-numeric: tabular-nums;
 }
 
 .display {
-	font-family: var(--font-display);
-	/* Cormorant defaults to old-style figures; gear names are full of numbers. */
-	font-variant-numeric: lining-nums;
-	font-weight: 600;
-	letter-spacing: -0.012em;
+	font-family: var(--font-sans);
+	font-weight: 800;
+	letter-spacing: -0.02em;
 }
 
-/* A bordered monospace control: the header chips, the small buttons. */
+/* A pill control: the small buttons and chips. */
 .panel-button {
-	font-family: var(--font-mono);
-	font-size: 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-height: 44px;
+	font-family: var(--font-sans);
+	font-size: 14px;
 	font-weight: 600;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--text-dim);
-	background: none;
-	border: 1px solid var(--line);
-	border-radius: 2px;
-	padding: 9px 14px;
+	color: var(--text);
+	background: var(--panel);
+	border: 0;
+	border-radius: 999px;
+	padding: 0 18px;
 	cursor: pointer;
+	text-decoration: none;
 }
 
 .panel-button:hover {
-	color: var(--text);
+	background: var(--line);
+}
+
+/* The main action of a form or a screen. */
+.primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-height: 48px;
+	font-family: var(--font-sans);
+	font-size: 16px;
+	font-weight: 800;
+	color: var(--ground);
+	background: var(--text);
+	border: 0;
+	border-radius: 999px;
+	padding: 0 24px;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.primary:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 :where(a) {
 	color: inherit;
 }
 
-:where(button, a, input, select, textarea):focus-visible {
-	outline: 2px solid var(--accent);
+:where(button, a, input, select, textarea, summary):focus-visible {
+	outline: 2px solid var(--lamp);
 	outline-offset: 2px;
 }
 
+/* On a card fill the lamp would not stand out; the card's own ink does. */
+:where(.card, .kept) :where(button, a):focus-visible {
+	outline-color: currentColor;
+}
+
 ::selection {
-	background: var(--accent);
-	color: var(--ground);
+	background: var(--lamp);
+	color: var(--lamp-ink);
 }
