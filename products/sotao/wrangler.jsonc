@@ -1,8 +1,7 @@
 // Sótão on Cloudflare Workers, the database on Cloudflare D1 (projects/sotao.md,
 // decision 8). A Worker of its own, in the same account as Escarpa Audio.
 //
-// Deploy from DABS's machine, with `npm run deploy`, so the build carries the
-// real seed files (seed/*.local.*, gitignored). The app migrates and seeds the
+// Deploy with `npm run deploy`. The app migrates and seeds the
 // database itself on its first request; do not also run `wrangler d1 migrations
 // apply`. Secrets are set once with `npx wrangler secret put <NAME>` and never
 // live in this file:

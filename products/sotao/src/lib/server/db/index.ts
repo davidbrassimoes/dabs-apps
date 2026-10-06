@@ -74,5 +74,8 @@ export function migrateDb(d1?: D1Database): Promise<void> {
 		// Cards after gear: the starter set references gear slugs by id.
 		await seedCardsIfEmpty();
 	})();
+	// A failed first run (a network blip on D1) must not poison the isolate: the
+	// next request tries again instead of awaiting the same rejection forever.
+	ready.catch(() => (ready = undefined));
 	return ready;
 }
