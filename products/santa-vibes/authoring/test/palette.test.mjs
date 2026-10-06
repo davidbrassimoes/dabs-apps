@@ -3,6 +3,9 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { PaletteVariation, oklabToSrgb, rotationPalettes, srgbToOklab } from '../src/palette.ts';
 
 const lab = (r, g, b) => {
@@ -82,3 +85,22 @@ test('rotationPalettes puts the current palette first and drops duplicates', () 
   assert.equal(list.length, 2);
   assert.equal(list[0], B);
 });
+
+// test/fixtures/palette-cases.json (scripts/palette-cases.mjs) is the shared contract with
+// the tv-app; the reference must still reproduce it.
+const fixture = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures', 'palette-cases.json'), 'utf8'));
+for (const c of fixture.cases) {
+  test(`fixture palette: ${c.name}`, () => {
+    const v = new PaletteVariation();
+    Object.assign(v.settings, c.settings);
+    v.setPalettes(fixture.scene, fixture.palettes.map(pal), fixture.epoch);
+    const out = new Float32Array(15);
+    for (const s of c.samples) {
+      v.write(out, s.t);
+      assert.equal(v.current, s.current, `current at ${s.t}`);
+      assert.equal(v.next, s.next, `next at ${s.t}`);
+      assert.ok(Math.abs(v.mix - s.mix) < 1e-12, `mix at ${s.t}`);
+      s.palette.forEach((x, i) => assert.ok(Math.abs(out[i] - x) < 1e-6, `palette[${i}] at ${s.t}`));
+    }
+  });
+}
