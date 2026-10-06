@@ -335,19 +335,25 @@
 	</div>
 
 	<div class="strip">
-		<span class="label">{mode === 'spread' ? 'Recipe' : 'Pool'}</span>
+		<span class="label lg">{mode === 'spread' ? 'Recipe' : 'Pool'}</span>
 		{#if mode === 'spread'}
-			<span class="recipe">
+			<span class="recipe lg">
 				{#each SPREAD_SLOTS as slot (slot)}
 					<span class="slot-chip" style="--slot: var(--kind-{slot})">{slot}</span>
 				{/each}
 			</span>
-			<span class="meta">{poolCount} cards</span>
+			<span class="meta lg">{poolCount} cards</span>
+			<span class="meta sm">{SPREAD_SLOTS.join(' · ')}</span>
 		{:else}
 			<span class="meta">Ideas · {poolCount} cards</span>
 		{/if}
-		<span class="meta">{filterSummary} · Last 30 draws suppressed</span>
-		<button type="button" class="panel-button" onclick={() => (showFilters = !showFilters)}>
+		<span class="meta lg">{filterSummary} · Last 30 draws suppressed</span>
+		<button
+			type="button"
+			class="panel-button filters-button"
+			aria-expanded={showFilters}
+			onclick={() => (showFilters = !showFilters)}
+		>
 			Edit filters
 		</button>
 
@@ -362,7 +368,9 @@
 	</div>
 
 	{#if relaxationNote}
-		<p class="relaxed" role="status">{relaxationNote}</p>
+		<p class="relaxed" role="status">
+			<span class="lg">{relaxationNote}</span><span class="sm">Pool was thin — rules relaxed.</span>
+		</p>
 	{/if}
 
 	<div class="board">
@@ -499,6 +507,34 @@
 
 	.strip .panel-button {
 		font-size: 13px;
+	}
+
+	.sm {
+		display: none;
+	}
+
+	/* A phone keeps the strip to one line: what the pool is, and the way to the filters. */
+	@media (max-width: 720px) {
+		.lg {
+			display: none;
+		}
+
+		.sm {
+			display: inline;
+		}
+
+		.strip {
+			flex-wrap: nowrap;
+			justify-content: space-between;
+			padding-bottom: 4px;
+		}
+
+		.relaxed {
+			margin: 0 0 4px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 	}
 
 	.relaxed {

@@ -27,6 +27,13 @@
 	}: Props = $props();
 
 	// The card is the colour of its kind, and the ink on it comes with the fill.
+	// Longer text steps down a size so it fits the card; the text box scrolls as a last resort.
+	let size = $derived.by(() => {
+		const n = slot.card?.text.length ?? 0;
+		const [a, b] = compact ? [38, 90] : [80, 140];
+		return n <= a ? 'm' : n <= b ? 's' : 'xs';
+	});
+
 	let kind = $derived(slot.kind ?? slot.card?.kinds[0] ?? 'idea');
 </script>
 
@@ -46,7 +53,23 @@
 		</span>
 
 		{#if compact && slot.card}
-			<button type="button" class="pill" onclick={onreroll}>Reroll</button>
+			<button
+				type="button"
+				class="pill icon"
+				aria-label="Reroll this slot"
+				title="Reroll"
+				onclick={onreroll}
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path
+						d="M20 12a8 8 0 1 1-2.5-5.8M20 4v4.5h-4.5"
+						stroke="currentColor"
+						stroke-width="2.2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+			</button>
 		{/if}
 
 		{#if showLock}
@@ -92,12 +115,13 @@
 	</div>
 
 	{#if slot.card}
-		<p class="text">{slot.card.text}</p>
+		<p class="text size-{size}">{slot.card.text}</p>
 
 		<div class="foot">
 			<p class="slugs">
-				{slot.card.gear.join(' · ')}{#if slot.card.gear.length && slot.card.tags.length}
-					<br />{/if}{slot.card.tags.map((t) => `#${t}`).join(' ')}
+				{[slot.card.gear.join(' · '), slot.card.tags.map((t) => `#${t}`).join(' ')]
+					.filter(Boolean)
+					.join(' · ')}
 			</p>
 			{#if !compact}
 				<a class="pill" href={resolve('/cards/[id]', { id: slot.card.id })}>Edit card</a>
@@ -195,25 +219,57 @@
 
 	.text {
 		margin: auto 0;
+		flex: 0 1 auto;
+		min-height: 0;
+		overflow-y: auto;
 		font-weight: 700;
-		font-size: 32px;
-		line-height: 36px;
 		letter-spacing: -0.015em;
 		text-wrap: balance;
+		overflow-wrap: anywhere;
+	}
+
+	.text.size-m {
+		font-size: 32px;
+		line-height: 36px;
+	}
+
+	.text.size-s {
+		font-size: 26px;
+		line-height: 30px;
+	}
+
+	.text.size-xs {
+		font-size: 22px;
+		line-height: 26px;
 	}
 
 	.compact .text {
 		margin: auto 0 0;
-		font-size: 24px;
-		line-height: 28px;
 		letter-spacing: -0.01em;
 	}
 
+	.compact .text.size-m {
+		font-size: 22px;
+		line-height: 26px;
+	}
+
+	.compact .text.size-s {
+		font-size: 19px;
+		line-height: 23px;
+	}
+
+	.compact .text.size-xs {
+		font-size: 16px;
+		line-height: 20px;
+	}
+
 	.foot {
+		flex: none;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: flex-end;
 		justify-content: space-between;
-		gap: 12px;
+		gap: 8px 12px;
 	}
 
 	.foot .pill {
@@ -223,6 +279,9 @@
 
 	.slugs {
 		margin: 0;
+		flex: 1 1 10rem;
+		min-width: 0;
+		overflow-wrap: anywhere;
 		font-family: var(--font-mono);
 		font-size: 14px;
 		line-height: 20px;
@@ -230,8 +289,18 @@
 	}
 
 	.compact .slugs {
-		font-size: 13px;
-		line-height: 18px;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 1;
+		line-clamp: 1;
+		overflow: hidden;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	.pill.icon {
+		width: 44px;
+		padding: 0;
 	}
 
 	.empty {
