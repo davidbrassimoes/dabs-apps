@@ -87,9 +87,16 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
   speed…", "Use it as the intro only…", "The loudest thing…" e "Build the whole thing from one
   bar." ganharam `constraint` (eram só technique/arrangement e nunca saíam); arquivadas "Mic it
   from three metres…" e "Two instruments at once…" (repetiam outras).
-- Encontrado: no editor, cliques feitos logo a seguir a abrir a página (antes da hidratação)
-  perdem-se, e "Save card" grava o estado antigo sem aviso. Com uma pausa de ~3 s funciona.
-  Não investigado.
+- Cliques "perdidos" no editor: **não é bug da app.** Investigado no mesmo dia. O separador do
+  Claude in Chrome está escondido (`visibilityState: hidden`) e um clique dado logo a seguir a
+  `navigate` não chega à página: zero `pointerdown`. Com uma captura de ecrã antes do clique, o
+  mesmo clique chega e o editor reage bem (classe `on`, frase dos tipos, `change`). As
+  coordenadas também mudam com o tamanho da janela. Para agentes: depois de `navigate`, tirar
+  uma captura e confirmar o estado antes de gravar.
+- Risco teórico, não observado: um clique antes de a hidratação acabar (~200 ms depois do
+  carregamento) muda a checkbox sem passar por `toggleKind`, e o estado e a checkbox ficam
+  dessincronizados. Não se corrige por agora; os sintomas seriam uma checkbox marcada com a
+  pílula sem cor.
 
 ### 2026-10-06 — a skill de cartas lê a app publicada
 
