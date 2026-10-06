@@ -6,9 +6,10 @@
 
 ## Para a próxima sessão
 
-- Fase 0 feita (0.6 fechado em 2026-10-06). Próximo: Fase 1, passo 1.1 (`signals-core` em Rust).
-- À espera de DABS (desde 2026-10-06): o ritmo da cena que sai durante o crossfade, e mais três
-  perguntas em `../../projects/santa-vibes.md` ("Por decidir").
+- Fase 0 feita; 1.1 (`signals-core`) feito em 2026-10-06. Próximo: 1.2 (`pc-bridge`: captura WASAPI
+  loopback, beacon, envio UDP), que é onde se afina o `signals-core` com música real.
+- À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
+  ("Por decidir"). Nenhuma bloqueia o 1.2.
 - Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
 
 ## Dados pessoais
@@ -32,6 +33,19 @@ Rever esta tabela quando o 1.4 entrar.
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-06 — 1.1 `signals-core`
+
+- Rust instalado no PC (`rustup` via winget, stable 1.99, MSVC).
+- Crate `signals-core`: espectro, bandas com AGC, centroid, onsets, tempo, fase com PLL e
+  lookahead, mood, pacotes `SIGN`/`PNMB`. Algoritmo e constantes em `signals-core/README.md`.
+- Três correções vindas dos testes: (1) AGC por banda isolado fazia leakage de −72 dB ler 0,39 →
+  o piso de cada banda segue o nível geral (−20 dB); (2) 150 BPM lido como 75 porque o período
+  fracionário (37,5 frames) falhava os picos estreitos → função de onsets suavizada antes da
+  autocorrelação; (3) ruído dava onsets a mais → limiar de 1,5 para 3 desvios, confiança mínima 0,3.
+- Loops reais de freesound (só leitura, fora do repo): 123 BPM certo no único com tempo conhecido;
+  nos de bateria não há verdade para comparar. Possível erro de oitava fica para afinar.
+- Não entrou no `scripts/check`/CI (pergunta 2).
 
 ### 2026-10-06 — 0.6 na tv-app, e arrumação
 

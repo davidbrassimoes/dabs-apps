@@ -1,7 +1,7 @@
 # santa-vibes
 
 **Dono:** DABS
-**Estado:** em construção (fase 0 feita; a seguir fase 1, ver `products/santa-vibes/docs/ROADMAP.md`)
+**Estado:** em construção (fase 0 feita; fase 1 em curso, 1.1 feito; ver `products/santa-vibes/docs/ROADMAP.md`)
 **Destino:** pessoal; sideload na Google TV Streamer. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/santa-vibes/`
 
@@ -25,11 +25,12 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
 | 1 | Nome definitivo (hoje nome de protótipo) e identificadores de pacote | DABS | Só uma eventual publicação |
-| 2 | Se `phone-app`, `pc-bridge` e `signals-core` entram na CI quando tiverem build | DABS | Nada por agora |
+| 2 | Se `phone-app`, `pc-bridge` e `signals-core` entram na CI quando tiverem build. Já é concreto: `signals-core` compila e tem 24 testes (`cargo test`, ~5 s depois de compilado); entrar implica `scripts/check` do produto chamar o `cargo` e a CI instalar Rust | DABS | Nada; hoje o Rust não é verificado pelo `scripts/check` |
 | 3 | Durante o crossfade, a cena que sai: continua a mexer (hoje, como diz `ARQUITETURA.md`; 6/15 transições a 24–26 fps), a meio ritmo (13/15 no limite) ou parada no último frame (15/15). Números em `tv-app/README.md`. Mudar atualiza `ARQUITETURA.md` | DABS | Nada; muda uma linha (`fadeEvery`) |
 | 4 | Valores por defeito na box para rotação de paleta e matiz (hoje desligados, como no authoring) até haver página de controlo | DABS | Nada; até lá, extras do intent |
 | 5 | `flow-particles` depende do fps (avança por frame): acrescentar `uDeltaTime` ao formato de cena? | DABS | Nada; nota em `NOTES.md` |
 | 6 | `color-field` tem `image: optional` mas não lê `uImage`: `optional` quer dizer "paleta da imagem" ou "amostra a imagem"? | DABS | Fase 2 |
+| 7 | Música de referência para afinar o tempo e as bandas: 5–10 faixas que DABS ouve de facto, de géneros diferentes, com o BPM conhecido (WAV ou outro formato; ficam fora do repo) | DABS | A afinação no 1.2/1.5, não o código |
 
 ## Próximos passos
 
@@ -37,10 +38,12 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 - [x] Repo antigo `davidbrassimoes/santa-vibes` arquivado e pasta local removida (2026-10-06)
 - [x] `NOTES.md` do produto criado de `templates/notes.md` (2026-10-06)
 - [x] Passo 0.6 na tv-app, medido na box (2026-10-06)
-- [ ] Fase 1, passo 1.1: `signals-core` (Rust)
+- [x] Fase 1, passo 1.1: `signals-core` (Rust) (2026-10-06)
+- [ ] Fase 1, passo 1.2: `pc-bridge` (captura WASAPI loopback, beacon, envio UDP)
 
 ## Histórico
 
 - 2026-10-06: movido para `dabs-apps`.
 - 2026-10-06: CI verde; repo antigo `davidbrassimoes/santa-vibes` arquivado (só leitura).
 - 2026-10-06: 0.6 na tv-app; Fase 0 completa. `CLAUDE.md` do produto encurtado; `NOTES.md` criado.
+- 2026-10-06: 1.1 `signals-core` (Rust): análise, pacotes, testes com áudio gerado e WAV.
