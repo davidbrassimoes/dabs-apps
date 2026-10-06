@@ -1,0 +1,18 @@
+[package]
+name = "pc-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "Santa Vibes PC bridge: WASAPI loopback capture -> signals-core -> UDP to the TV"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+signals-core = { path = "../signals-core" }
+# Audio capture (Apache-2.0). Chosen in docs/decisoes/0001-stack.md; on Windows an input
+# stream on an output device is a WASAPI loopback capture.
+cpal = "0.18"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
