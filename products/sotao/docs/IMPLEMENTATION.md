@@ -2,7 +2,7 @@
 
 > **Since this was written** (2026-10-06): the app is **Sótão — studio cards** and lives in
 > `davidbrassimoes/dabs-apps` at `products/sotao/`. Two sections are overridden. **§3
-> Hosting** is Cloudflare Workers + Turso (`wrangler.jsonc`). **§12 Theming** is
+> Hosting** is Cloudflare Workers + D1 (`wrangler.jsonc`; `projects/sotao.md`, decision 8). **§12 Theming** is
 > replaced by `docs/LOOK.md` (look G, approved at gate 2 on 2026-10-06). Everything else stands as written.
 
 **For:** the agent building this in a fresh Claude Code session.

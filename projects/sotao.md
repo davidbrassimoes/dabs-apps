@@ -22,6 +22,7 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 5. 2026-10-06, DABS: fica PWA por agora; portar para outras plataformas não está em cima da mesa.
 6. 2026-10-06, DABS: deploy nas mesmas contas Cloudflare e Turso da Escarpa Audio, num Worker próprio.
 7. 2026-10-06, DABS, gate 2: aspeto **G · Baralho suave** "por enquanto" (`products/sotao/docs/LOOK.md`).
+8. 2026-10-06, DABS: **Cloudflare D1 em vez de Turso** (substitui a parte Turso da decisão 6). Porquê: uma conta só, sem serviço nem token extra, e o D1 tem as chaves estrangeiras sempre ligadas, o que fecha o risco do `PRAGMA foreign_keys` sobre HTTP. Alternativa pesada e posta de lado por agora: VPS com Node + ficheiro SQLite (zero mudanças de código, mas operação contínua). Custo: trocar o driver e passar a única transação (importar) a `batch`.
 
 ## Por decidir
 
@@ -33,8 +34,9 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 
 - [x] Gate 2: aspeto G escolhido (2026-10-06)
 - [x] Aspeto G implementado e verificado em capturas, 390 e 1280 px, dois temas (2026-10-06)
-- [ ] Primeiro deploy (gate 3): criar base Turso, `wrangler secret put` para os quatro
-      secrets, `npm run deploy`, testar o `PRAGMA foreign_keys` (ver `NOTES.md`)
+- [ ] Trocar Turso por D1 (decisão 8)
+- [ ] Primeiro deploy (gate 3): `wrangler secret put` para `APP_PASSWORD` e `APP_SECRET`, `npm run deploy`,
+      testar que apagar material usado por uma carta falha
 
 ## Histórico
 
