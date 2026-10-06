@@ -1,0 +1,23 @@
+[package]
+name = "santavibes-signals"
+version = "0.1.0"
+edition = "2021"
+description = "JNI wrapper around signals-core for the Santa Vibes phone app"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[lib]
+name = "santavibes_signals"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# No JNI crate: the three JNIEnv functions used are called through the fixed JNI
+# function table (src/jni.rs).
+signals-core = { path = "../../signals-core" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"
+strip = true
