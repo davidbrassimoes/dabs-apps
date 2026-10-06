@@ -263,6 +263,40 @@
 		line-height: 20px;
 	}
 
+	/* Wide screens: one card has about twice a phone's area, so its steps go up a lot; the three
+	   cards share the same height, so theirs go up less. */
+	@media (min-width: 721px) {
+		.text.size-m {
+			font-size: 44px;
+			line-height: 48px;
+		}
+
+		.text.size-s {
+			font-size: 36px;
+			line-height: 40px;
+		}
+
+		.text.size-xs {
+			font-size: 30px;
+			line-height: 34px;
+		}
+
+		.compact .text.size-m {
+			font-size: 26px;
+			line-height: 30px;
+		}
+
+		.compact .text.size-s {
+			font-size: 22px;
+			line-height: 26px;
+		}
+
+		.compact .text.size-xs {
+			font-size: 18px;
+			line-height: 22px;
+		}
+	}
+
 	.foot {
 		flex: none;
 		display: flex;

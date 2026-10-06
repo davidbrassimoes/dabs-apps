@@ -7,8 +7,8 @@
 
 - **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 114 testes. Nunca publicada.
 - **Aspeto G no `main`** (2026-10-06). Visto em capturas headless a 390 e 1280 px, nos dois
-  temas; atalhos de teclado, offline e telemóvel real por ver. Em ecrã largo o texto da carta
-  fica pequeno (o escalonamento por comprimento aplica-se a todas as larguras): afinar.
+  temas; atalhos de teclado, offline e telemóvel real por ver. Em ecrã largo o texto
+  das cartas sobe um degrau (`DrawCard.svelte`, acima de 720 px), verificado em 8 tiragens sem scroll.
 - **Próximo: primeiro deploy (gate 3)** nas contas da Escarpa. DABS cria a base Turso e os
   quatro secrets (`wrangler secret put`).
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
