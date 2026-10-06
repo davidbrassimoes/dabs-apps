@@ -1,7 +1,7 @@
 # sotao
 
 **Dono:** DABS
-**Estado:** em construção (fase 1 e aspeto G feitos; falta o primeiro deploy)
+**Estado:** publicado (uso pessoal), 2026-10-06
 **Destino:** pessoal. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/sotao/`
 
@@ -28,15 +28,15 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
-| 2 | Domínio próprio ou só `workers.dev` | DABS | Nada; publicação é gate 3 |
+| 2 | Domínio próprio ou só `workers.dev` (o endereço atual leva o nome `escarpa-audio` da conta) | DABS | Nada |
 
 ## Próximos passos
 
 - [x] Gate 2: aspeto G escolhido (2026-10-06)
 - [x] Aspeto G implementado e verificado em capturas, 390 e 1280 px, dois temas (2026-10-06)
 - [x] Turso trocado por D1 (decisão 8); base D1 `sotao` criada na conta, WEUR (2026-10-06)
-- [ ] Primeiro deploy (gate 3): `wrangler secret put` para `APP_PASSWORD` e `APP_SECRET`, `npm run deploy`,
-      testar que apagar material usado por uma carta falha
+- [x] Primeiro deploy (gate 3), 2026-10-06: https://sotao.escarpa-audio.workers.dev
+- [ ] DABS entra no telemóvel, instala a PWA e usa uma noite; importar uma carta confirma o `batch` no D1 remoto
 
 ## Histórico
 
@@ -44,3 +44,4 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 - 2026-09-26: trazido para o `escarpa-audio` num branch, adaptado às regras da empresa.
 - 2026-10-06: movido para o `dabs-apps`; nomes reais no git; marcas da Escarpa removidas.
 - 2026-10-06: gate 2 (aspeto G) e implementação no `main`.
+- 2026-10-06: D1 em vez de Turso; gate 3, primeiro deploy.

@@ -5,13 +5,16 @@
 
 ## Para a próxima sessão
 
-- **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 118 testes. Nunca publicada.
-- **Aspeto G no `main`** (2026-10-06). Visto em capturas headless a 390 e 1280 px, nos dois
-  temas; atalhos de teclado, offline e telemóvel real por ver. Em ecrã largo o texto
-  das cartas sobe um degrau (`DrawCard.svelte`, acima de 720 px), verificado em 8 tiragens sem scroll.
-- **D1 em vez de Turso** implementado no branch `sotao-d1` (decisão 8). **Próximo: primeiro deploy
-  (gate 3)**: DABS corre `wrangler d1 create sotao`, cola o `database_id` em `wrangler.jsonc` e
-  define os dois secrets (`APP_PASSWORD`, `APP_SECRET`).
+- **Publicada (gate 3, DABS, 2026-10-06):** https://sotao.escarpa-audio.workers.dev, Worker `sotao`,
+  versão `e9f6e8e2`, D1 `sotao` (WEUR). 118 testes. Aspeto G; D1 em vez de Turso (decisão 8).
+- **Verificado em produção:** o primeiro pedido migrou e semeou (1,3 s; 47 peças, 32 cartas, 1
+  migração); pedidos seguintes ~0,1 s; `foreign_keys = 1`; apagar `ac30` (usado por cartas)
+  falha com `FOREIGN KEY constraint failed` e nada muda.
+- **Por verificar em produção:** login e uso real (a password do Worker não é a do `.env` local,
+  por isso o agente não entrou); importação com commit no D1 remoto (atomicidade do `batch`);
+  telemóvel real, atalhos de teclado, offline.
+- **Por decidir:** o endereço `workers.dev` leva o nome da conta, `escarpa-audio`. Um domínio
+  próprio tira-o (`projects/sotao.md`, por decidir 2).
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
