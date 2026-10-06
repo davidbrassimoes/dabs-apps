@@ -19,19 +19,19 @@ gate é o **mockup do novo aspeto** (gate 2).
    original `sotao-cards`.
 3. 2026-10-06, DABS: nomes reais de material entram no git.
 4. 2026-10-06, DABS: o Sótão ganha um aspeto próprio. Até lá fica o sea fog da Escarpa, provisório.
+5. 2026-10-06, DABS: fica PWA por agora; portar para outras plataformas não está em cima da mesa.
+6. 2026-10-06, DABS: deploy nas mesmas contas Cloudflare e Turso da Escarpa Audio, num Worker próprio.
 
 ## Por decidir
 
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
 | 1 | O novo aspeto (mockup) | DABS, gate 2 | Trabalho de UI |
-| 2 | Portar para outras plataformas (app nativa, desktop)? Se sim, quais e quando. Pesa no desenho do novo aspeto e no stack | DABS | O spec do novo aspeto |
-| 3 | Que conta Cloudflare (e Turso) recebe o Worker: a de DABS pessoal ou outra. A da Escarpa já não serve | DABS | Primeiro deploy |
-| 4 | Domínio próprio ou só `workers.dev` | DABS | Nada; publicação é gate 3 |
+| 2 | Domínio próprio ou só `workers.dev` | DABS | Nada; publicação é gate 3 |
 
 ## Próximos passos
 
-- [ ] Brief curto do novo aspeto (e da questão das plataformas) → mockup → gate 2
+- [ ] Propostas de aspeto em `products/sotao/design/` → DABS escolhe → gate 2
 - [ ] Primeiro deploy (gate 3): criar base Turso, `wrangler secret put` para os quatro
       secrets, `npm run deploy`, testar o `PRAGMA foreign_keys` (ver `NOTES.md`)
 
