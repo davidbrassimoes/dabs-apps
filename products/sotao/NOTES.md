@@ -76,6 +76,16 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 
 ## Registo
 
+### 2026-10-06 — a skill de cartas lê a app publicada
+
+- `.claude/skills/sotao-cards/scripts/cards.mjs` lê o material e as cartas do D1 de produção
+  (`wrangler d1 execute --remote`, só leitura, o wrangler da app corrido pelo node, sem shell).
+  Se falhar, avisa com o motivo do wrangler e usa o seed; `--seed` força o seed.
+- Verificado: `vocab`, `existing` e `check` contra produção (3 corridas seguidas); a falha forçada
+  (token inválido) cai no seed com a mensagem do wrangler.
+- O lote `imports/2026-09-22-stairs-and-winter.yaml` (14 cartas novas, 0 erros) nunca foi
+  importado.
+
 ### 2026-10-06 — troca de modo e três cartas em ecrã grande (relatado por DABS)
 
 - **Troca One/Three:** a página não remonta ao mudar `?mode=`, por isso a tiragem do modo anterior

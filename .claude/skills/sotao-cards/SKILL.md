@@ -1,11 +1,11 @@
 ---
 name: sotao-cards
-description: Write inspiration cards for the Sótão Cards app as an import-ready YAML file (import v1, author claude), from a card count plus optional ideas or themes from David. Use this whenever David asks for cards, prompts, studio ideas, "twenty more sources", constraints, treatments, or anything to feed the app's /import screen — even when he does not say "skill", "YAML" or "import". Also use it when he is only kicking ideas around and wants them turned into cards.
+description: Write inspiration cards for the Sótão app (studio cards) as an import-ready YAML file (import v1, author claude), from a card count plus optional ideas or themes from David. Use this whenever David asks for cards, prompts, studio ideas, "twenty more sources", constraints, treatments, or anything to feed the app's /import screen — even when he does not say "skill", "YAML" or "import". Also use it when he is only kicking ideas around and wants them turned into cards.
 ---
 
-# Sótão Cards — card generation
+# Sótão — card generation
 
-Sótão Cards deals David a card when he sits down in the studio and does not know where to
+Sótão deals David a card when he sits down in the studio and does not know where to
 start. The cards live or die on whether they name a real move he can make tonight with gear
 he actually owns. A vague card is worse than no card — it gets skipped, and a pool full of
 skipped cards stops being worth drawing from.
@@ -90,14 +90,21 @@ draw filter for the theme afterwards, which is worth more than the tag being tid
 
 Gear slugs must match character for character or the importer rejects the card, and the
 inventory changes — David adds gear from the UI and flips things from wishlist to owned. So
-read it from the repo rather than from memory:
+read it from the deployed app rather than from memory:
 
 ```bash
 node .claude/skills/sotao-cards/scripts/cards.mjs vocab
 ```
 
 That prints every gear slug by category (wishlist marked `*`), the six kinds, the tags
-already in use with their counts, and how big the library currently is.
+already in use with their counts, and how big the library currently is. Gear and cards come
+from the deployed app's D1 database, read-only through the app's own wrangler (already logged
+in on this machine). The first line says where they came from.
+
+If it prints `WARNING: could not read the deployed app's D1`, it fell back to the repo seed
+(`seed/gear.ts`, `seed/cards.yaml`), which knows only the seeded gear and the 32 starter
+cards. Tell David, say why (the warning has wrangler's reason), and ask whether to go on
+against the seed or fix the connection first. `--seed` forces the seed on purpose.
 
 Then read what already exists, so you write additions rather than restatements:
 
@@ -106,13 +113,8 @@ node .claude/skills/sotao-cards/scripts/cards.mjs existing
 ```
 
 If the library has grown past a few hundred cards, skim the kinds you are about to write
-rather than all of it. And if David has an export from the running app
-(manager toolbar → export, or `GET /api/export.yaml`), prefer it — pass it as
-`--existing <file>` to both `existing` and `check`. the starter set in `seed/` only knows the
-starter set, so duplicate checking against it alone is optimistic.
-
-Node is not on this machine's PATH. Prefix shell calls:
-`export PATH="/c/Program Files/nodejs:$PATH"`.
+rather than all of it. `--existing <file>` (an export from the app's Cards screen) replaces
+the live library for `existing` and `check`; it is only needed when the live read fails.
 
 ## The six kinds
 
@@ -201,7 +203,7 @@ Try using only one microphone and moving it around a lot.          # a constrain
 ## The file
 
 ```yaml
-# sótão cards — import v1
+# sótão — import v1
 version: 1
 defaults:
   author: claude
@@ -289,9 +291,10 @@ no-op, so there is no harm in previewing twice.
 This skill mirrors decisions that live in the repo. When something looks off, the source of
 truth is (paths from `products/sotao/`, where the app lives):
 
-- `seed/gear.ts` — the real gear slugs and what is owned, read at run time by
-  `cards.mjs vocab`. Gear added from the app's UI lives only in the database, so if he names
-  gear that is not listed, ask before inventing a slug.
+- The deployed D1 (`sotao`) — the real gear slugs and what is owned, and the card library,
+  read at run time by `cards.mjs`. If he names gear that is not listed, ask before inventing a
+  slug: it has to exist in the app before a card can reference it. `seed/gear.ts` and
+  `seed/cards.yaml` are only the fallback and what an empty database is seeded with.
 - `src/lib/vocab.ts` — the kinds, authors, statuses.
 - `src/lib/kinds.ts` — which kinds a draw actually reaches. If a spread gains a slot, or
   `technique` becomes drawable, fix both the kinds table above and `DRAWABLE` in
