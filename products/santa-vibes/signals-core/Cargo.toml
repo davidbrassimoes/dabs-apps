@@ -1,0 +1,20 @@
+[package]
+name = "signals-core"
+version = "0.1.0"
+edition = "2021"
+description = "Santa Vibes audio analysis: bands, AGC, onsets, tempo, beat phase, SIGN packets"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[lib]
+name = "signals_core"
+crate-type = ["rlib"]
+
+[dependencies]
+# FFT (MIT OR Apache-2.0). Chosen in docs/decisoes/0001-stack.md; pure Rust, builds for
+# Windows and the Android NDK alike. Alternative: realfft on top of it (not needed yet).
+rustfft = "6"
+
+[profile.release]
+lto = true
+codegen-units = 1
