@@ -20,7 +20,7 @@ formatos e os números são vinculativos; o topo diz que secções foram substit
 - **Nomes reais entram no git.** `seed/gear.ts` e `seed/cards.yaml` são o rig e as cartas de
   arranque verdadeiros. Os slugs são o vocabulário das importações: mudar um parte as cartas que o usam.
 - **Cores só como tokens** em `src/routes/layout.css`, nunca literais num componente. O
-  aspeto atual é provisório até o mockup do novo passar o gate 2.
+  aspeto é o de `docs/LOOK.md` (G, aprovado no gate 2).
 
 ## Comandos (de `products/sotao/`)
 

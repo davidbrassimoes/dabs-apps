@@ -6,9 +6,8 @@
 ## Para a próxima sessão
 
 - **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 114 testes. Nunca publicada.
-- **Próximo: o novo aspeto.** Mockup primeiro, gate 2 com DABS. O aspeto atual é o sea fog da
-  Escarpa Audio, provisório (`src/routes/layout.css`). Antes de desenhar, saber se o porte
-  para outras plataformas está em cima da mesa (`projects/sotao.md`, por decidir).
+- **Próximo: implementar o aspeto G** (`docs/LOOK.md`, gate 2 aprovado por DABS a
+  2026-10-06). Depois, o primeiro deploy (gate 3) nas contas da Escarpa.
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
@@ -36,7 +35,9 @@ Cartas, material e histórico de tiragens não são dados pessoais de terceiros.
 
 ## Registo
 
-### 2026-10-06 — propostas de aspeto (gate 2 pendente)
+### 2026-10-06 — propostas de aspeto; gate 2: G
+
+- **Gate 2 aprovado:** DABS escolheu **G · Baralho suave**, "por enquanto". Regras em `docs/LOOK.md`.
 
 - **Segunda ronda** (DABS gostou mais de A e C e pediu mais hipóteses): **D · Cartolina** (a ficha
   da A em cartolina de cor por tipo), **E · Carta de jogar** (carta branca, índice nos cantos,

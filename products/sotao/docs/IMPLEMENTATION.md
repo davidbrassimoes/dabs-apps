@@ -3,9 +3,7 @@
 > **Since this was written** (2026-10-06): the app is **Sótão — studio cards** and lives in
 > `davidbrassimoes/dabs-apps` at `products/sotao/`. Two sections are overridden. **§3
 > Hosting** is Cloudflare Workers + Turso (`wrangler.jsonc`). **§12 Theming** is
-> provisional: the app still wears the sea fog palette it got while it lived in the Escarpa
-> Audio repository, and a new look replaces it once its mockup passes gate 2
-> (`projects/sotao.md` at the repository root). Everything else stands as written.
+> replaced by `docs/LOOK.md` (look G, approved at gate 2 on 2026-10-06). Everything else stands as written.
 
 **For:** the agent building this in a fresh Claude Code session.
 **From:** a design session with the owner (David / DABS). Everything in here was decided
