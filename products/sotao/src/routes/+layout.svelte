@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	// The brand's three faces, bundled from @fontsource and served from here —
-	// nothing is fetched from a third party. All SIL OFL 1.1.
-	import '@fontsource/cormorant-garamond/500.css';
-	import '@fontsource/cormorant-garamond/600.css';
-	import '@fontsource/jost/400.css';
-	import '@fontsource/jost/500.css';
-	import '@fontsource/jost/600.css';
-	import '@fontsource/dm-mono/400.css';
-	import '@fontsource/dm-mono/500.css';
+	// The two faces, bundled from @fontsource and served from here, so nothing is
+	// fetched from a third party. Both SIL OFL 1.1.
+	import '@fontsource/bricolage-grotesque/400.css';
+	import '@fontsource/bricolage-grotesque/600.css';
+	import '@fontsource/bricolage-grotesque/700.css';
+	import '@fontsource/bricolage-grotesque/800.css';
+	import '@fontsource/courier-prime/400.css';
+	import '@fontsource/courier-prime/700.css';
 	import './layout.css';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import { page } from '$app/state';
@@ -31,7 +30,7 @@
 </script>
 
 <svelte:head>
-	<title>Sótão</title>
+	<title>sótão</title>
 </svelte:head>
 
 {#if chromeless}
@@ -59,5 +58,12 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+	}
+
+	/* The tab bar is fixed to the bottom on a phone; leave room for it. */
+	@media (max-width: 720px) {
+		main {
+			padding-bottom: calc(64px + env(safe-area-inset-bottom));
+		}
 	}
 </style>
