@@ -28,7 +28,7 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 | authoring | `cd authoring && npm install && npm run build` | `npm run dev` → http://localhost:5180/ | `npm test` (composição, drift, paleta) · `npm run check` (tipos) · `node scripts/smoke.mjs --gpu` (headless, com o servidor a correr) |
 | tv-app | `cd tv-app && ./gradlew :app:assembleDebug` | `adb -s 192.168.1.27:5555 install -r app/build/outputs/apk/debug/app-debug.apk` + `adb -s 192.168.1.27:5555 shell am start -n dev.santavibes.tv/.MainActivity`; logs: `adb -s 192.168.1.27:5555 logcat -s SantaVibes` | `./gradlew :core:test` |
 | signals-core | `cd signals-core && cargo build --release` | `cargo run --release --example analyze -- musica.wav` | `cargo test --release` · `cargo clippy --all-targets` (Rust via `rustup`; fora do `scripts/check` por agora) |
-| pc-bridge | _a definir_ | _a definir_ | _a definir_ |
+| pc-bridge | `cd pc-bridge && cargo build --release` | `target/release/pc-bridge.exe [--tv 192.168.1.27]`; sem TV: `cargo run --release --example fake_tv` | `cargo clippy --all-targets`; teste manual com o `fake_tv` (README) |
 | phone-app | _a definir_ | _a definir_ | _a definir_ |
 
 O servidor do authoring é `node dev-server.mjs` (não é Vite). Fixtures partilhadas entre o

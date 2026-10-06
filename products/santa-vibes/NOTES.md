@@ -6,8 +6,8 @@
 
 ## Para a próxima sessão
 
-- Fase 0 feita; 1.1 (`signals-core`) feito em 2026-10-06. Próximo: 1.2 (`pc-bridge`: captura WASAPI
-  loopback, beacon, envio UDP), que é onde se afina o `signals-core` com música real.
+- Fase 0 feita; 1.1 e 1.2 feitos em 2026-10-06. Próximo: 1.3 (receção na tv-app: `SignalHub`,
+  beacon, mixer de reatividade). Com ele a box reage à música do PC e afina-se tudo a olho.
 - À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
   ("Por decidir"). Nenhuma bloqueia o 1.2.
 - Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
@@ -33,6 +33,16 @@ Rever esta tabela quando o 1.4 entrar.
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-06 — 1.2 `pc-bridge`
+
+- Binário Rust com `cpal` (loopback WASAPI) + `signals-core` + UDP; `fake_tv` como TV de teste.
+- Erro encontrado no primeiro teste: o loopback reporta Xrun em cada início/fim de reprodução e
+  eu reabria a captura por isso (só saíam 2 pacotes em 2 s). Agora só reabre quando o dispositivo
+  some ou a saída por defeito muda.
+- Medido com dois loops reais pelas colunas: 60 pkt/s, 0 perdidos, 1,6 % de um núcleo, 11,9 MB.
+  Pacotes chegam à box (`nc` no adb). Números no `pc-bridge/README.md`.
+- Não feito: arranque automático, ícone, correr sem consola.
 
 ### 2026-10-06 — 1.1 `signals-core`
 
