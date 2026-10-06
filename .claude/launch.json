@@ -1,0 +1,12 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "sotao-dev",
+			"runtimeExecutable": "C:/Program Files/nodejs/npm.cmd",
+			"runtimeArgs": ["--prefix", "products/sotao", "run", "dev"],
+			"autoPort": true,
+			"port": 5173
+		}
+	]
+}

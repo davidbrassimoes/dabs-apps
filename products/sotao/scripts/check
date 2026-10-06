@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Verificação do Sótão: tipos, lint, testes (com mínimo de testes) e build para Workers.
+# Output só com falhas. Assume `npm ci` já corrido.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+# Um runner que não descobre testes também sai com 0; o mínimo apanha isso.
+MIN_TESTS=100
+
+run() {
+  local out
+  if ! out="$("$@" 2>&1)"; then
+    echo "falhou: $*"
+    echo "$out" | tail -n 60
+    exit 1
+  fi
+}
+
+run npm run -s check
+run npm run -s lint
+run npx vitest --run --silent --reporter=json --outputFile=test-results.json
+total="$(node -p "require('./test-results.json').numTotalTests")"
+if [ "$total" -lt "$MIN_TESTS" ]; then
+  echo "só $total testes correram; mínimo $MIN_TESTS"
+  exit 1
+fi
+run npm run -s build

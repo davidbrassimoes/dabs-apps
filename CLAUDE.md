@@ -63,5 +63,7 @@ Documentação em português de Portugal. Código, identificadores e commits em 
 - [x] ADR-001: DABS aprova todos os gates, PT-PT, stack por produto (2026-10-05)
 - [x] `gota` movido para `products/gota` com história (2026-10-05)
 - [x] `santa-vibes` movido para `products/santa-vibes` com história (2026-10-06)
+- [x] `sotao` movido do branch `sotao` do `escarpa-audio` para `products/sotao` com história (2026-10-06)
+- [ ] Arquivar `davidbrassimoes/sotao-cards` no GitHub depois de a CI aqui ficar verde
 - [ ] Preencher os princípios em `handbook/00-manifesto.md`
 - [x] Arquivar `davidbrassimoes/gota` e `davidbrassimoes/santa-vibes` no GitHub depois de a CI aqui ficar verde (2026-10-06)
