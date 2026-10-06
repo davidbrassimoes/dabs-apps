@@ -15,6 +15,7 @@
 | Fonte | Acesso | Tamanho controlado | Notas | Verificado |
 |---|---|---|---|---|
 | **Pasta local** | ficheiros na box ou partilha do PC | redimensionar ao importar | as tuas fotos; zero dependências | — |
+| **Servidor de casa** (candidato) | pasta servida por HTTP pelo Apache já instalado; a box lê com `HttpURLConnection` (SMB pediria biblioteca nova) | o servidor redimensiona e prepara a pasta (cron) | pode também descarregar os acervos à noite; a box usa a cache quando ele está desligado | 2026-10-06 (hardware) |
 | **Art Institute of Chicago** | API pública, sem chave | sim, IIIF | filtro de domínio público; boa primeira fonte | por verificar |
 | **The Met** | API pública, sem chave | não (imagem "small"/original) | filtro de domínio público | por verificar |
 | **Rijksmuseum** | dados abertos / IIIF | sim | a API mudou recentemente — confirmar o modelo atual | por verificar |
