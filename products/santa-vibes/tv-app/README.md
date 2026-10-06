@@ -1,4 +1,4 @@
-# tv-app — app Android TV (Fase 0.4 e Fase 3)
+# tv-app — app Android TV (Fase 0.4–0.6 e Fase 3)
 
 Kotlin + OpenGL ES 3.0 nativo. Renderer de cenas, receção de sinais, fontes de imagem, servidor de controlo e `DreamService`.
 
@@ -10,10 +10,12 @@ Regras: ver `CLAUDE.md` (zero alocações por frame, sem WebView, dependências 
 ## Estrutura
 
 ```
-core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição de shaders, Synth.
+core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição de shaders, Synth,
+        drift de parâmetros (Drift) e variação de paleta (PaletteVariation).
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
-app/    Android: MainActivity (ecrã inteiro, comando, overlay), SceneRenderer (FBO + passe de saída),
-        SceneLibrary (assets), Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
+app/    Android: MainActivity (ecrã inteiro, comando, overlay), SceneRenderer (cenas, crossfade, passe de saída),
+        SceneSlot (uma cena: programa, FBOs, relógio), Benchmark (passo 0.5), SceneLibrary (assets),
+        Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
 ```
 
 ## Como compilar, correr e testar
@@ -22,7 +24,7 @@ Requer JDK 17+ (testado com 21) e o Android SDK (platform 36) em `ANDROID_HOME`.
 
 ```
 cd tv-app
-./gradlew :core:test                 # composição de shaders igual à da autoria (fixtures), JSON, cenas reais
+./gradlew :core:test                 # composição, drift e paleta iguais aos da autoria (fixtures), JSON, cenas reais
 ./gradlew :app:assembleDebug         # APK em app/build/outputs/apk/debug/app-debug.apk
 adb connect 192.168.1.27:5555
 adb -s 192.168.1.27:5555 install -r app/build/outputs/apk/debug/app-debug.apk
@@ -97,5 +99,28 @@ Uma janela de 10 s por cena, com o limite de fps de cada cena: **todas no limite
 
 **Conclusão:** com o ruído por textura, o passe de saída otimizado e a escala por cena, as 15 cenas cumprem o critério da Fase 0 na box. A escala dinâmica não é precisa por agora; volta a ser avaliada com um projetor 4K ou cenas novas mais pesadas.
 
-**Por fazer:** custo do crossfade quando chegar à tv-app (0.6; soma das duas cenas durante ~4 s).
+### Drift, paleta e crossfade (passo 0.6), 2026-10-06
+
+Definições do host por extras do intent até haver página de controlo (Fase 3); por defeito: crossfade 4 s, drift 1, paleta sem rodar e sem matiz (como no authoring).
+
+```
+am start -n dev.santavibes.tv/.MainActivity [--ef transition 4] [--ef drift 1] [--ef driftSpeed 1]
+    [--ez rotate true] [--ef hold 180] [--ef fade 20] [--ef hue 30] [--ei fadeEvery 1]
+```
+
+No fim de cada crossfade o logcat mostra `transition <de> -> <para>: frames=… interval avg=… max=… cpu max=…`. O overlay mostra drift, paleta atual e progresso da transição.
+
+**Compilação no arranque.** Trocar de cena compilava o shader no thread de GL: 50–95 ms parados no início de cada crossfade. Agora as 15 cenas compilam (e desenham uma vez num alvo 1×1, para drivers que só acabam a compilação no primeiro draw) ao criar o contexto: **+0,9–1,1 s no arranque**, e o pior frame de uma transição passou de 60–95 ms para ~42 ms.
+
+**Custo do crossfade.** Durante a mistura renderizam-se as duas cenas. Volta pelas 15 cenas (D-pad, crossfade de 4 s), por `fadeEvery` (de quantos em quantos frames a cena que sai é renderizada):
+
+| `fadeEvery` | Transições no limite de fps | As outras |
+|---|---|---|
+| 1 (a cena que sai continua a mexer; é o que diz `ARQUITETURA.md`) | 9 de 15 | 24–26 fps (38,3–45,7 ms) nas que juntam duas cenas pesadas: nebula → veils, glitch-drift → liquid-light, liquid-light → marble, marble → spiral-melt, spiral-melt → flow-particles, ink-bloom → nebula |
+| 2 (a cena que sai a meio ritmo) | 13 de 15 | liquid-light → marble 35,0 ms, ink-bloom → nebula 37,4 ms |
+| 0 (a cena que sai fica parada no último frame) | 15 de 15 | — |
+
+Transições de/para breath e halo ficam a 41,5 ms porque essas cenas têm limite de 24 fps (é o esperado). Por defeito fica `fadeEvery 1`, o comportamento documentado, até DABS decidir (ver `projects/santa-vibes.md`).
+
+**Alocações:** com drift, rotação de paleta e matiz ligados, o padrão de `alloc` é igual ao de drift desligado (só o bloco TLAB periódico do log da UI); o código novo não aloca por frame.
 
