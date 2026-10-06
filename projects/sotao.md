@@ -34,7 +34,7 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 
 - [x] Gate 2: aspeto G escolhido (2026-10-06)
 - [x] Aspeto G implementado e verificado em capturas, 390 e 1280 px, dois temas (2026-10-06)
-- [ ] Trocar Turso por D1 (decisão 8)
+- [x] Turso trocado por D1 (decisão 8); base D1 `sotao` criada na conta, WEUR (2026-10-06)
 - [ ] Primeiro deploy (gate 3): `wrangler secret put` para `APP_PASSWORD` e `APP_SECRET`, `npm run deploy`,
       testar que apagar material usado por uma carta falha
 

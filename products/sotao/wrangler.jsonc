@@ -20,18 +20,18 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
-	// Reached at sotao.<account>.workers.dev for now. A custom domain is a
-	// decision, not a default — nothing here is public but the login page.
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "sotao",
-			// Placeholder until `wrangler d1 create sotao` is run; paste its id here.
-			// Local dev (vite dev, miniflare) accepts any string.
-			"database_id": "REPLACE_WITH_wrangler_d1_create_sotao",
+			// Created with `wrangler d1 create sotao` on 2026-10-06 (region WEUR).
+			// Local dev (vite dev, miniflare) keeps its own copy in .wrangler/state.
+			"database_id": "f0a7ad97-2ba5-410a-a8a2-dfd989dda3fc",
 			"migrations_dir": "drizzle"
 		}
 	],
+	// Reached at sotao.<account>.workers.dev for now. A custom domain is a
+	// decision, not a default — nothing here is public but the login page.
 	"workers_dev": true,
 	"preview_urls": false
 }
