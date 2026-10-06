@@ -6,8 +6,9 @@
 ## Para a próxima sessão
 
 - **Fase 1 construída** (M0–M5 de `docs/IMPLEMENTATION.md` §15), 114 testes. Nunca publicada.
-- **Próximo: implementar o aspeto G** (`docs/LOOK.md`, gate 2 aprovado por DABS a
-  2026-10-06). Depois, o primeiro deploy (gate 3) nas contas da Escarpa.
+- **Aspeto G implementado** no branch `sotao-look-g` (tokens, fontes, temas, ecrãs, ícones). Falta
+  DABS **ver** a app (nada foi visto num ecrã) e aprovar o merge. Depois, o primeiro deploy
+  (gate 3) nas contas da Escarpa.
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
@@ -18,6 +19,42 @@
 | Cookie de sessão assinado       | Manter a sessão aberta (dura um ano) | Um ano ou até sair     | Browser do utilizador                      |
 
 Cartas, material e histórico de tiragens não são dados pessoais de terceiros.
+
+## Paleta
+
+Medida a 2026-10-06 com a fórmula WCAG 2.x (luminância relativa), sobre cada superfície onde
+o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout.css`.
+
+| Par (texto sobre superfície)                                | Escuro | Claro |
+| ----------------------------------------------------------- | ------ | ----- |
+| `--text` sobre `--ground`                                   | 15,45  | 14,60 |
+| `--text` sobre `--panel`                                    | 13,46  | 12,59 |
+| `--text-dim` sobre `--ground`                               | 7,89   | 6,41  |
+| `--text-dim` sobre `--panel` (pior de `--text-dim`)         | 6,88   | 5,53  |
+| `--ground` sobre `--text` (comutador ativo)                 | 15,45  | 14,60 |
+| `--lamp-ink` sobre `--lamp` (botão Draw)                    | 8,32   | 6,10  |
+| `--lamp` sobre `--ground` (foco, gráfico)                   | 8,36   | 5,05  |
+| `--lamp` sobre `--panel` (foco, gráfico)                    | 7,29   | 4,35  |
+| `--kind-source` sobre `--panel`                             | 6,99   | 4,59  |
+| `--kind-treatment` sobre `--panel`                          | 7,91   | 4,62  |
+| `--kind-technique` sobre `--panel`                          | 7,69   | 5,00  |
+| `--kind-constraint` sobre `--panel` (pior escuro)           | 5,81   | 4,62  |
+| `--kind-arrangement` sobre `--panel`                        | 7,08   | 5,01  |
+| Tinta da carta sobre o fundo do tipo (pior: constraint)     | 6,36   | 6,36  |
+| Tinta da carta a 80 % (linha de material, pior: constraint) | 4,58   | 4,58  |
+| Tinta da carta ideia (`#1C1814` / `#F1EADD` invertida)      | 13,33  | 14,75 |
+
+- **Ajustados em relação a `LOOK.md`** (só luminosidade, falhavam sobre `--panel` no claro, onde as
+  linhas da lista de cartas e os chips de receita os usam): `--kind-source` `#3E6B5D` -> `#3A6759`
+  (4,32 -> 4,59) e `--kind-treatment` `#855A12` -> `#7F5611` (4,32 -> 4,62).
+- Sem alteração: `--text-dim` sobre `--line` no claro dava 4,28; em vez de mexer na cor, o
+  hover das linhas de cartas passou a `--ground` (6,41).
+- **Não cumpre 3:1** (e `LOOK.md` manda assim): o fundo das cartas sobre `--ground` no tema claro
+  (1,69 a 2,30; a ideia, invertida, dá 14,60). A carta é um bloco de leitura, não um controlo,
+  e o texto dentro dela passa. Se DABS quiser contorno, é um token novo.
+- `--line` (divisores) é decorativo: 1,47 / 1,50 sobre `--ground`. Nenhum controlo depende só dele
+  para ser encontrado (os botões têm fundo `--panel`).
+- Foco: 2 px em `--lamp`; dentro de uma carta usa a tinta da carta (o âmbar sobre `#E9DFC9` daria 1,7).
 
 ## Encontrado e não resolvido
 
@@ -34,6 +71,25 @@ Cartas, material e histórico de tiragens não são dados pessoais de terceiros.
 - `docs/mockups/` usa nomes genéricos de material (da passagem pela Escarpa). Só servem para layout.
 
 ## Registo
+
+### 2026-10-06 — aspeto G implementado (branch `sotao-look-g`)
+
+- Tokens de `layout.css` reescritos segundo `LOOK.md`; nomes e comentários do sea fog removidos.
+  Tokens que já não cabiam saíram (`--rail`, `--line-soft`, `--text-faint`, `--text-muted`,
+  `--accent`, `--fav-*`, `--chip-*`, `--tag-line`, `--danger-line`...). Entram `--card-<tipo>`,
+  `--card-<tipo>-ink`, `--ink`, `--lamp-ink`, `--shadow-pop`; `--kind-<tipo>` passa a ser o tipo como texto.
+- Temas: Auto / Dark / Light. Auto cai para Dark. Valores guardados mapeados: `night`/`dark` ->
+  `dark`, `morning`/`light` -> `light`, `system` -> `auto`.
+- **Dependências novas** (versão 5.3.0 fixa, licença SIL OFL 1.1; as três antigas saíram):
+  - `@fontsource/bricolage-grotesque`: texto, títulos e botões do G; servida pela app, sem
+    pedidos a terceiros. Alternativa: a variável do Google Fonts (pede à Google em runtime).
+  - `@fontsource/courier-prime`: rótulos, slugs e contagens do G. Alternativa: `ui-monospace`
+    do sistema (muda de aparelho para aparelho).
+- Ícones redesenhados (`npm run icons`): fundo escuro, carta `#E9DFC9` inclinada, barra `--lamp`.
+- Mudanças de comportamento: nenhuma intencional. O botão Draw diz "Draw two" / "Draw one" com
+  1 / 2 cartas trancadas no Three (rótulo derivado de `locked`).
+- **Não visto num ecrã.** Verificado: `scripts/check`, respostas 200 dos seis ecrãs, ausência das
+  fontes e tokens antigos no HTML/CSS. Falta: ver telemóvel e largo, escuro e claro, offline.
 
 ### 2026-10-06 — propostas de aspeto; gate 2: G
 

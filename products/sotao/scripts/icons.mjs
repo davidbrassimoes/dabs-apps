@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Draws the app icons into static/: a card, tilted, on Night fog's ground.
+// Draws the app icons into static/: a bone card, tilted, with a lamp bar, on the dark ground.
 //
 //   node scripts/icons.mjs
 //
-// It is drawn here rather than in an editor so its colours are the palette's (src/routes/layout.css, Night) and
-// it can be redrawn in one command when they move. No dependencies: shapes are
-// signed-distance tests, 4×4 supersampled, written as PNG with node's zlib.
+// It is drawn here rather than in an editor so its colours are the palette's
+// (src/routes/layout.css, dark) and it can be redrawn in one command when they
+// move. No dependencies: shapes are signed-distance tests, 4×4 supersampled, written as PNG with node's zlib.
 
 import { writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
@@ -14,14 +14,12 @@ import { fileURLToPath } from 'node:url';
 
 const STATIC = join(dirname(fileURLToPath(import.meta.url)), '..', 'static');
 
-// Night fog (layout.css). Ochre is the product's accent; the card's first line
-// is its lamp.
-const GROUND = '#151d23';
-const PANEL = '#1b242c';
-const LINE = '#3e4c58';
-const INK = '#dde5ea';
-const LAMP = '#cb9633';
-const SOURCE = '#74a79a';
+// The dark theme (layout.css, docs/LOOK.md): --ground, the idea card's fill
+// and --lamp. The card's ink is --ink.
+const GROUND = '#17130f';
+const CARD = '#e9dfc9';
+const INK = '#1c1814';
+const LAMP = '#e3a23f';
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
@@ -39,9 +37,8 @@ function capsule(x, y, ax, ay, bx, by, r) {
 	return Math.hypot(px - dx * t, py - dy * t) - r;
 }
 
-// The drawing, in a 192-unit square, card centred and turned 8° anticlockwise —
-// the original icon's composition, in the new palette. Everything sits inside
-// the central 80% so the maskable crop keeps it.
+// The drawing, in a 192-unit square, card centred and turned 8° anticlockwise.
+// Everything sits inside the central 80% so the maskable crop keeps it.
 const ANGLE = (-8 * Math.PI) / 180;
 const CX = 96;
 const CY = 98;
@@ -53,16 +50,13 @@ function colourAt(ux, uy) {
 	const x = dx * Math.cos(-ANGLE) - dy * Math.sin(-ANGLE);
 	const y = dx * Math.sin(-ANGLE) + dy * Math.cos(-ANGLE);
 
-	const outer = roundedRect(x, y, 46, 56, 6);
-	if (outer > 0) return GROUND;
-	if (outer > -2) return LINE;
+	if (roundedRect(x, y, 46, 56, 10) > 0) return GROUND;
 
-	// The card's lines: a short accent, two ink rules, and a source-green tag.
-	if (capsule(x, y, -30, -34, -18, -34, 2.2) < 0) return LAMP;
-	if (capsule(x, y, -30, -24, 20, -24, 2.2) < 0) return INK;
-	if (capsule(x, y, -30, -14, 8, -14, 2.2) < 0) return INK;
-	if (capsule(x, y, -30, 34, -16, 34, 2.2) < 0) return SOURCE;
-	return PANEL;
+	// A lamp bar, then two ink rules, on the card.
+	if (capsule(x, y, -30, -32, 2, -32, 5) < 0) return LAMP;
+	if (capsule(x, y, -30, -10, 26, -10, 2.6) < 0) return INK;
+	if (capsule(x, y, -30, 4, 8, 4, 2.6) < 0) return INK;
+	return CARD;
 }
 
 function render(size) {
