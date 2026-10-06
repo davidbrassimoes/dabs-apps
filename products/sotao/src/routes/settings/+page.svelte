@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { THEMES, themeLabel } from '$lib/theme';
+	import { enhance } from '$app/forms';
+	import { THEMES, themeLabel, themeAttribute, isTheme } from '$lib/theme';
+
+	// Paint the choice at once; the server saves it and the header follows.
+	function paint(theme: string) {
+		if (!isTheme(theme)) return;
+		const attribute = themeAttribute(theme);
+		if (attribute) document.documentElement.dataset.theme = attribute;
+		else delete document.documentElement.dataset.theme;
+	}
 
 	let { data } = $props();
 </script>
@@ -11,7 +20,14 @@
 
 	<section>
 		<h2 class="label">Theme</h2>
-		<form method="POST" action="?/theme" class="choices">
+		<form
+			method="POST"
+			action="?/theme"
+			class="choices"
+			use:enhance={({ formData }) => {
+				paint(String(formData.get('theme')));
+			}}
+		>
 			{#each THEMES as theme (theme)}
 				<button
 					type="submit"

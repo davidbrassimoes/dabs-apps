@@ -30,10 +30,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// and the app never flashes the wrong ground (§12).
 	const theme = event.locals.authenticated ? await getTheme() : DEFAULT_THEME;
 	event.locals.theme = theme;
-	const attribute = themeAttribute(theme);
 
 	return resolve(event, {
-		transformPageChunk: ({ html }) =>
-			html.replace('%sotao.theme%', attribute ? ` data-theme="${attribute}"` : '')
+		// Read when the page is rendered, not before: a form action that changes
+		// the theme sets locals.theme, and its own response must show the change.
+		transformPageChunk: ({ html }) => {
+			const attribute = themeAttribute(event.locals.theme);
+			return html.replace('%sotao.theme%', attribute ? ` data-theme="${attribute}"` : '');
+		}
 	});
 };

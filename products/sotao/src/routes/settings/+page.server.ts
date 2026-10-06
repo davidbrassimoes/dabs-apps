@@ -9,10 +9,13 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	theme: async ({ request }) => {
+	theme: async ({ request, locals }) => {
 		const form = await request.formData();
 		const theme = form.get('theme');
-		if (isTheme(theme)) await setTheme(theme);
+		if (isTheme(theme)) {
+			await setTheme(theme);
+			locals.theme = theme;
+		}
 		return { saved: true };
 	},
 
