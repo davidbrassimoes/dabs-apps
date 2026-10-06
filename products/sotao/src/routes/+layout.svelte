@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	// The brand's three faces, bundled from @fontsource and served from here —
-	// nothing is fetched from a third party (ADR-008). All SIL OFL 1.1.
+	// nothing is fetched from a third party. All SIL OFL 1.1.
 	import '@fontsource/cormorant-garamond/500.css';
 	import '@fontsource/cormorant-garamond/600.css';
 	import '@fontsource/jost/400.css';

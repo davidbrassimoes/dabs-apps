@@ -60,7 +60,7 @@
 		gap: 20px;
 	}
 
-	/* Product name over its function line, as on a faceplate (brand/tokens.md, "Type"). */
+	/* Product name over its function line, as on a faceplate. */
 	.name {
 		display: flex;
 		flex-direction: column;

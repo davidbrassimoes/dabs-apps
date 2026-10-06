@@ -5,7 +5,7 @@ import { applyMigrations, bundledMigrations } from './migrations';
 
 // The bundled migrator stands in for drizzle-orm's, which reads the disk. The
 // two must agree exactly, or a database migrated by one looks out of date — or
-// worse, up to date — to the other (ADR-027).
+// worse, up to date — to the other.
 
 describe('the bundled migrations', () => {
 	it('are what drizzle-orm reads from drizzle/: same order, SQL, timestamps and hashes', () => {

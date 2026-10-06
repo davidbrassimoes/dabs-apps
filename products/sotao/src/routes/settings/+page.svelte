@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { THEMES, themeLabel } from '$lib/theme';
-	// Copied verbatim from brand/ at the repository root. Both inherit currentColor.
-	import wordmark from '$lib/assets/brand/wordmark.svg?raw';
-	import stamp from '$lib/assets/brand/stamp.svg?raw';
 
 	let { data } = $props();
 </script>
@@ -42,10 +39,7 @@
 		<p class="note">Signing in again lasts a year. There is no password reset.</p>
 	</section>
 
-	<!--
-		The one place the brand appears: the marks, and the product's accent as a
-		lamp (ADR-004, ADR-027). Nowhere in the working screens.
-	-->
+	<!-- The product's name, and its accent as a lamp. Nowhere in the working screens. -->
 	<section class="about" aria-labelledby="about-name">
 		<div class="name">
 			<span class="lamp" aria-hidden="true"></span>
@@ -56,13 +50,6 @@
 			Deals a card when you sit down in the studio and do not know where to start. Built for one
 			attic and the gear in it. Not published.
 		</p>
-		<!-- The two marks are our own SVG files, bundled at build time: no input reaches them. -->
-		<div class="marks">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="wordmark">{@html wordmark}</span>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="stamp">{@html stamp}</span>
-		</div>
 	</section>
 </div>
 
@@ -169,28 +156,6 @@
 		letter-spacing: 0.29em;
 		text-transform: uppercase;
 		color: var(--text-faint);
-	}
-
-	.marks {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 24px;
-		color: var(--text);
-		opacity: 0.75;
-	}
-
-	.marks :global(svg) {
-		display: block;
-		height: auto;
-	}
-
-	.wordmark :global(svg) {
-		width: 200px;
-	}
-
-	.stamp :global(svg) {
-		width: 40px;
 	}
 
 	@media (max-width: 720px) {

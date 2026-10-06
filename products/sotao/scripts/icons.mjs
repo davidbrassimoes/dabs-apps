@@ -3,9 +3,7 @@
 //
 //   node scripts/icons.mjs
 //
-// The icon is the app's own mark, not the company's — the stamp belongs to
-// Escarpa Audio and appears on the About block. It is drawn here rather than in
-// an editor so its colours are the palette's (src/routes/layout.css, Night) and
+// It is drawn here rather than in an editor so its colours are the palette's (src/routes/layout.css, Night) and
 // it can be redrawn in one command when they move. No dependencies: shapes are
 // signed-distance tests, 4×4 supersampled, written as PNG with node's zlib.
 

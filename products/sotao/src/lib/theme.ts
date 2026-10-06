@@ -1,9 +1,8 @@
-// Theme choice. Escarpa Audio's two themes, Morning fog and Night fog, and the
-// same three settings every product has (ADR-012, brand/tokens.md "Themes"):
+// Theme choice. Two themes, Morning and Night, and three settings:
 // Auto follows the device and falls back to Morning where it cannot tell; a
 // hand-picked theme wins over the device. Persisted in settings.theme and
 // applied server-side on first render so the app never flashes the wrong
-// ground (§12, as amended by ADR-027).
+// ground (§12).
 
 export const THEMES = ['auto', 'morning', 'night'] as const;
 export type Theme = (typeof THEMES)[number];

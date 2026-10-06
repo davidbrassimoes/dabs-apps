@@ -1,6 +1,5 @@
-// Sótão on Cloudflare Workers, the database on Turso (ADR-027). The same
-// account as escarpaaudio.com (ADR-010), and a separate Worker: the site and
-// this app deploy on their own schedules.
+// Sótão on Cloudflare Workers, the database on Turso. Which Cloudflare account
+// it deploys to is open (projects/sotao.md).
 //
 // Deploy from DABS's machine, with `npm run deploy`, so the build carries the
 // real seed files (seed/*.local.*, gitignored). Secrets are set once with

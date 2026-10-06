@@ -31,16 +31,16 @@ defaults:
   author: claude
 cards:
   - text: >-
-      Play the stage piano through the pitch shifter at plus one octave,
-      reamp it into the valve combo, and mic the amp from the staircase
+      Play the RD-08 through the Pitch Fork+ at plus one octave,
+      reamp it into the AC30, and mic the amp from the staircase
       opening.
     kinds: [idea]
-    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
+    gear: [rd-08, pitch-fork-plus, ac30, cm25]
     tags: [reamping, room]
 
-  - text: The toy sampler, sampled from something already in the room.
+  - text: Casio SK-1, sampled from something already in the room.
     kinds: [idea, source]
-    gear: [toy-sampler]
+    gear: [sk-1]
     tags: [sampling, lo-fi]
     favorite: true
 

@@ -1,23 +1,23 @@
 @import 'tailwindcss';
 
 /*
-  Theme tokens — sea fog (ADR-012; ADR-027 for how Sótão takes it). Every colour
-  is a custom property, and the themes redefine the tokens, never the components.
+  Theme tokens. Every colour is a custom property, and the themes redefine the
+  tokens, never the components.
 
-  Morning fog is on :root, so it is what shows when nothing else applies — the
-  company's fallback. Night fog applies on an explicit [data-theme="night"], or
+  PROVISIONAL: this is Escarpa Audio's sea fog, kept from when the app lived
+  there. A new look replaces it once its mockup passes gate 2
+  (projects/sotao.md).
+
+  Morning fog is on :root, so it is what shows when nothing else applies. Night fog applies on an explicit [data-theme="night"], or
   under Auto (no attribute) when the device prefers dark.
 
-  A tool takes from brand/tokens.md the marks, the three faces, one accent, and
-  both themes' ground and ink (ADR-004), and keeps its own palette architecture.
-  So: the grounds and inks are Derrocada's sea fog values, which are points on
-  the brand's haze and brand inks, measured there. The kind colours keep the hues
+  The kind colours keep the hues
   §12 gave them, moved by lightness alone until each reaches 4.5:1 on every
   surface text sits on — ground, panel, rail and chip — in both themes. The
   tints (favourite, author, status, tag and danger borders) are the kind colour
   mixed into the panel. The worst cases are in NOTES.md, "Palette".
 
-  --accent is the brand's pointer: what indicates on a panel indicates here —
+  --accent is the pointer: what indicates on a panel indicates here —
   focus, selection, the active tab. --lamp is the product's accent, Ochre, and
   it is a lamp only: the About block, nowhere in the working UI.
 */

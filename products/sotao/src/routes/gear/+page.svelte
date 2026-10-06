@@ -55,8 +55,8 @@
 				ticked, so a card never asks you to re-cable the room.
 			</p>
 			<p class="quieter">
-				The desk, the monitor pair, headphones and the laptop are always in the chain, so they are
-				not listed here and never gate a draw. Cards can still name them in their text.
+				The AR16c, the T5V pair, headphones and the laptop are always in the chain, so they are not
+				listed here and never gate a draw. Cards can still name them in their text.
 			</p>
 		</div>
 		<div class="spacer"></div>
@@ -140,7 +140,7 @@
 			<form method="POST" action="?/add" use:enhance class="add-form">
 				<label>
 					<span class="label">Name</span>
-					<input name="name" bind:value={addName} required placeholder="Compact delay" />
+					<input name="name" bind:value={addName} required placeholder="Boss DD-3" />
 				</label>
 				<label>
 					<span class="label">Slug</span>
@@ -150,7 +150,7 @@
 						oninput={() => (slugTouched = true)}
 						required
 						pattern="[a-z0-9][a-z0-9\-]*"
-						placeholder="compact-delay"
+						placeholder="boss-dd-3"
 					/>
 				</label>
 				<label>

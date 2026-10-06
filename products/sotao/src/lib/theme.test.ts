@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_THEME, nextTheme, readTheme, themeAttribute } from './theme';
 
-describe('the theme setting (ADR-012)', () => {
+describe('the theme setting', () => {
 	it('defaults to Auto', () => {
 		expect(DEFAULT_THEME).toBe('auto');
 		expect(readTheme(undefined)).toBe('auto');

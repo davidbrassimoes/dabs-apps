@@ -1,20 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { EXAMPLE_GEAR, SEED_GEAR } from '../../seed/index';
+import { SEED_GEAR } from '../../seed/index';
 import { CATEGORY_LABELS, CATEGORY_ORDER, isValidSlug, slugify } from './gear';
 
-// Two inventories: the committed example, always, and the real one when
-// seed/gear.local.ts is on this machine (it is gitignored, ADR-027). The example
-// mirrors §7 row for row, so §7's shape is pinned on it; the rules that make an
-// inventory valid are checked on both.
-const INVENTORIES: [string, typeof SEED_GEAR][] =
-	SEED_GEAR === EXAMPLE_GEAR
-		? [['example', EXAMPLE_GEAR]]
-		: [
-				['example', EXAMPLE_GEAR],
-				['local', SEED_GEAR]
-			];
-
-describe.each(INVENTORIES)('the seeded inventory (%s)', (_, SEED_GEAR) => {
+describe('the seeded inventory', () => {
 	it('is 47 rows: 42 owned and 5 on the wishlist', () => {
 		expect(SEED_GEAR).toHaveLength(47);
 		expect(SEED_GEAR.filter((g) => g.owned !== false)).toHaveLength(42);

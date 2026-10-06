@@ -162,7 +162,7 @@
 		gap: 26px;
 	}
 
-	/* The product-name role: Cormorant Garamond 600, uppercase, tracked .20em (brand/tokens.md). */
+	/* The product-name role: Cormorant Garamond 600, uppercase, tracked .20em. */
 	.wordmark {
 		font-family: var(--font-display);
 		font-variant-numeric: lining-nums;

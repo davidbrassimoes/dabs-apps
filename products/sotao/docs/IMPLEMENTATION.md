@@ -1,11 +1,11 @@
 # Sótão — implementation specification
 
-> **Since this was written** (ADR-027, 2026-09-26): the app is **Sótão — studio cards**, it
-> lives in the Escarpa Audio repository at `products/sotao/`, and three sections are
-> overridden. **§3 Hosting** is Cloudflare Workers + Turso. **§12 Theming** is the brand's
-> sea fog, Morning and Night, from `brand/tokens.md`, with the switch defaulting to Auto.
-> **§7** below is a generic stand-in for the real inventory, which stays out of git. Where
-> this document and ADR-027 disagree, the ADR wins. Everything else stands as written.
+> **Since this was written** (2026-10-06): the app is **Sótão — studio cards** and lives in
+> `davidbrassimoes/dabs-apps` at `products/sotao/`. Two sections are overridden. **§3
+> Hosting** is Cloudflare Workers + Turso (`wrangler.jsonc`). **§12 Theming** is
+> provisional: the app still wears the sea fog palette it got while it lived in the Escarpa
+> Audio repository, and a new look replaces it once its mockup passes gate 2
+> (`projects/sotao.md` at the repository root). Everything else stands as written.
 
 **For:** the agent building this in a fresh Claude Code session.
 **From:** a design session with the owner (David / DABS). Everything in here was decided
@@ -340,61 +340,58 @@ re-record anything.
 
 ## 7. Gear inventory
 
-Seed the `gear` table with exactly this shape. The list below is the generic stand-in
-committed as `seed/gear.example.ts`. The real rig names real products, so it is
-`seed/gear.local.ts`, gitignored, and the same shape row for row (ADR-027). Slugs are the
-vocabulary for card imports and the card-generation skill, so they must match
-character-for-character.
+Seed the `gear` table with exactly this. Slugs are the vocabulary for card imports and the
+card-generation skill, so they must match character-for-character.
 
 **strings**
-`single-coil` Single-coil electric ·
-`spare-single-coil` Spare single-coil electric ·
-`humbucker` Humbucker electric ·
-`twelve-string` 12-string ·
+`fender-strat` Fender Stratocaster (MX) ·
+`aria-strat` Aria strat ·
+`epiphone-sg` Epiphone SG ·
+`gretsch-12` Gretsch 12-string ·
 `nylon-classical` Nylon classical ·
 `bandolim` Bandolim ·
 `guitarra-portuguesa` Guitarra portuguesa ·
-`electric-bass` Electric bass ·
+`aria-bass` Aria bass ·
 `flamenca` Flamenca *(owned: false)* ·
 `steel-string` Steel-string acoustic *(owned: false)*
 
 **keys**
-`stage-piano` Stage piano ·
-`rack-synth` Rack synth module ·
-`pad-sampler` Pad sampler ·
-`synth-groovebox` Synth groovebox ·
-`drum-groovebox` Sampling drum groovebox ·
-`mini-synth` Mini analogue synth ·
-`toy-sampler` Toy sampling keyboard
+`rd-08` Roland RD-08 ·
+`jv-880` Roland JV-880 ·
+`mpc-one-plus` MPC One+ ·
+`circuit-tracks` Circuit Tracks ·
+`circuit-rhythm` Circuit Rhythm ·
+`volca-keys` Volca Keys ·
+`sk-1` Casio SK-1
 
 **amps**
-`valve-combo` 2×12 valve combo ·
-`practice-amp` 15 W practice combo ·
-`bass-practice-amp` 10 W bass combo
+`ac30` Vox AC30 ·
+`pathfinder-15r` Pathfinder 15R ·
+`pathfinder-bass-10` Pathfinder Bass 10
 
 **pedals**
-`fuzz` Fuzz (custom) ·
-`compact-fuzz` Compact fuzz ·
-`octave-fuzz` Octave fuzz ·
-`overdrive` Overdrive ·
-`phaser` Phaser ·
-`flanger` Flanger ·
-`pitch-shifter` Pitch shifter ·
-`volume-pedal` Volume pedal ·
-`delay` Delay ·
-`reverb` Reverb ·
-`envelope-filter` Envelope filter ·
-`octaver` Octaver ·
-`parametric-eq` Parametric EQ ·
-`multi-effect` Multi-effect
+`fuzz-factory` Fuzz Factory (custom) ·
+`boss-fz5` Boss FZ-5 ·
+`french-toast` Danelectro French Toast ·
+`hardwire-od` DigiTech Hardwire OD ·
+`boss-phaser` Boss phaser ·
+`eleclady` Mooer ElecLady ·
+`pitch-fork-plus` EHX Pitch Fork+ ·
+`boss-volume` Boss volume pedal ·
+`flashback-2` TC Flashback 2 ·
+`hall-of-fame-2` TC Hall of Fame 2 ·
+`synth-wah` DigiTech Synth Wah ·
+`mooer-octaver` Mooer octaver ·
+`artec-eq` Artec parametric EQ ·
+`rp90` DigiTech RP90
 
 **mics**
-`dynamic-mic` Dynamic vocal mic ·
-`condenser` Large-diaphragm condenser ·
-`handheld-recorder` Handheld recorder ·
-`instrument-dynamic` Instrument dynamic *(owned: false)* ·
-`ribbon` Ribbon mic *(owned: false)* ·
-`pencil-pair` Pencil condenser pair *(owned: false)*
+`xm8500` Behringer XM8500 ·
+`cm25` Focusrite CM25 MkIII ·
+`h4essential` Zoom H4essential ·
+`sm57` Shure SM57 *(owned: false)* ·
+`ga-r1` Golden Age R1 MkIII *(owned: false)* ·
+`c2-pair` Behringer C2 pair *(owned: false)*
 
 **small**
 `harmonicas` Harmonicas ·
@@ -415,9 +412,9 @@ the mockup is wrong, this list is right.)
   them. When the owner buys the thing, he flips `owned` and the cards come alive.
 - **`in_rack`** is "patched and reachable tonight", toggled on the gear screen. It is the
   one piece of state the owner changes most often. It is global, not per-session.
-- **Always-on gear is absent from this table.** The desk, the monitors,
+- **Always-on gear is absent from this table.** The AR16c, the ADAM T5V monitors,
   headphones and the laptop are always in the chain and choosing them means nothing. Cards
-  may name them in their *text* — "Nothing added after the desk" is a real card — but
+  may name them in their *text* — "Nothing added after the AR16c" is a real card — but
   there is no gear row and no gear reference. If the owner later asks to add a monitor,
   push back before doing it.
 - The owner can add gear from the UI. New slugs must match `^[a-z0-9][a-z0-9-]*$`.

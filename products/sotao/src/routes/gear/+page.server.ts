@@ -66,8 +66,8 @@ export const actions: Actions = {
 	add: async ({ request }) => {
 		const form = await request.formData();
 		const name = String(form.get('name') ?? '').trim();
-		// Case is normalised rather than rejected — "Delay-DL-7" becomes
-		// "delay-dl-7" — so the stored vocabulary always matches §7's pattern.
+		// Case is normalised rather than rejected — "Boss-DD-7" becomes
+		// "boss-dd-7" — so the stored vocabulary always matches §7's pattern.
 		// Everything else about the shape is an error the owner has to fix.
 		const id = String(form.get('id') ?? '')
 			.trim()

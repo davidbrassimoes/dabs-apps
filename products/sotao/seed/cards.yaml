@@ -1,76 +1,74 @@
-# The starter cards, written against the example rig in gear.example.ts. The
-# real set is cards.local.yaml, gitignored (seed/index.ts, ADR-027).
 version: 1
 defaults:
   author: claude
 cards:
   - text: >-
-      Play the stage piano through the pitch shifter at plus one octave, reamp it into
-      the valve combo, and mic the amp from the staircase opening.
+      Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into
+      the AC30, and mic the amp from the staircase opening.
     kinds: [idea]
-    gear: [stage-piano, pitch-shifter, valve-combo, condenser]
+    gear: [rd-08, pitch-fork-plus, ac30, cm25]
     tags: [reamping, room]
 
   - text: >-
-      Sample yourself whistling into the toy sampler, pitch it down two octaves, and
+      Sample yourself whistling into the SK-1, pitch it down two octaves, and
       build the bass line out of that.
     kinds: [idea, source]
-    gear: [toy-sampler]
+    gear: [sk-1]
     tags: [sampling, lo-fi]
     favorite: true
 
   - text: >-
-      Record the bandolim with the condenser up close and the handheld recorder at the
+      Record the bandolim with the CM25 up close and the H4essential at the
       bottom of the stairs. Blend until the room is half the sound.
     kinds: [idea, technique]
-    gear: [bandolim, condenser, handheld-recorder]
+    gear: [bandolim, cm25, h4essential]
     tags: [room, stereo]
 
   - text: >-
-      Loop a djembé pattern on the drum groovebox, then play guitarra
+      Loop a djembé pattern on the Circuit Rhythm, then play guitarra
       portuguesa over it in one take. Keep the take where you lost the thread.
     kinds: [idea]
-    gear: [drum-groovebox, guitarra-portuguesa, djembes]
+    gear: [circuit-rhythm, guitarra-portuguesa, djembes]
     tags: [one-take]
 
   - text: >-
-      Run the mini synth into the octave fuzz, then into the practice combo
+      Run the Volca Keys into the French Toast, then into the Pathfinder 15R
       turned up past where it stays clean. One microphone, three metres back.
     kinds: [idea, treatment]
-    gear: [mini-synth, octave-fuzz, practice-amp, dynamic-mic]
+    gear: [volca-keys, french-toast, pathfinder-15r, xm8500]
     tags: [saturation, room]
 
   - text: >-
       Play the ocarina and the melodica at the same time, one in each hand,
-      into the condenser. Do not fix the timing afterwards.
+      into the CM25. Do not fix the timing afterwards.
     kinds: [idea, technique]
-    gear: [ocarina, melodica, condenser]
+    gear: [ocarina, melodica, cm25]
     tags: [one-take, winds]
 
-  - text: The toy sampler, sampled from something already in the room.
+  - text: Casio SK-1, sampled from something already in the room.
     kinds: [source]
-    gear: [toy-sampler]
+    gear: [sk-1]
     tags: [sampling, lo-fi]
     favorite: true
 
-  - text: The 12-string, tuned down until it rattles.
+  - text: Gretsch 12-string, tuned down until it rattles.
     kinds: [source]
-    gear: [twelve-string]
+    gear: [gretsch-12]
     tags: [strings]
 
   - text: Melodica, into a microphone — never a DI.
     kinds: [source, technique]
-    gear: [melodica, dynamic-mic]
+    gear: [melodica, xm8500]
     tags: [winds]
 
-  - text: A rack synth patch you would never choose on purpose.
+  - text: A JV-880 patch you would never choose on purpose.
     kinds: [source]
-    gear: [rack-synth]
+    gear: [jv-880]
     tags: [presets]
 
   - text: Kalimba, close-miked, one metre off the slab.
     kinds: [source]
-    gear: [kalimba, condenser]
+    gear: [kalimba, cm25]
     tags: [small]
 
   - text: The tube. Whatever it is doing today.
@@ -83,40 +81,40 @@ cards:
     gear: [guitarra-portuguesa]
     tags: [strings]
 
-  - text: Pitch shifter at minus twelve, wet only.
+  - text: Pitch Fork+ at minus twelve, wet only.
     kinds: [treatment]
-    gear: [pitch-shifter]
+    gear: [pitch-fork-plus]
     tags: [octave]
     favorite: true
 
-  - text: Octave fuzz into the overdrive, gain staged wrong on purpose.
+  - text: French Toast into the Hardwire, gain staged wrong on purpose.
     kinds: [treatment]
-    gear: [octave-fuzz, overdrive]
+    gear: [french-toast, hardwire-od]
     tags: [fuzz]
 
-  - text: Reverb pedal before the amp, not after.
+  - text: Hall of Fame 2 before the amp, not after.
     kinds: [treatment]
-    gear: [reverb, valve-combo]
+    gear: [hall-of-fame-2, ac30]
     tags: [reverb]
 
-  - text: Delay with the mix pinned at 100%.
+  - text: Flashback 2 with the mix pinned at 100%.
     kinds: [treatment]
-    gear: [delay]
+    gear: [flashback-2]
     tags: [delay]
 
-  - text: Envelope filter on a source that is not a guitar.
+  - text: Synth Wah on a source that is not a guitar.
     kinds: [treatment, constraint]
-    gear: [envelope-filter]
+    gear: [synth-wah]
     tags: [filter]
 
-  - text: Multi-effect, first preset, no editing allowed.
+  - text: RP90, first preset, no editing allowed.
     kinds: [treatment, constraint]
-    gear: [multi-effect]
+    gear: [rp90]
     tags: [lo-fi]
 
-  - text: Flanger on the way in, bass combo on the way out.
+  - text: ElecLady on the way in, Pathfinder Bass 10 on the way out.
     kinds: [treatment]
-    gear: [flanger, bass-practice-amp]
+    gear: [eleclady, pathfinder-bass-10]
     tags: [phaser]
 
   - text: Mono. All of it.
@@ -132,7 +130,7 @@ cards:
     kinds: [constraint]
     tags: [limits]
 
-  - text: Nothing added after the desk.
+  - text: Nothing added after the AR16c.
     kinds: [constraint]
     tags: [limits]
 

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" role="img" aria-label="Escarpa Audio maker's stamp: a sea cliff standing in water">
-  <title>Escarpa Audio — maker's stamp</title>
-  <desc>Single-colour version. Inherits currentColor. Use on light grounds and as the favicon.</desc>
-  <path d="M12 58 L12 38 L28 26 L40 30 L54 12 L68 12 L68 58 Z" fill="currentColor"/>
-  <rect x="4" y="58" width="72" height="3.4" fill="currentColor"/>
-  <rect x="4" y="66" width="46" height="3.4" fill="currentColor" fill-opacity="0.55"/>
-</svg>
