@@ -11,10 +11,12 @@ Regras: ver `CLAUDE.md` (zero alocações por frame, sem WebView, dependências 
 
 ```
 core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição de shaders, Synth,
-        drift de parâmetros (Drift) e variação de paleta (PaletteVariation).
+        drift de parâmetros (Drift), variação de paleta (PaletteVariation), pacotes de sinais
+        (SignPacket) e mixer de reatividade (SignalMixer, SequenceGate).
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
 app/    Android: MainActivity (ecrã inteiro, comando, overlay), SceneRenderer (cenas, crossfade, passe de saída),
-        SceneSlot (uma cena: programa, FBOs, relógio), Benchmark (passo 0.5), SceneLibrary (assets),
+        SceneSlot (uma cena: programa, FBOs, relógio), OutputPass, SignalHub (receção UDP e beacon),
+        Benchmark (passo 0.5), SceneLibrary (assets),
         Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
 ```
 
@@ -34,7 +36,7 @@ adb -s 192.168.1.27:5555 logcat -s SantaVibes   # cena, GL, e de 10 em 10 s: fps
 
 No comando: **◀ ▶** trocam de cena (mesma ordem da autoria: por estilo, depois id); **OK** mostra/esconde o overlay de diagnóstico. A app também aparece no launcher da TV.
 
-**Zero alocações por frame**: a linha `stats` do logcat inclui `alloc=… B/s` (bytes alocados por todo o processo, contador do ART). Com o overlay escondido deve ficar perto de 0; com o overlay visível há algumas centenas de B/s do texto, na thread de UI.
+**Zero alocações por frame**: a linha `stats` do logcat inclui `alloc=… B/s` (bytes alocados por todo o processo, contador do ART). Com o overlay escondido deve ficar em 0 (com um bloco TLAB de 3–32 KB de vez em quando, do log da UI); com o overlay visível sobe para ~55 KB/s (o texto refeito 2× por segundo, na thread de UI), por isso mede-se sempre com ele escondido.
 
 ## A box (medido em 2026-10-04, passo 0.1)
 
@@ -124,3 +126,29 @@ Transições de/para breath e halo ficam a 41,5 ms porque essas cenas têm limit
 
 **Alocações:** com drift, rotação de paleta e matiz ligados, o padrão de `alloc` é igual ao de drift desligado (só o bloco TLAB periódico do log da UI); o código novo não aloca por frame.
 
+
+### Receção de sinais (passo 1.3), 2026-10-06
+
+A app escuta pacotes `SIGN` em UDP 47800 e envia o beacon `PNMB` de 2 em 2 s para 255.255.255.255:47801
+(`deviceId` aleatório guardado nas preferências; `controlPort` 0 até haver ControlServer). Permissão `INTERNET`.
+
+```
+am start -n dev.santavibes.tv/.MainActivity [--ef reactivity 1] [--es source auto|pc|phone|mic|midi|none]
+```
+
+- **Receção** (`SignalHub`, thread própria): `Os.recvfrom` para um buffer fixo, sem pedir o endereço de origem, por isso não aloca por pacote. Guarda o último pacote por tipo de fonte; descarta pacotes fora de ordem, mas aceita um emissor que reinicia (2 s sem pacotes ou salto para trás > 1000).
+- **Escolha da fonte**: `auto` usa a primeira com som por esta ordem: PC, telemóvel (playback), microfone, MIDI; senão a primeira que está a enviar.
+- **Mixer** (`SignalMixer`, thread de GL): `saída = mix(Synth, real, reatividade × presença)`. Valores suavizados em 30 ms; a fase do beat anda sozinha ao bpm recebido entre pacotes e é puxada para a de cada pacote; fase, bpm e onset vêm da fonte que pesa mais (não se misturam). Presença sobe em 0,5 s; cai em 1,5 s depois de 1,5 s sem pacotes ou 4 s só com silêncio. Reatividade 0 = exatamente o Synth (teste).
+- **Logcat/overlay**: `signals: source pc|none` quando muda; a linha `stats` acrescenta `src`, `w` (peso), `bpm`, `pkt/s`.
+
+Medido com o `pc-bridge` no PC e dois loops reais pelas colunas, cena `bars`:
+
+| | Resultado |
+|---|---|
+| Descoberta | o `pc-bridge` encontrou a box pelo beacon, sem `--tv` |
+| Receção | 59–62 pkt/s, `src=pc`, peso 1,00, 123,9 BPM (piano 123) e 102,5 (rock); 30,0 fps, p95 33,5 ms |
+| Alocações | **0 B/s** com 60 pkt/s e overlay escondido |
+| PC desligado a meio | fonte `none` 2,1 s depois (1,5 s + tick de 0,5 s do log); peso a 0 até 3 s (teste do mixer) |
+| Reatividade 0 | 60 pkt/s recebidos, peso 0,00 |
+
+Não verificado: se a reação é agradável à vista (isso é a afinação, com DABS a ver).

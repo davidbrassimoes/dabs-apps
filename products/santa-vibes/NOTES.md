@@ -6,8 +6,8 @@
 
 ## Para a próxima sessão
 
-- Fase 0 feita; 1.1 e 1.2 feitos em 2026-10-06. Próximo: 1.3 (receção na tv-app: `SignalHub`,
-  beacon, mixer de reatividade). Com ele a box reage à música do PC e afina-se tudo a olho.
+- Fase 0 feita; 1.1, 1.2 e 1.3 feitos em 2026-10-06. A box já reage à música do PC.
+  Próximo: afinar a olho com DABS (música de referência, pergunta 7) ou 1.4 (`phone-app`).
 - À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
   ("Por decidir"). Nenhuma bloqueia o 1.2.
 - Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
@@ -33,6 +33,17 @@ Rever esta tabela quando o 1.4 entrar.
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-06 — 1.3 receção na tv-app
+
+- `core`: `SignPacket` (decode sem alocação, verificado contra o fixture gerado pelo Rust:
+  `signals-core/tests/fixtures/sign-cases.json`), `SignalMixer`, `SequenceGate`; 8 testes novos.
+- `app`: `SignalHub` (recvfrom sem endereço, beacon), mixer ligado aos uniforms, overlay e logcat.
+  Faltava a permissão `INTERNET` no manifest.
+- Medido na box com o `pc-bridge`: descoberta pelo beacon, 60 pkt/s, 0 B/s, volta ao Synth.
+  As alocações que apareceram (55 KB/s) eram do overlay visível, não da receção.
+- `SceneRenderer.kt` tinha passado as 300 linhas desde o 0.6: passe de saída em `OutputPass.kt`.
+- Reatividade por defeito 1 (pergunta 4 alargada).
 
 ### 2026-10-06 — 1.2 `pc-bridge`
 
