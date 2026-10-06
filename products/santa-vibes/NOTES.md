@@ -11,6 +11,10 @@
 - À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
   ("Por decidir"). Nenhuma bloqueia o 1.2.
 - Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
+- Quando o projetor (Magcubic L018) chegar, dentro do prazo de devolução: instalar a `tv-app` por
+  `adb`, correr o benchmark nas 15 cenas, afinar `shared/profiles/projector.json` (passo 3.5) e
+  DABS ouve a ventoinha em modo Eco no sótão. Se não convencer, devolver e passar ao Vali 1 Pro.
+  Detalhes no registo de 2026-10-06 abaixo.
 
 ## Dados pessoais
 
@@ -35,7 +39,7 @@
 
 ## Registo
 
-### 2026-10-06 — Servidor de casa e projetor (levantamento, sem decisão)
+### 2026-10-06 — Servidor de casa (levantamento) e escolha do projetor
 
 - Servidor `obelisk-server`, `192.168.1.200` (SSH `dave`): Ubuntu 24.04, AMD FX-6300, 7,7 GB RAM,
   GeForce GT 710 (Kepler, sem driver), SSD 112 GB + HDD 1 TB (`/mnt/drive2`, 343 GB livres).
@@ -44,9 +48,15 @@
   redimensionar) na Fase 2. Sempre opcional: a box continua offline-first com a cache.
 - Não serve para: imagens por IA (GPU sem CUDA/PyTorch atual, CPU sem AVX2), renderizar para o
   projetor, sinais de áudio.
-- Projetor ainda por comprar. Candidatos falados: Epson EF-22 (Google TV, laser, suporte para o
-  teto), Dangbei Freedo, ou um projetor simples com uma box Google TV ao lado. Num projetor ou
-  box com outro GPU, a `tv-app` tem de ser medida outra vez (modo benchmark).
+- Projetor escolhido, ainda não comprado: **Magcubic L018** (106,99 € na PcComponentes, vendido
+  pela loja, devolução grátis). Critérios de DABS: apontar para qualquer lado (teto incluído),
+  silencioso, Android para a `tv-app`, ligado à corrente (bateria dispensável); uso só em salas
+  escuras (noite, estúdio no sótão), por isso o brilho pouco importa. Riscos: ruído da ventoinha
+  (medição de 54 dBA colado / ~32 dBA à distância num modelo irmão; modo Eco baixa) e GPU
+  Mali-G31 com 1 GB RAM. Plano B: Wanbo Vali 1 Pro (273,44 € na PowerPlanet, Google TV 14,
+  suporte de 200°, ≤ 28 dB). Comparação e preços: doc "Projetor de mood — comparação"
+  (https://claude.ai/code/artifact/a8534f05-4afb-426d-a135-5ee5e6b8b706), atualizado pela skill
+  local `/precos-projetor` de DABS.
 
 ### 2026-10-06 — 1.4 `phone-app`
 
