@@ -4,7 +4,6 @@ import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
-import dev.santavibes.core.OutputGrade
 import dev.santavibes.core.PaletteVariation
 import dev.santavibes.core.Profile
 import dev.santavibes.core.SceneFormat
@@ -99,20 +98,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var fadeIntervalMax = 0f
     private var fadeCpuMax = 0f
 
-    private var output = 0
-    private var oScene = -1
-    private var oScenePrev = -1
-    private var oMix = -1
-    private var oResolution = -1
-    private var oNoise = -1
-    private var oDitherOffset = -1
-    private var oGrade = -1
-    private var oGradeOffset = -1
-    private var oInvGamma = -1
-    private var oLevels = -1
-    private var oDither = -1
-    private val grade = OutputGrade().apply { compute(profile) }
-    private var frameCount = 0
+    private var output: OutputPass? = null
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         // A new EGL context: every GL object from before is gone.
@@ -122,11 +108,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         halfOk = Gl.hasExtension("GL_EXT_color_buffer_half_float") || Gl.hasExtension("GL_EXT_color_buffer_float")
         black = Gl.blackTexture()
         noise = Gl.noiseTexture()
-        output = Gl.program(lib.outputFrag)
-        fun u(n: String) = GLES30.glGetUniformLocation(output, n)
-        oScene = u("uScene"); oScenePrev = u("uScenePrev"); oMix = u("uMix")
-        oResolution = u("uResolution"); oNoise = u("uNoise"); oDitherOffset = u("uDitherOffset")
-        oGrade = u("uGrade"); oGradeOffset = u("uGradeOffset"); oInvGamma = u("uInvGamma"); oLevels = u("uLevels"); oDither = u("uDither")
+        output = OutputPass(lib.outputFrag, profile)
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
         compileAll()
         bench?.let { b ->
@@ -203,28 +185,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         }
 
         // --- output pass -> surface at native resolution
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
-        GLES30.glViewport(0, 0, surfaceW, surfaceH)
-        GLES30.glUseProgram(output)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, dst?.tex ?: black)
-        GLES30.glUniform1i(oScene, 0)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, prev?.tex ?: black)
-        GLES30.glUniform1i(oScenePrev, 1)
-        GLES30.glUniform1f(oMix, if (prev != null) mix else 1f)
-        GLES30.glUniform2f(oResolution, surfaceW.toFloat(), surfaceH.toFloat())
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, noise)
-        GLES30.glUniform1i(oNoise, 2)
-        frameCount++
-        GLES30.glUniform2f(oDitherOffset, ((frameCount * 73) and 255).toFloat(), ((frameCount * 151) and 255).toFloat())
-        GLES30.glUniformMatrix3fv(oGrade, 1, false, grade.mat, 0)
-        GLES30.glUniform3fv(oGradeOffset, 1, grade.offset, 0)
-        GLES30.glUniform1f(oInvGamma, grade.invGamma)
-        GLES30.glUniform2fv(oLevels, 1, grade.levels, 0)
-        GLES30.glUniform1f(oDither, profile.dither)
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
+        output?.draw(dst?.tex ?: black, prev?.tex ?: black, if (prev != null) mix else 1f, noise, surfaceW, surfaceH)
 
         val cpuMs = ((System.nanoTime() - now) / 1e6).toFloat()
         stats.record(now, intervalMs, cpuMs)
