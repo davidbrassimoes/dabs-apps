@@ -1,7 +1,7 @@
 # santa-vibes
 
 **Dono:** DABS
-**Estado:** em construção (fase 0 feita; fase 1 em curso, 1.1 a 1.3 feitos; ver `products/santa-vibes/docs/ROADMAP.md`)
+**Estado:** em construção (fase 0 feita; fase 1 em curso, 1.1 a 1.3 feitos, 1.4 à espera de um telemóvel real; ver `products/santa-vibes/docs/ROADMAP.md`)
 **Destino:** pessoal; sideload na Google TV Streamer. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/santa-vibes/`
 
@@ -32,6 +32,8 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 | 6 | `color-field` tem `image: optional` mas não lê `uImage`: `optional` quer dizer "paleta da imagem" ou "amostra a imagem"? | DABS | Fase 2 |
 | 7 | Música de referência para afinar o tempo e as bandas: 5–10 faixas que DABS ouve de facto, de géneros diferentes, com o BPM conhecido (WAV ou outro formato; ficam fora do repo) | DABS | A afinação no 1.2/1.5, não o código |
 | 8 | `pc-bridge` arranca com o Windows? (atalho em `shell:startup`, sem consola, log em ficheiro) | DABS | Nada; corre-se à mão |
+| 9 | Testar a `phone-app` no telemóvel ligado ao PC (`3B241FDJH000QX`): instalo e conduzo eu por adb, ou fazes tu à mão? | DABS | Fechar o 1.4 |
+| 10 | Merge dos branches empilhados `santa-vibes-0.6` → `-1.4` para `main` | DABS | Nada; cada passo novo empilha mais |
 
 ## Próximos passos
 
@@ -43,7 +45,8 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 - [x] Fase 1, passo 1.2: `pc-bridge` (2026-10-06)
 - [x] Fase 1, passo 1.3: receção na tv-app (2026-10-06)
 - [ ] Afinar a reação a olho com DABS, com a música de referência (pergunta 7)
-- [ ] Fase 1, passo 1.4: `phone-app` (Android, microfone/playback capture, `signals-core` via NDK)
+- [~] Fase 1, passo 1.4: `phone-app` feita e testada no emulador; falta telemóvel real (pergunta 9)
+- [ ] Fase 1, passo 1.5: MIDI clock e afinação da latência
 
 ## Histórico
 
@@ -53,3 +56,4 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 - 2026-10-06: 1.1 `signals-core` (Rust): análise, pacotes, testes com áudio gerado e WAV.
 - 2026-10-06: 1.2 `pc-bridge`: loopback WASAPI → UDP; medido no PC, pacotes chegam à box.
 - 2026-10-06: 1.3 receção na tv-app: a box reage à música do PC (descoberta, mixer, volta ao Synth).
+- 2026-10-06: 1.4 `phone-app` (Kotlin + Rust/JNI): testada no emulador até à box.

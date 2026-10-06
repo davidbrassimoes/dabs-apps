@@ -29,7 +29,7 @@ control-web/     página de controlo para o telemóvel, servida pela tv-app — 
 | tv-app | `cd tv-app && ./gradlew :app:assembleDebug` | `adb -s 192.168.1.27:5555 install -r app/build/outputs/apk/debug/app-debug.apk` + `adb -s 192.168.1.27:5555 shell am start -n dev.santavibes.tv/.MainActivity`; logs: `adb -s 192.168.1.27:5555 logcat -s SantaVibes` | `./gradlew :core:test` |
 | signals-core | `cd signals-core && cargo build --release` | `cargo run --release --example analyze -- musica.wav` | `cargo test --release` · `cargo clippy --all-targets` (Rust via `rustup`; fora do `scripts/check` por agora) |
 | pc-bridge | `cd pc-bridge && cargo build --release` | `target/release/pc-bridge.exe [--tv 192.168.1.27]`; sem TV: `cargo run --release --example fake_tv` | `cargo clippy --all-targets`; teste manual com o `fake_tv` (README) |
-| phone-app | _a definir_ | _a definir_ | _a definir_ |
+| phone-app | `cd phone-app && ./gradlew :app:assembleDebug` (precisa de NDK 30, targets Android do Rust e `cargo-ndk`: README) | `adb install -r app/build/outputs/apk/debug/app-debug.apk` | `cd native && cargo test --release`; manual no emulador ou telemóvel (README) |
 
 O servidor do authoring é `node dev-server.mjs` (não é Vite). Fixtures partilhadas entre o
 authoring e a tv-app: `authoring/test/fixtures/`; a de paleta gera-se com

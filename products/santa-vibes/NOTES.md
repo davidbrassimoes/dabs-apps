@@ -6,20 +6,21 @@
 
 ## Para a próxima sessão
 
-- Fase 0 feita; 1.1, 1.2 e 1.3 feitos em 2026-10-06. A box já reage à música do PC.
-  Próximo: afinar a olho com DABS (música de referência, pergunta 7) ou 1.4 (`phone-app`).
+- Fase 0 feita; 1.1–1.3 feitos e 1.4 quase (falta telemóvel real) em 2026-10-06. A box reage à
+  música do PC. Próximo: testar a `phone-app` num telemóvel com DABS, afinar a olho (pergunta 7), 1.5.
 - À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
   ("Por decidir"). Nenhuma bloqueia o 1.2.
 - Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
 
 ## Dados pessoais
 
-Nenhum por agora. A Fase 1 vai captar áudio (microfone ou playback no telemóvel, loopback no
-PC); só se processam sinais derivados (bandas, beat), nada se grava nem sai da rede local.
-Rever esta tabela quando o 1.4 entrar.
+Áudio captado para análise. Nada se grava; à rede local só saem sinais derivados.
 
 | Dado | Finalidade | Retenção | Onde fica |
 |---|---|---|---|
+| Som que o PC toca (loopback, `pc-bridge`) | Calcular os sinais para a TV | Só em memória, ~6 s de função de onsets e 40 ms de PCM | Processo do `pc-bridge` |
+| Som da sala (microfone) ou das apps (playback capture), `phone-app` | Igual | Igual | Processo da `phone-app`, só com o serviço ligado e a notificação visível |
+| `deviceId` da TV (número aleatório) | Distinguir TVs no beacon | Enquanto a app estiver instalada | Preferências da tv-app |
 
 ## Encontrado e não resolvido
 
@@ -33,6 +34,18 @@ Rever esta tabela quando o 1.4 entrar.
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-06 — 1.4 `phone-app`
+
+- Instalados no PC: NDK 30.0.16248370, emulador e imagem Android 16 x86_64 (AVD `sv-phone`),
+  targets Android do Rust, `cargo-ndk` 4.1.2. O `sdkmanager.bat` parte nomes com `;` — usar
+  `--package_file`.
+- App sem dependências; JNI sem crate (tabela de funções). Gradle chama o `cargo ndk` com o
+  caminho absoluto do `cargo` (o daemon não tem `~/.cargo/bin` no PATH).
+- Android 15+ desenha por baixo das barras do sistema: o ecrã usa os insets.
+- Testado no emulador até à box (`src=mic`). Não testado: microfone real, música de uma app
+  real, beacon por Wi-Fi. Há um telemóvel ligado por USB ao PC (`3B241FDJH000QX`) em que não
+  mexi: instalar e tocar no ecrã remotamente precisa do OK de DABS.
 
 ### 2026-10-06 — 1.3 receção na tv-app
 
