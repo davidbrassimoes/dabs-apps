@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Baralho — cards</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;600&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button,input{font:inherit}
+button{cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Bricolage Grotesque', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 6px">
+    <h1 style="margin: 0; font-weight: 800; font-size: 32px; letter-spacing: -0.02em">Cards <span style="font-weight: 400; font-size: 18px; color: {{c.dim}}">32</span></h1>
+    <a href="#new" aria-label="New card" style="text-decoration: none; width: 52px; height: 52px; border-radius: 18px; background: {{c.text}}; color: {{c.ground}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+    </a>
+  </header>
+
+  <div style="padding: 8px 16px 0">
+    <label for="search-c" style="position: absolute; left: -9999px">Search cards</label>
+    <input id="search-c" type="search" placeholder="Search" style="width: 100%; box-sizing: border-box; height: 48px; border: 0; border-radius: 16px; background: {{c.panel}}; color: {{c.text}}; padding: 0 16px; font-size: 16px">
+  </div>
+
+  <div style="display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto">
+    <sc-for list="{{chips}}" as="k" hint-placeholder-count="5">
+      <button aria-pressed="{{k.on}}" style="flex: none; height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: {{k.bg}}; color: {{k.fg}}; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{k.dot}}"></span>{{k.label}}</button>
+    </sc-for>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 0 16px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; gap: 8px">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+      <li>
+        <a href="#edit" style="text-decoration: none; display: flex; gap: 12px; align-items: stretch; background: {{c.card}}; border-radius: 16px; padding: 10px 12px 10px 10px">
+          <span style="flex: none; width: 34px; border-radius: 10px; background: {{r.bg}}; color: {{r.ink}}; display: flex; align-items: center; justify-content: center; font-family: 'Azeret Mono', monospace; font-weight: 600; font-size: 13px">{{r.letter}}</span>
+          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex-grow: 1">
+            <span style="font-weight: 600; font-size: 16px; line-height: 21px">{{r.text}}</span>
+            <span style="display: flex; justify-content: space-between; gap: 8px; font-family: 'Azeret Mono', monospace; font-size: 11px; color: {{c.dim}}"><span>{{r.gear}}</span><span>{{r.drawn}}</span></span>
+          </span>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 10px">
+    <a href="#draw" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Draw</a>
+    <a href="#cards" aria-current="page" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 800; color: {{c.text}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = { ground: '#111113', panel: '#222226', card: '#1B1B1F', text: '#F4F1EA', dim: '#A9A7A2' };
+    const light = { ground: '#F3F1EC', panel: '#E3E0D8', card: '#FFFFFF', text: '#141416', dim: '#5A5853' };
+    const isDark = (this.props.theme ?? 'light') === 'dark';
+    const c = isDark ? dark : light;
+    const k = {
+      idea: [isDark ? '#EDE6D6' : '#141416', isDark ? '#141416' : '#F4F1EA'],
+      source: ['#2E8C76', '#FFFFFF'],
+      treatment: ['#F0A93B', '#141416'],
+      technique: ['#5468D4', '#FFFFFF'],
+      constraint: ['#D9472F', '#FFFFFF'],
+      arrangement: ['#A979C9', '#141416']
+    };
+    const chip = (label, kind, on) => ({
+      label, on: on ? 'true' : 'false',
+      bg: on ? c.text : c.panel, fg: on ? c.ground : c.text,
+      dot: kind ? k[kind][0] : 'transparent'
+    });
+    const row = (kind, letter, text, gear, drawn) => ({ bg: k[kind][0], ink: k[kind][1], letter, text, gear, drawn });
+    return {
+      c,
+      chips: [chip('All', null, true), chip('Source', 'source', false), chip('Treatment', 'treatment', false), chip('Constraint', 'constraint', false), chip('Idea', 'idea', false)],
+      rows: [
+        row('constraint', 'C', 'Nothing quantised.', 'no gear', 'never'),
+        row('source', 'S', 'Melodica, into a microphone — never a DI.', 'melodica · xm8500', 'never'),
+        row('treatment', 'T', 'Hall of Fame 2 before the amp, not after.', 'hall-of-fame-2 · ac30', '1×'),
+        row('idea', 'I', 'Play the ocarina and the melodica at the same time, one in each hand, into the CM25.', 'ocarina · melodica · cm25', '2×'),
+        row('source', 'S', 'Kalimba, close-miked, one metre off the slab.', 'kalimba · cm25', '3×'),
+        row('arrangement', 'A', 'Build the whole thing from one bar.', 'no gear', '4×')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

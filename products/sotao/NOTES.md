@@ -36,6 +36,19 @@ Cartas, material e histórico de tiragens não são dados pessoais de terceiros.
 
 ## Registo
 
+### 2026-10-06 — propostas de aspeto (gate 2 pendente)
+
+- Três direções, cada uma com tirar uma, tirar três e a lista de cartas, para telemóvel, com
+  ajuste escuro/claro: **A · Lamparina** (ficha de cartolina, Courier Prime + Archivo, botão
+  âmbar), **B · Fita-cola** (fita de papel numa mesa de mistura, Permanent Marker + Chivo),
+  **C · Baralho** (cartas de cor chapada por tipo, Bricolage Grotesque + Azeret Mono).
+- Canvas: https://claude.ai/artifact/G3HZ1K6AzNKup4fWCwcUzh (privado). Fontes em
+  `docs/look-2026-10-06/` (`.dc.html`, só abrem no canvas).
+- Nenhuma usa as fontes da Escarpa nem as do spec original. Contrastes não medidos: medem-se
+  na direção escolhida, como em §12.
+- Proposta, não decisão: muda a navegação para uma barra de baixo e o modo para "One card /
+  Three". DABS decide com o mockup.
+
 ### 2026-10-06 — saída da Escarpa Audio para o dabs-apps
 
 - **Movido** do branch `sotao` do `escarpa-audio` por `git subtree split` + `add`, com a

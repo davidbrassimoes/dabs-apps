@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lamparina — draw three</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=Courier+Prime:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Archivo', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 10px">
+    <span style="font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 22px; letter-spacing: 0.02em">Sótão</span>
+    <a href="#gear" style="text-decoration: none; font-size: 13px; color: {{c.dim}}; border: 1px solid {{c.line}}; border-radius: 999px; padding: 8px 12px">In the rack · 18 of 42</a>
+  </header>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 12px">
+    <div role="group" aria-label="Mode" style="display: flex; background: {{c.rail}}; border-radius: 10px; padding: 3px">
+      <a href="#single" style="text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: 8px; color: {{c.dim}}">One card</a>
+      <a href="#spread" aria-current="page" style="text-decoration: none; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 8px; background: {{c.panel}}; color: {{c.text}}">Three</a>
+    </div>
+    <span style="font-size: 13px; color: {{c.faint}}">Offline · cached</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 4px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{slots}}" as="s" hint-placeholder-count="3">
+      <article style="flex: 1 1 0; background-color: {{c.paper}}; border-left: 6px solid {{s.color}}; border-radius: 3px; box-shadow: 0 10px 26px rgba(0,0,0,0.3); padding: 10px 12px 14px 16px; display: flex; flex-direction: column; color: {{c.ink}}">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: {{s.color}}">{{s.kind}}</span>
+          <button aria-label="{{s.lockLabel}}" aria-pressed="{{s.lockedAttr}}" style="height: 44px; border: 0; background: transparent; color: {{s.lockColor}}; display: flex; align-items: center; gap: 6px; padding: 0 0 0 12px; font-size: 12px">
+            <span>{{s.lockText}}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+          </button>
+        </div>
+        <p style="margin: 2px 0 0; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 21px; line-height: 28px">{{s.text}}</p>
+      </article>
+    </sc-for>
+  </div>
+
+  <div style="padding: 14px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 56px; height: 76px; border: 1px solid {{c.line}}; border-radius: 14px; background: transparent; color: {{c.dim}}; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 76px; border: 0; border-radius: 14px; background: {{c.lamp}}; color: {{c.lampInk}}; font-family: 'Courier Prime', monospace; font-weight: 700; font-size: 26px; letter-spacing: 0.04em">Draw two</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid {{c.line}}; background: {{c.rail}}">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; font-weight: 600; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 14px 0 18px; font-size: 13px; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = {
+      ground: '#15120F', rail: '#1C1814', panel: '#2A241E', line: '#3A332B',
+      text: '#EFE8DC', dim: '#B3A797', faint: '#8E8373',
+      paper: '#F3EEE4', ink: '#1E1B18', inkDim: '#6A6158',
+      lamp: '#E3A23F', lampInk: '#1B1307'
+    };
+    const light = {
+      ground: '#E8E2D6', rail: '#DDD6C8', panel: '#FBF9F4', line: '#C8BFAE',
+      text: '#1F1B17', dim: '#554C42', faint: '#6E6457',
+      paper: '#FFFFFF', ink: '#1E1B18', inkDim: '#6A6158',
+      lamp: '#8F5410', lampInk: '#FFFFFF'
+    };
+    const c = (this.props.theme ?? 'dark') === 'light' ? light : dark;
+    const slot = (kind, color, text, locked) => ({
+      kind, color, text,
+      lockedAttr: locked ? 'true' : 'false',
+      lockText: locked ? 'Kept' : 'Keep',
+      lockLabel: locked ? 'Unlock ' + kind : 'Keep ' + kind,
+      lockColor: locked ? c.ink : c.inkDim
+    });
+    return {
+      c,
+      slots: [
+        slot('Source', '#2F6E5F', 'Gretsch 12-string, tuned down until it rattles.', true),
+        slot('Treatment', '#93600F', 'Pitch Fork+ at minus twelve, wet only.', false),
+        slot('Constraint', '#A93B2A', 'Three minutes, then you stop and listen back once.', false)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

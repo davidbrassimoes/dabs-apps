@@ -31,7 +31,7 @@ gate é o **mockup do novo aspeto** (gate 2).
 
 ## Próximos passos
 
-- [ ] Propostas de aspeto em `products/sotao/design/` → DABS escolhe → gate 2
+- [ ] DABS escolhe uma das três propostas (`products/sotao/NOTES.md`, 2026-10-06) → gate 2
 - [ ] Primeiro deploy (gate 3): criar base Turso, `wrangler secret put` para os quatro
       secrets, `npm run deploy`, testar o `PRAGMA foreign_keys` (ver `NOTES.md`)
 

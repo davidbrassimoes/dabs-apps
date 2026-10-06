@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Baralho — draw one</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;600&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:.85}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.ground}}; color: {{c.text}}; font-family: 'Bricolage Grotesque', system-ui, sans-serif; overflow: hidden">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 6px">
+    <span style="font-weight: 800; font-size: 24px; letter-spacing: -0.02em">sótão</span>
+    <div style="display: flex; gap: 4px; background: {{c.panel}}; border-radius: 999px; padding: 4px">
+      <a href="#single" aria-current="page" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; background: {{c.text}}; color: {{c.ground}}; font-weight: 600; font-size: 14px">One</a>
+      <a href="#spread" style="text-decoration: none; padding: 10px 16px; border-radius: 999px; color: {{c.dim}}; font-weight: 600; font-size: 14px">Three</a>
+    </div>
+  </header>
+
+  <div style="padding: 6px 16px 0; display: flex; justify-content: space-between; font-family: 'Azeret Mono', monospace; font-size: 12px; color: {{c.dim}}">
+    <a href="#gear" style="text-decoration: none; padding: 12px 0">18 of 42 in the rack</a>
+    <span style="padding: 12px 0">3 / 7 tonight</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 4px 16px 0; display: flex">
+    <article style="flex-grow: 1; position: relative; border-radius: 22px; background: {{c.card}}; color: {{c.cardInk}}; padding: 22px 22px 24px; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <span style="font-family: 'Azeret Mono', monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.1em">IDEA</span>
+        <button aria-label="Favourite" aria-pressed="true" style="width: 44px; height: 44px; margin: -10px -10px 0 0; border: 0; background: transparent; color: {{c.cardInk}}; display: flex; align-items: center; justify-content: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+        </button>
+      </div>
+      <p style="margin: auto 0; font-weight: 800; font-size: 34px; line-height: 37px; letter-spacing: -0.02em">Play the RD-08 through the Pitch Fork+ at plus one octave, reamp it into the AC30, and mic the amp from the staircase opening.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{gear}}" as="g" hint-placeholder-count="4">
+          <span style="font-family: 'Azeret Mono', monospace; font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1.5px solid {{c.cardInk}}">{{g}}</span>
+        </sc-for>
+      </div>
+    </article>
+  </div>
+
+  <div style="padding: 14px 16px 12px; display: flex; gap: 10px">
+    <button aria-label="Previous draw" style="width: 64px; height: 76px; border-radius: 22px; border: 0; background: {{c.panel}}; color: {{c.text}}; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <button style="flex-grow: 1; height: 76px; border-radius: 22px; border: 0; background: {{c.text}}; color: {{c.ground}}; font-weight: 800; font-size: 30px; letter-spacing: -0.01em">Draw</button>
+  </div>
+
+  <nav aria-label="Sections" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0 8px 10px">
+    <a href="#draw" aria-current="page" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 800; color: {{c.text}}">Draw</a>
+    <a href="#cards" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Cards</a>
+    <a href="#gear" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Gear</a>
+    <a href="#import" style="text-decoration: none; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600; color: {{c.dim}}">Import</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"kind":{"editor":"enum","options":["idea","source","treatment","technique","constraint","arrangement"],"default":"idea"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = { ground: '#111113', panel: '#222226', text: '#F4F1EA', dim: '#A9A7A2' };
+    const light = { ground: '#F3F1EC', panel: '#E3E0D8', text: '#141416', dim: '#5A5853' };
+    const base = (this.props.theme ?? 'dark') === 'light' ? light : dark;
+    const kinds = {
+      idea: ['#EDE6D6', '#141416'],
+      source: ['#2E8C76', '#FFFFFF'],
+      treatment: ['#F0A93B', '#141416'],
+      technique: ['#5468D4', '#FFFFFF'],
+      constraint: ['#D9472F', '#FFFFFF'],
+      arrangement: ['#A979C9', '#141416']
+    };
+    const k = kinds[this.props.kind ?? 'idea'] ?? kinds.idea;
+    const cardOnLight = (this.props.theme === 'light' && (this.props.kind ?? 'idea') === 'idea') ? '#141416' : k[0];
+    const inkOnLight = (this.props.theme === 'light' && (this.props.kind ?? 'idea') === 'idea') ? '#F4F1EA' : k[1];
+    return {
+      c: Object.assign({}, base, { card: cardOnLight, cardInk: inkOnLight }),
+      gear: ['rd-08', 'pitch-fork-plus', 'ac30', 'cm25']
+    };
+  }
+}
+</script>
+</body>
+</html>
