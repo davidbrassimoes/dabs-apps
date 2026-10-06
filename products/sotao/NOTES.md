@@ -76,6 +76,18 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 
 ## Registo
 
+### 2026-10-06 — troca de modo e três cartas em ecrã grande (relatado por DABS)
+
+- **Troca One/Three:** a página não remonta ao mudar `?mode=`, por isso a tiragem do modo anterior
+  ficava no ecrã com o formato do outro. Agora cada modo guarda e repõe a sua tiragem, histórico e
+  trancas (`draw/+page.svelte`).
+- **Três cartas:** a partir de 1100 px ficam lado a lado (fonte · tratamento · restrição), texto em
+  cima, 34/28/24 px. Abaixo disso empilham: cada carta tem pelo menos a altura do seu texto, a
+  sobra divide-se mais para as longas, e se não couberem a zona das cartas faz scroll (o Draw fica).
+  O resumo dos filtros é uma linha até 1100 px.
+- Verificado: 12 tiragens de três cartas em 390, 1024, 1100, 1280 e 1920 px, sem texto cortado nem
+  scroll; troca One → Three → One → Three em 1920 e 1440 px.
+
 ### 2026-10-06 — D1 em vez de Turso (branch `sotao-d1`)
 
 - Um módulo, dois drivers: `src/lib/server/db/index.ts` exporta `db` como proxy para a instância

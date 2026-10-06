@@ -34,6 +34,10 @@
 		return n <= a ? 'm' : n <= b ? 's' : 'xs';
 	});
 
+	// Stacked in Three mode, each card is at least as tall as its text, and the room
+	// left over is shared, more of it to the longer cards.
+	let share = $derived(size === 'm' ? 1 : size === 's' ? 1.3 : 1.9);
+
 	let kind = $derived(slot.kind ?? slot.card?.kinds[0] ?? 'idea');
 </script>
 
@@ -41,7 +45,7 @@
 	class="card"
 	class:compact
 	class:locked
-	style="--fill: var(--card-{kind}); --on: var(--card-{kind}-ink)"
+	style="--fill: var(--card-{kind}); --on: var(--card-{kind}-ink); --share: {share}"
 >
 	<div class="top">
 		<span class="kinds">
@@ -156,6 +160,7 @@
 	}
 
 	.card.compact {
+		flex: var(--share) 0 auto;
 		padding: 12px 18px 16px;
 		gap: 8px;
 	}
@@ -263,8 +268,8 @@
 		line-height: 20px;
 	}
 
-	/* Wide screens: one card has about twice a phone's area, so its steps go up a lot; the three
-	   cards share the same height, so theirs go up less. */
+	/* Wide screens: one card has about twice a phone's area, so its steps go up. Three stacked
+	   cards keep the phone's sizes; side by side (1100px and up) the draw page sizes them. */
 	@media (min-width: 721px) {
 		.text.size-m {
 			font-size: 44px;
@@ -279,21 +284,6 @@
 		.text.size-xs {
 			font-size: 30px;
 			line-height: 34px;
-		}
-
-		.compact .text.size-m {
-			font-size: 26px;
-			line-height: 30px;
-		}
-
-		.compact .text.size-s {
-			font-size: 22px;
-			line-height: 26px;
-		}
-
-		.compact .text.size-xs {
-			font-size: 18px;
-			line-height: 22px;
 		}
 	}
 

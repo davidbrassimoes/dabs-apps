@@ -20,7 +20,9 @@
 
 	let { data } = $props();
 
-	let mode = $derived(page.url.searchParams.get('mode') === 'spread' ? 'spread' : 'single');
+	let mode: 'single' | 'spread' = $derived(
+		page.url.searchParams.get('mode') === 'spread' ? 'spread' : 'single'
+	);
 
 	// Seeded from the server render so the first draw needs no network at all.
 	let pool = $state<Pool>(untrack(() => data.pool));
@@ -66,13 +68,43 @@
 		};
 	}
 
-	onMount(() => {
-		history = data.tonight.filter((d) => d.mode === mode).map(fromRecord);
-		historyIndex = history.length - 1;
-		// Show tonight's last draw immediately rather than the idle state, so
-		// coming back to the screen picks up where it left off.
-		if (historyIndex >= 0) current = history[historyIndex];
+	// One and Three are the same page with a different ?mode=, so switching does
+	// not remount it. Each mode keeps its own draw, history and locks: leaving a
+	// mode saves them, entering one restores them, or starts from tonight's
+	// draws for that mode the first time. Without this the previous mode's cards
+	// stayed on screen, laid out for the other mode.
+	type ModeState = {
+		current: DrawResult | null;
+		locked: (string | null)[];
+		history: DrawResult[];
+		historyIndex: number;
+		drawUuid: string | null;
+	};
+	const saved: Partial<Record<'single' | 'spread', ModeState>> = {};
+	let shownMode: 'single' | 'spread' | null = null;
 
+	$effect(() => {
+		const next = mode;
+		untrack(() => {
+			if (shownMode === next) return;
+			if (shownMode) saved[shownMode] = { current, locked, history, historyIndex, drawUuid };
+			const restored = saved[next];
+			if (restored) {
+				({ current, locked, history, historyIndex, drawUuid } = restored);
+			} else {
+				history = data.tonight.filter((d) => d.mode === next).map(fromRecord);
+				historyIndex = history.length - 1;
+				// Show tonight's last draw rather than the idle state, so coming back
+				// to the screen picks up where it left off.
+				current = historyIndex >= 0 ? history[historyIndex] : null;
+				locked = [null, null, null];
+				drawUuid = null;
+			}
+			shownMode = next;
+		});
+	});
+
+	onMount(() => {
 		void (async () => {
 			const stored = await readCachedPool();
 			if (stored && stored.syncedAt > pool.syncedAt) pool = stored;
@@ -324,7 +356,7 @@
 <svelte:head><title>Draw — Sótão</title></svelte:head>
 <svelte:window onkeydown={onKey} />
 
-<div class="screen">
+<div class="screen" class:spread={mode === 'spread'}>
 	<div class="info">
 		<a href={resolve('/gear')} class="rack">{data.rack.inRack} of {data.rack.owned} in the rack</a>
 		{#if offline || cached}
@@ -513,8 +545,9 @@
 		display: none;
 	}
 
-	/* A phone keeps the strip to one line: what the pool is, and the way to the filters. */
-	@media (max-width: 720px) {
+	/* Until the cards sit side by side (1100px), the strip stays one line: what the pool
+	   is, and the way to the filters. Its long form costs the stacked cards their height. */
+	@media (max-width: 1099px) {
 		.lg {
 			display: none;
 		}
@@ -544,9 +577,12 @@
 		color: var(--text);
 	}
 
+	/* Stacked cards never shrink below their text (DrawCard); when the three do not fit,
+	   this area scrolls and the Draw button stays where it is. */
 	.board {
 		flex-grow: 1;
 		min-height: 0;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
@@ -634,6 +670,48 @@
 			display: flex;
 			justify-content: center;
 			gap: 24px;
+		}
+	}
+
+	/* A big window: the three cards side by side, read left to right as a recipe. */
+	@media (min-width: 1100px) {
+		.screen.spread {
+			max-width: 1140px;
+		}
+
+		.screen.spread .board {
+			flex-grow: 0;
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			min-height: 380px;
+			max-height: 560px;
+		}
+
+		/* In a column the text reads from the top, under the slot's name. */
+		.screen.spread .board :global(.text) {
+			margin: 16px 0 auto;
+		}
+
+		.screen.spread .board :global(.text.size-m) {
+			font-size: 34px;
+			line-height: 38px;
+		}
+
+		.screen.spread .board :global(.text.size-s) {
+			font-size: 28px;
+			line-height: 32px;
+		}
+
+		.screen.spread .board :global(.text.size-xs) {
+			font-size: 24px;
+			line-height: 28px;
+		}
+
+		.screen.spread .controls,
+		.screen.spread .keys {
+			width: 100%;
+			max-width: 528px;
+			margin-inline: auto;
 		}
 	}
 
