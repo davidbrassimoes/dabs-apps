@@ -10,9 +10,9 @@
 - **Verificado em produção:** o primeiro pedido migrou e semeou (1,3 s; 47 peças, 32 cartas, 1
   migração); pedidos seguintes ~0,1 s; `foreign_keys = 1`; apagar `ac30` (usado por cartas)
   falha com `FOREIGN KEY constraint failed` e nada muda.
-- **Por verificar em produção:** login e uso real (a password do Worker não é a do `.env` local,
-  por isso o agente não entrou); importação com commit no D1 remoto (atomicidade do `batch`);
-  telemóvel real, atalhos de teclado, offline.
+- **Por verificar em produção:** telemóvel real, atalhos de teclado, offline. Login, importação
+  com commit no D1 remoto (188 cartas num só `batch`) e edição/arquivo de cartas verificados a
+  2026-10-06 (ver Registo).
 - Verificar: `scripts/check` (desta pasta) ou `scripts/check sotao` (da raiz).
 
 ## Dados pessoais
@@ -75,6 +75,21 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 - `docs/mockups/` usa nomes genéricos de material (da passagem pela Escarpa). Só servem para layout.
 
 ## Registo
+
+### 2026-10-06 — 188 cartas experimentais e curadoria das de arranque
+
+- Importadas pelo `/import` em produção (Chrome, sessão de DABS): 188 novas, 0 erros; a
+  biblioteca passou de 32 para 220. Foco pedido por DABS: sampling experimental (MPC One+,
+  Circuit Rhythm, SK-1, Bitwig) e cordas, com uma parte fora desses dois pilares. Tags novas:
+  `experimental` (em todo o lote), `chops`, `resampling`, `tuning`.
+- Curadoria aprovada por DABS, feita no editor de cartas e confirmada no D1: a ideia Volca Keys →
+  French Toast perdeu `treatment`; "Synth Wah on a source…" perdeu `constraint`; "Play it at half
+  speed…", "Use it as the intro only…", "The loudest thing…" e "Build the whole thing from one
+  bar." ganharam `constraint` (eram só technique/arrangement e nunca saíam); arquivadas "Mic it
+  from three metres…" e "Two instruments at once…" (repetiam outras).
+- Encontrado: no editor, cliques feitos logo a seguir a abrir a página (antes da hidratação)
+  perdem-se, e "Save card" grava o estado antigo sem aviso. Com uma pausa de ~3 s funciona.
+  Não investigado.
 
 ### 2026-10-06 — a skill de cartas lê a app publicada
 
