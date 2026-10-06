@@ -1,6 +1,7 @@
 import { LineCounter, parseDocument, type Document } from 'yaml';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
+import type { BatchItem } from 'drizzle-orm/batch';
 import { db } from './db';
 import { cardGear, cardKinds, cardTags, cards, gear } from './db/schema';
 import { cardId } from '$lib/cardId';
@@ -343,7 +344,7 @@ export async function existingCardSnapshots(): Promise<Map<string, ExistingCardS
 export type CommitSummary = { created: number; updated: number };
 
 /**
- * Writes the New and Updated rows from a report, in one transaction — nothing
+ * Writes the New and Updated rows from a report, in one atomic batch — nothing
  * is written before this runs, and either all of it lands or none of it does.
  *
  * An Updated row touches only kinds, gear, tags and favorite. Author, status,
@@ -354,13 +355,34 @@ export async function applyImport(rows: ImportRow[]): Promise<CommitSummary> {
 	const toCreate = rows.filter((r) => r.class === 'new');
 	const toUpdate = rows.filter((r) => r.class === 'updated');
 
-	await db.transaction(async (tx) => {
-		const now = Date.now();
+	const now = Date.now();
+	// One db.batch: atomic on both drivers (D1 has no transactions), so a failing
+	// statement leaves nothing written. Order matters: a card before its joins.
+	const statements: BatchItem<'sqlite'>[] = [];
 
-		for (const row of toCreate) {
-			if (!row.id || !row.text || !row.author) continue;
+	const joins = (row: ImportRow) => {
+		if (row.kinds.length) {
+			statements.push(
+				db.insert(cardKinds).values(row.kinds.map((kind) => ({ cardId: row.id!, kind })))
+			);
+		}
+		if (row.gear.length) {
+			statements.push(
+				db.insert(cardGear).values(row.gear.map((gearId) => ({ cardId: row.id!, gearId })))
+			);
+		}
+		if (row.tags.length) {
+			statements.push(
+				db.insert(cardTags).values(row.tags.map((tag) => ({ cardId: row.id!, tag })))
+			);
+		}
+	};
 
-			await tx.insert(cards).values({
+	for (const row of toCreate) {
+		if (!row.id || !row.text || !row.author) continue;
+
+		statements.push(
+			db.insert(cards).values({
 				id: row.id,
 				text: row.text,
 				favorite: row.favorite,
@@ -370,42 +392,26 @@ export async function applyImport(rows: ImportRow[]): Promise<CommitSummary> {
 				lastDrawnAt: null,
 				createdAt: now,
 				updatedAt: now
-			});
+			})
+		);
+		joins(row);
+	}
 
-			if (row.kinds.length) {
-				await tx.insert(cardKinds).values(row.kinds.map((kind) => ({ cardId: row.id!, kind })));
-			}
-			if (row.gear.length) {
-				await tx.insert(cardGear).values(row.gear.map((gearId) => ({ cardId: row.id!, gearId })));
-			}
-			if (row.tags.length) {
-				await tx.insert(cardTags).values(row.tags.map((tag) => ({ cardId: row.id!, tag })));
-			}
-		}
+	for (const row of toUpdate) {
+		if (!row.id) continue;
 
-		for (const row of toUpdate) {
-			if (!row.id) continue;
+		statements.push(
+			db.update(cards).set({ favorite: row.favorite, updatedAt: now }).where(eq(cards.id, row.id)),
+			db.delete(cardKinds).where(eq(cardKinds.cardId, row.id)),
+			db.delete(cardGear).where(eq(cardGear.cardId, row.id)),
+			db.delete(cardTags).where(eq(cardTags.cardId, row.id))
+		);
+		joins(row);
+	}
 
-			await tx
-				.update(cards)
-				.set({ favorite: row.favorite, updatedAt: now })
-				.where(eq(cards.id, row.id));
-
-			await tx.delete(cardKinds).where(eq(cardKinds.cardId, row.id));
-			await tx.delete(cardGear).where(eq(cardGear.cardId, row.id));
-			await tx.delete(cardTags).where(eq(cardTags.cardId, row.id));
-
-			if (row.kinds.length) {
-				await tx.insert(cardKinds).values(row.kinds.map((kind) => ({ cardId: row.id!, kind })));
-			}
-			if (row.gear.length) {
-				await tx.insert(cardGear).values(row.gear.map((gearId) => ({ cardId: row.id!, gearId })));
-			}
-			if (row.tags.length) {
-				await tx.insert(cardTags).values(row.tags.map((tag) => ({ cardId: row.id!, tag })));
-			}
-		}
-	});
+	if (statements.length > 0) {
+		await db.batch(statements as [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]]);
+	}
 
 	return { created: toCreate.length, updated: toUpdate.length };
 }
