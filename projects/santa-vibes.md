@@ -40,6 +40,8 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
     do brilho aos 123 BPM). Faz-se uma versão mais reativa das 15 cenas, alternável na box com a
     atual sem reinstalar; DABS compara as duas na TV antes de a reativa passar a predefinição.
     Feito (PR #4). 2026-10-07, DABS: **a predefinição é a reativa**; a atual continua a um ▲.
+14. **Sem MIDI clock** (2026-10-07, DABS): estava na visão sem razão escrita e não serve o uso real
+    (música do PC). Sai do produto; o 1.5 fica só a afinação da latência. ADR 0003 do produto.
 
 ## Por decidir
 

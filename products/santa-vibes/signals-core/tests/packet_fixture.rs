@@ -44,8 +44,8 @@ fn fixture() -> String {
         ),
         (
             Signals { bpm: 90.0, beat_phase: 0.999, tempo_valid: true, ..Default::default() },
-            SourceKind::MidiClock,
-            1 << 2,
+            SourceKind::PhonePlayback,
+            0,
             7,
             1,
         ),

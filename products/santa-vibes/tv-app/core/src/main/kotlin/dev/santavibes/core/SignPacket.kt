@@ -48,7 +48,6 @@ class SignPacket {
         const val FIELDS = 10
         const val FLAG_ONSET = 1
         const val FLAG_TEMPO_VALID = 2
-        const val FLAG_MIDI_LOCKED = 4
         const val FLAG_SILENCE = 8
 
         // Indices into [values].
@@ -67,7 +66,7 @@ class SignPacket {
         const val SOURCE_PC = 1
         const val SOURCE_PHONE_MIC = 2
         const val SOURCE_PHONE_PLAYBACK = 3
-        const val SOURCE_MIDI = 4
+        // 4 is reserved (was MIDI clock; docs/decisoes/0003-sem-midi.md)
 
         private fun u16(b: ByteArray, o: Int) = (b[o].toInt() and 0xff) or ((b[o + 1].toInt() and 0xff) shl 8)
 

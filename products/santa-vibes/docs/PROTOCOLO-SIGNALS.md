@@ -52,7 +52,7 @@ O emissor usa o IP de origem do beacon como destino. Se receber beacons de vári
 | 1 | PC loopback |
 | 2 | telemóvel — microfone |
 | 3 | telemóvel — playback capture |
-| 4 | MIDI clock (só tempo/fase) |
+| 4 | reservado (era MIDI clock, retirado em 2026-10-07: `decisoes/0003-sem-midi.md`) |
 
 ### `flags` (bits)
 
@@ -60,7 +60,7 @@ O emissor usa o IP de origem do beacon como destino. Se receber beacons de vári
 |---|---|
 | 0 | onset de beat neste pacote |
 | 1 | `bpm`/`beatPhase` válidos |
-| 2 | tempo bloqueado a MIDI clock |
+| 2 | reservado (era "tempo bloqueado a MIDI clock"), enviado a `0` |
 | 3 | silêncio (abaixo do limiar) |
 | 4–15 | reservados (`0`) |
 

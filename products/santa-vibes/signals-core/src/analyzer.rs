@@ -149,7 +149,8 @@ impl Analyzer {
         // without one, from the detected onsets.
         let fire = if self.tempo.valid {
             let ahead = self.cfg.lookahead_ms / 1000.0 / self.tempo.period_s();
-            let ph = (self.tempo.phase + ahead).fract();
+            // rem_euclid, not fract: a negative lookahead (the picture would lead the sound) must wrap to 0..1.
+            let ph = (self.tempo.phase + ahead).rem_euclid(1.0);
             let wrapped = ph < self.out_phase && self.out_phase - ph > 0.5;
             self.out_phase = ph;
             wrapped

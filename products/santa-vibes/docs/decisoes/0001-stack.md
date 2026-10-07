@@ -15,7 +15,7 @@ O critério principal é **desempenho, eficiência e leveza**. A preferência de
 | Shaders | GLSL ES 3.00 (idêntico ao WebGL2) |
 | Ferramenta de autoria | Página WebGL2 + TypeScript, só para desenvolvimento |
 | Núcleo de DSP | Rust (`signals-core`), partilhado entre PC e telemóvel |
-| Bridge do PC | Rust (`cpal` WASAPI loopback, `rustfft`, `midir`) — binário único, sem runtime |
+| Bridge do PC | Rust (`cpal` WASAPI loopback, `rustfft`) — binário único, sem runtime. (`midir` saiu com o MIDI clock: ADR 0003) |
 | App do telemóvel | Kotlin (captura, serviço, UI mínima) + `signals-core` via NDK/JNI |
 | Sinais | UDP binário fixo, ~60 Hz, descoberta por beacon |
 | Controlo | HTTP mínimo dentro da tv-app + página HTML/JS sem framework |

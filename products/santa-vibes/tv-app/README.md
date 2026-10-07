@@ -133,11 +133,11 @@ A app escuta pacotes `SIGN` em UDP 47800 e envia o beacon `PNMB` de 2 em 2 s par
 (`deviceId` aleatório guardado nas preferências; `controlPort` 0 até haver ControlServer). Permissão `INTERNET`.
 
 ```
-am start -n dev.santavibes.tv/.MainActivity [--ef reactivity 1] [--es source auto|pc|phone|mic|midi|none]
+am start -n dev.santavibes.tv/.MainActivity [--ef reactivity 1] [--es source auto|pc|phone|mic|none]
 ```
 
 - **Receção** (`SignalHub`, thread própria): `Os.recvfrom` para um buffer fixo, sem pedir o endereço de origem, por isso não aloca por pacote. Guarda o último pacote por tipo de fonte; descarta pacotes fora de ordem, mas aceita um emissor que reinicia (2 s sem pacotes ou salto para trás > 1000).
-- **Escolha da fonte**: `auto` usa a primeira com som por esta ordem: PC, telemóvel (playback), microfone, MIDI; senão a primeira que está a enviar.
+- **Escolha da fonte**: `auto` usa a primeira com som por esta ordem: PC, telemóvel (playback), microfone; senão a primeira que está a enviar.
 - **Mixer** (`SignalMixer`, thread de GL): `saída = mix(Synth, real, reatividade × presença)`. Valores suavizados em 30 ms; a fase do beat anda sozinha ao bpm recebido entre pacotes e é puxada para a de cada pacote; fase, bpm e onset vêm da fonte que pesa mais (não se misturam). Presença sobe em 0,5 s; cai em 1,5 s depois de 1,5 s sem pacotes ou 4 s só com silêncio. Reatividade 0 = exatamente o Synth (teste).
 - **Logcat/overlay**: `signals: source pc|none` quando muda; a linha `stats` acrescenta `src`, `w` (peso), `bpm`, `pkt/s`.
 
