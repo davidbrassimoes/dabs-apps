@@ -6,15 +6,12 @@
 
 ## Para a próxima sessão
 
-- Fase 0 feita; 1.1–1.3 feitos e 1.4 quase (falta telemóvel real) em 2026-10-06. A box reage à
-  música do PC. Próximo: testar a `phone-app` num telemóvel com DABS, afinar a olho (pergunta 7), 1.5.
-- À espera de DABS (desde 2026-10-06): as perguntas 2 a 7 em `../../projects/santa-vibes.md`
-  ("Por decidir"). Nenhuma bloqueia o 1.2.
-- Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`.
-- Quando o projetor (Magcubic L018) chegar, dentro do prazo de devolução: instalar a `tv-app` por
-  `adb`, correr o benchmark nas 15 cenas, afinar `shared/profiles/projector.json` (passo 3.5) e
-  DABS ouve a ventoinha em modo Eco no sótão. Se não convencer, devolver e passar ao Vali 1 Pro.
-  Detalhes no registo de 2026-10-06 abaixo.
+- 2026-10-07: decisões aplicadas (ver `../../projects/santa-vibes.md`, decisões 3–12). Falta: o teste da
+  `phone-app` num telemóvel (ligar por USB), a música de referência para afinar, o merge para `main`.
+- O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
+  enquanto ele correr (`--tv` ou `--autostart off`). Ao testar a TV com outra fonte, usar
+  `--es source mic|phone` (em `auto` o PC ganha).
+- Verificar o estado: `scripts/check santa-vibes` da raiz (inclui agora Rust). Na box: `tv-app/README.md`.
 
 ## Dados pessoais
 
@@ -28,16 +25,20 @@
 
 ## Encontrado e não resolvido
 
-- 2026-10-05, do 0.3: `flow-particles` avança e desvanece por frame (não por segundo); com o
-  limite de fps fixo não se nota. Durante um crossfade a 24 fps (ver abaixo) anda mais devagar.
-  Correção limpa: `uDeltaTime` no contrato (muda o formato de cena; pedir antes).
-- 2026-10-05, do 0.3: `color-field` declara `image: optional` mas não lê `uImage`. Se `optional`
-  quer dizer "a paleta pode vir da imagem", está certo; se quer dizer "amostra a imagem", passa a
-  `none`. O formato de cena não distingue. Decidir quando a Fase 2 chegar.
 - 2026-10-06: com a box em standby a app arranca mas fica parada ("App is in stopped state");
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-07 — decisões de DABS aplicadas
+
+- Formato de cena 4 (`uDeltaTime`, por slot nos dois hosts); `flow-particles` por segundo; `image:
+  optional` definido. Na box: 15 cenas compilam, `flow-particles` a 30 fps, 0 B/s.
+- Predefinições da box: `fadeEvery 2`, paleta a rodar, reatividade 0,7.
+- `scripts/check` com `cargo test` + clippy do `signals-core` e do crate nativo; apanhou logo um
+  aviso no teste do fixture do 1.3.
+- `pc-bridge`: biblioteca + `pc-bridge`/`pc-bridge-bg`; `--autostart on` ligado no PC de DABS.
+- O telemóvel `3B241FDJH000QX` já não estava ligado: o teste do 1.4 fica para quando estiver.
 
 ### 2026-10-06 — Servidor de casa (levantamento) e escolha do projetor
 

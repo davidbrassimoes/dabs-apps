@@ -20,20 +20,33 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 2. O `CLAUDE.md` do produto encurta-se para ~40 linhas, com o mapa do repo e as convenções em
    `docs/`. Feito em 2026-10-06: 35 linhas, resto em `docs/REPO.md`.
 
+Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
+
+3. **CI**: `signals-core` e o crate nativo da `phone-app` no `scripts/check` do produto (cargo test +
+   clippy) e por isso na CI; `pc-bridge` (só Windows) e o APK da `phone-app` (NDK) ficam de fora. Feito.
+4. **Crossfade**: a cena que sai é renderizada a meio ritmo (`fadeEvery 2`). `ARQUITETURA.md` atualizada. Feito.
+5. **Predefinições da box** até haver página de controlo: paleta a rodar (180 s, transição 20 s), sem
+   matiz, reatividade 0,7. Feito.
+6. **Formato de cena 4**: uniform `uDeltaTime`; `flow-particles` passa a avançar por segundo. Feito.
+7. **`image: optional`** quer dizer "pode usar a imagem, nem que seja só a paleta"; `color-field` fica. Feito.
+8. **`pc-bridge` arranca com o Windows**, sem janela, com log em ficheiro (`--autostart on`). Ligado no PC
+   de DABS. Feito.
+9. **Telemóvel**: Claude instala e conduz o teste da `phone-app` por adb; DABS põe música a tocar.
+   À espera de o telemóvel estar ligado ao PC (em 2026-10-07 já não estava).
+10. **Merge** dos branches empilhados para `main` por PR, depois de a CI passar.
+11. **Música de referência**: DABS escolhe 5–10 faixas que ouve, de géneros diferentes, com BPM conhecido.
+12. **Nome**: fica o de protótipo até haver intenção de publicar.
+
 ## Por decidir
 
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
-| 1 | Nome definitivo (hoje nome de protótipo) e identificadores de pacote | DABS | Só uma eventual publicação |
-| 2 | Se `phone-app`, `pc-bridge` e `signals-core` entram na CI quando tiverem build. Já é concreto: `signals-core` compila e tem 24 testes; `pc-bridge` compila (só Windows: precisa de runner Windows na CI ou fica de fora) (`cargo test`, ~5 s depois de compilado); entrar implica `scripts/check` do produto chamar o `cargo` e a CI instalar Rust | DABS | Nada; hoje o Rust não é verificado pelo `scripts/check` |
-| 3 | Durante o crossfade, a cena que sai: continua a mexer (hoje, como diz `ARQUITETURA.md`; 6/15 transições a 24–26 fps), a meio ritmo (13/15 no limite) ou parada no último frame (15/15). Números em `tv-app/README.md`. Mudar atualiza `ARQUITETURA.md` | DABS | Nada; muda uma linha (`fadeEvery`) |
-| 4 | Valores por defeito na box até haver página de controlo: rotação de paleta e matiz (hoje desligados, como no authoring) e reatividade (hoje 1: com o PC a tocar, a imagem segue só o áudio real) | DABS | Nada; até lá, extras do intent |
-| 5 | `flow-particles` depende do fps (avança por frame): acrescentar `uDeltaTime` ao formato de cena? | DABS | Nada; nota em `NOTES.md` |
-| 6 | `color-field` tem `image: optional` mas não lê `uImage`: `optional` quer dizer "paleta da imagem" ou "amostra a imagem"? | DABS | Fase 2 |
-| 7 | Música de referência para afinar o tempo e as bandas: 5–10 faixas que DABS ouve de facto, de géneros diferentes, com o BPM conhecido (WAV ou outro formato; ficam fora do repo) | DABS | A afinação no 1.2/1.5, não o código |
-| 8 | `pc-bridge` arranca com o Windows? (atalho em `shell:startup`, sem consola, log em ficheiro) | DABS | Nada; corre-se à mão |
-| 9 | Testar a `phone-app` no telemóvel ligado ao PC (`3B241FDJH000QX`): instalo e conduzo eu por adb, ou fazes tu à mão? | DABS | Fechar o 1.4 |
-| 10 | Merge dos branches empilhados `santa-vibes-0.6` → `-1.4` para `main` | DABS | Nada; cada passo novo empilha mais |
+| 1 | Nome definitivo e identificadores de pacote (decisão 12: só antes de publicar) | DABS | Só uma eventual publicação |
+
+## À espera de DABS (ações, não decisões)
+
+- Ligar o telemóvel ao PC por USB (e aceitar a depuração) para o teste do 1.4 (decisão 9).
+- As faixas de referência (decisão 11), num sítio que o PC leia; ficam fora do repo.
 
 ## Próximos passos
 
@@ -44,8 +57,10 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 - [x] Fase 1, passo 1.1: `signals-core` (Rust) (2026-10-06)
 - [x] Fase 1, passo 1.2: `pc-bridge` (2026-10-06)
 - [x] Fase 1, passo 1.3: receção na tv-app (2026-10-06)
-- [ ] Afinar a reação a olho com DABS, com a música de referência (pergunta 7)
-- [~] Fase 1, passo 1.4: `phone-app` feita e testada no emulador; falta telemóvel real (pergunta 9)
+- [ ] Afinar a reação a olho com DABS, com a música de referência (decisão 11)
+- [~] Fase 1, passo 1.4: `phone-app` feita e testada no emulador; falta telemóvel real (decisão 9)
+- [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)
+- [ ] Merge para `main` (decisão 10)
 - [ ] Fase 1, passo 1.5: MIDI clock e afinação da latência
 
 ## Histórico
@@ -57,3 +72,4 @@ variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/
 - 2026-10-06: 1.2 `pc-bridge`: loopback WASAPI → UDP; medido no PC, pacotes chegam à box.
 - 2026-10-06: 1.3 receção na tv-app: a box reage à música do PC (descoberta, mixer, volta ao Synth).
 - 2026-10-06: 1.4 `phone-app` (Kotlin + Rust/JNI): testada no emulador até à box.
+- 2026-10-07: DABS aceitou as recomendações para as perguntas em aberto; aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`).
