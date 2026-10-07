@@ -35,18 +35,31 @@ fn fixture() -> String {
             41,
             123_456,
         ),
-        (Signals { silent: true, mood_energy: 0.1, ..Default::default() }, SourceKind::PhoneMic, 0, 4_000_000_000, u32::MAX),
-        (Signals { bpm: 90.0, beat_phase: 0.999, tempo_valid: true, ..Default::default() }, SourceKind::MidiClock, 1 << 2, 7, 1),
+        (
+            Signals { silent: true, mood_energy: 0.1, ..Default::default() },
+            SourceKind::PhoneMic,
+            0,
+            4_000_000_000,
+            u32::MAX,
+        ),
+        (
+            Signals { bpm: 90.0, beat_phase: 0.999, tempo_valid: true, ..Default::default() },
+            SourceKind::MidiClock,
+            1 << 2,
+            7,
+            1,
+        ),
     ];
     let mut out = String::from("{\n \"sign\": [\n");
     for (i, (s, kind, extra, seq, t)) in cases.iter().enumerate() {
         let flags = flags_of(s) | extra;
         let b = encode_sign(s, *kind, flags, *seq, *t);
-        let v = [s.energy, s.low, s.mid, s.high, s.centroid, s.beat, s.beat_phase, s.bpm, s.mood_energy, s.mood_brightness];
+        let v =
+            [s.energy, s.low, s.mid, s.high, s.centroid, s.beat, s.beat_phase, s.bpm, s.mood_energy, s.mood_brightness];
         let vals: Vec<String> = v.iter().map(|x| format!("{x:?}")).collect();
-        write!(
+        writeln!(
             out,
-            "  {{\"hex\": \"{}\", \"kind\": {}, \"flags\": {flags}, \"sequence\": {seq}, \"senderTimeMs\": {t}, \"values\": [{}]}}{}\n",
+            "  {{\"hex\": \"{}\", \"kind\": {}, \"flags\": {flags}, \"sequence\": {seq}, \"senderTimeMs\": {t}, \"values\": [{}]}}{}",
             hex(&b),
             *kind as u8,
             vals.join(", "),

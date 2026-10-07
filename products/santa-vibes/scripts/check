@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Verificação do santa-vibes: testes do núcleo da tv-app (Gradle) e check + testes da
-# ferramenta de autoria (npm). Output só com falhas. As cenas e os contratos em scenes/ e
-# shared/ são verificados pelos testes destes dois.
+# Verificação do santa-vibes: testes do núcleo da tv-app (Gradle), check + testes da
+# ferramenta de autoria (npm) e, desde 2026-10-07 (decisão de DABS), testes + clippy do
+# signals-core e do crate nativo da phone-app (cargo). Output só com falhas. As cenas e os
+# contratos em scenes/ e shared/ são verificados pelos testes da tv-app e do authoring.
+# Fica de fora o pc-bridge (só compila em Windows) e o APK da phone-app (precisa do NDK).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 rc=0
@@ -16,6 +18,18 @@ if [ -d authoring/node_modules ]; then
   }
 else
   echo "[authoring] sem node_modules: corre 'npm ci' em products/santa-vibes/authoring"; rc=1
+fi
+
+# Rust: rustup installs to ~/.cargo/bin, which a fresh shell may not have on its PATH.
+export PATH="$HOME/.cargo/bin:$PATH"
+if command -v cargo >/dev/null 2>&1; then
+  for crate in signals-core phone-app/native; do
+    out="$(cd "$crate" && cargo test --release --quiet 2>&1 && cargo clippy --release --all-targets --quiet -- -D warnings 2>&1)" || {
+      rc=1; echo "[$crate]"; echo "$out" | grep -vE '^(running|test result: ok|$)' | tail -n 60
+    }
+  done
+else
+  echo "[rust] cargo não encontrado: instala com rustup (signals-core/README.md)"; rc=1
 fi
 
 exit "$rc"

@@ -105,7 +105,8 @@ pub extern "system" fn Java_dev_santavibes_phone_SignalsNative_packet(
         if p.is_null() {
             return 0;
         }
-        let flags = engine.packet(kind as u8, sequence as u32, time_ms as u32, std::slice::from_raw_parts_mut(p as *mut u8, n));
+        let flags =
+            engine.packet(kind as u8, sequence as u32, time_ms as u32, std::slice::from_raw_parts_mut(p as *mut u8, n));
         release(env, out, p, 0); // 0: copy back (if ART copied) and free
         flags as i32
     }
