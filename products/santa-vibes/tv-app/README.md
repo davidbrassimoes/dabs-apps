@@ -152,3 +152,19 @@ Medido com o `pc-bridge` no PC e dois loops reais pelas colunas, cena `bars`:
 | Reatividade 0 | 60 pkt/s recebidos, peso 0,00 |
 
 Não verificado: se a reação é agradável à vista (isso é a afinação, com DABS a ver).
+
+### Versão reativa das cenas (para comparar), 2026-10-07
+
+Decisão 13 de DABS (`projects/santa-vibes.md`): cada cena tem o parâmetro `react` (0 = a imagem atual,
+1 = reativa) e a app força-o em todas as cenas, sem reinstalar.
+
+```
+am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # defeito: current
+```
+
+- **Comando**: ▲ alterna atual ↔ reativa ao vivo. O overlay mostra `versão: atual|reativa`; o logcat escreve
+  `look=` quando muda e na linha `stats`.
+- Na reativa o `Synth` não toca metrónomo (beat e punch a 0): sem música a cena fica calma em vez de pulsar
+  a 100 BPM sintéticos.
+- O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
+  `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.

@@ -99,10 +99,10 @@ class MainActivity : Activity() {
                 val id = renderer.sceneIndex.let { if (it >= 0) library.scenes[it].def.id else "-" }
                 Log.i(
                     SceneLibrary.TAG,
-                    "stats scene=$id frames=${s.winFrames} fps=%.1f interval avg=%.2f p95=%.2f max=%.2f ms cpu avg=%.2f p95=%.2f ms render=%dx%d %s cap=%d alloc=%d B/s src=%s w=%.2f bpm=%.1f pkt/s=%.0f".format(
+                    "stats scene=$id frames=${s.winFrames} fps=%.1f interval avg=%.2f p95=%.2f max=%.2f ms cpu avg=%.2f p95=%.2f ms render=%dx%d %s cap=%d alloc=%d B/s src=%s w=%.2f bpm=%.1f pkt/s=%.0f look=%s".format(
                         s.winFps, s.winIntervalAvg, s.winIntervalP95, s.winIntervalMax, s.winCpuAvg, s.winCpuP95,
                         renderer.renderWidth, renderer.renderHeight, if (renderer.halfFloat) "RGBA16F" else "RGBA8",
-                        renderer.fpsCap, allocRate, SignalHub.kindName(src), renderer.signalWeight, renderer.mixer.realBpm, packetRate,
+                        renderer.fpsCap, allocRate, SignalHub.kindName(src), renderer.signalWeight, renderer.mixer.realBpm, packetRate, lookName(),
                     ),
                 )
             }
@@ -134,6 +134,7 @@ class MainActivity : Activity() {
         hub = SignalHub(deviceId())
         hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
         renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
+        renderer.react = if (intent.getStringExtra("look") == "reactive") 1f else 0f
         if (!benchMode) renderer.hub = hub
         renderer.paletteVariation.apply {
             rotate = intent.getBooleanExtra("rotate", true)
@@ -189,6 +190,11 @@ class MainActivity : Activity() {
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_NEXT -> renderer.step(1)
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> renderer.step(-1)
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                renderer.react = 1f - renderer.react
+                Log.i(SceneLibrary.TAG, "look=${lookName()}")
+                if (overlay.visibility == View.VISIBLE) overlay.text = overlayText()
+            }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
                 overlay.visibility = if (overlay.visibility == View.VISIBLE) View.GONE else View.VISIBLE
                 overlay.text = overlayText()
@@ -220,10 +226,13 @@ class MainActivity : Activity() {
             SignalHub.kindName(src), packetRate, r.signalWeight,
             if (r.mixer.realBpm > 0) "%.1f bpm".format(r.mixer.realBpm) else "sem tempo",
         )).append(" · reatividade %.1f".format(r.mixer.reactivity)).append('\n')
+        sb.append("versão: ").append(if (r.react > 0f) "reativa" else "atual").append('\n')
         r.lastError?.let { sb.append("ERRO: ").append(it).append('\n') }
-        sb.append("◀ ▶ cena · OK overlay")
+        sb.append("◀ ▶ cena · ▲ versão · OK overlay")
         return sb.toString()
     }
+
+    private fun lookName() = if (renderer.react > 0f) "reactive" else "current"
 
     /** Random, kept across restarts: the beacon's deviceId (PROTOCOLO-SIGNALS.md). */
     private fun deviceId(): Int {
