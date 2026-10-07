@@ -159,7 +159,7 @@ Decisão 13 de DABS (`projects/santa-vibes.md`): cada cena tem o parâmetro `rea
 1 = reativa) e a app força-o em todas as cenas, sem reinstalar.
 
 ```
-am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # defeito: current
+am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # defeito: reactive (DABS, 2026-10-07)
 ```
 
 - **Comando**: ▲ alterna atual ↔ reativa ao vivo. O overlay mostra `versão: atual|reativa`; o logcat escreve
