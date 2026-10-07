@@ -105,8 +105,9 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
   Se falhar, avisa com o motivo do wrangler e usa o seed; `--seed` força o seed.
 - Verificado: `vocab`, `existing` e `check` contra produção (3 corridas seguidas); a falha forçada
   (token inválido) cai no seed com a mensagem do wrangler.
-- O lote `imports/2026-09-22-stairs-and-winter.yaml` (14 cartas novas, 0 erros) nunca foi
-  importado.
+- O lote `imports/2026-09-22-stairs-and-winter.yaml` foi importado a 2026-10-07: 13 cartas
+  (tirada "Nothing that needs the laptop open.", repetida; H4essential e XM8500 nomeados no
+  texto das cartas que os pedem). Biblioteca: 233 cartas.
 
 ### 2026-10-06 — troca de modo e três cartas em ecrã grande (relatado por DABS)
 
