@@ -4,6 +4,7 @@
 // never drops below ~0.6, so the scene lights the room instead of reading as black.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 #include "lib/image.glsl"
 
 void main() {
@@ -13,12 +14,15 @@ void main() {
 
     float t = uTime * p_speed * 0.08;
     float energy = mix(0.6, 1.4, uMood.x);
+    // Reactive variant (p_react): beat swells with the tempo, bass + beat deepens the warp.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
 
     vec2 q = vec2(fbm(p + vec2(0.0, t), 4),
                   fbm(p + vec2(5.2, 1.3) - t, 4));
     vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2) + t * 0.5, 4),
                   fbm(p + 4.0 * q + vec2(8.3, 2.8) - t * 0.3, 4));
-    float f = fbm(p + p_warp * energy * r, 4);
+    float f = fbm(p + (p_warp + 1.5 * drive) * energy * r, 4);
 
     float pc = tri(f * 1.2 + length(q) * 0.4 + uMood.y * 0.3 + t * 0.05);
     vec3 col = palette(0.15 + 0.85 * pc);
@@ -32,6 +36,6 @@ void main() {
         col = mix(col, img * (0.5 + 1.0 * f), p_imageMix * uImageInfo.z);
     }
 
-    col *= 1.0 + p_pulse * 0.15 * uBeat.x;
+    col *= 1.0 + beat * 0.15;
     fragColor = vec4(col, 1.0);
 }

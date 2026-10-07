@@ -12,6 +12,7 @@
 // uDeltaTime, normalised so that 30 fps (k = 1) looks exactly as authored.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 const float CELLS = 48.0; // emission cells per screen height
 
@@ -23,7 +24,11 @@ void main() {
 
     // Flow field.
     vec2 p = n * p_scale + vec2(0.0, uTime * 0.02);
-    float speed = p_flow * (0.6 + 0.8 * uMood.x);
+    // Reactive variant (p_react): energy speeds the flow (advected per frame, so no jumps),
+    // beat emission x3, and each onset adds a burst of dots.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
+    float speed = p_flow * (0.6 + 0.8 * uMood.x) * (1.0 + 1.5 * p_react * uBands.w);
     vec2 v = curlNoise(p, 3) * speed * 0.006 * k;
 
     // Background the trails decay towards: a slow, dim palette wash.
@@ -39,7 +44,7 @@ void main() {
     vec2 cell = floor(g);
     float tick = floor(uTime * 12.0);
     float seed = hash12(cell + tick * 13.7);
-    float rate = p_density * 0.035 * (1.0 + 2.0 * uBeat.x * p_pulse);
+    float rate = p_density * 0.035 * (1.0 + 2.0 * beat) + 0.08 * p_react * uBeat.w;
     vec2 centre = 0.25 + 0.5 * hash22(cell + tick * 7.3);
     float spot = smoothstep(0.4, 0.0, length(g - cell - centre)) * step(1.0 - rate, seed);
 

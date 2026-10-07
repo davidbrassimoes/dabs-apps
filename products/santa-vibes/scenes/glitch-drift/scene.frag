@@ -3,6 +3,7 @@
 // and out over a "tick" so nothing snaps. Cost: 3 x fbm(3) per pixel.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
@@ -17,11 +18,16 @@ void main() {
     float h = hash12(vec2(slice + 1.0, tick + 1.0));
     float tear = step(1.0 - 0.35 * p_amount, h) * env;
     tear = max(tear, uBeat.w * p_pulse); // the beat can trigger a one-frame tear
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
+    // Reactive variant (p_react): a beat tears hashed slices (about a third) for a moment, and
+    // bass widens the RGB split everywhere.
+    float beatTear = step(0.65, hash12(vec2(slice + 3.0, floor(uTime * 8.0)))) * smoothstep(0.4, 0.9, uBeat.x);
+    tear = max(tear, p_react * beatTear);
 
     // Slice displacement and channel split.
     float shift = (hash12(vec2(slice * 3.1 + 2.0, tick * 1.7 + 3.0)) - 0.5) * 0.25 * tear;
     vec2 suv = vec2(uv.x + shift, uv.y);
-    float split = 0.006 * p_amount * (0.25 + tear);
+    float split = 0.006 * p_amount * (0.25 + tear) + 0.008 * drive;
 
     // Base: slow drifting gradient, sampled per channel with the split.
     float gr = fbm((suv + vec2(split, 0.0)) * 1.4 + t * 0.35, 3);

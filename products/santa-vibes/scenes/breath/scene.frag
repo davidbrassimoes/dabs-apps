@@ -2,12 +2,16 @@
 // (luminance and a slight warm shift) on a long cycle. No shapes at all: this is the
 // scene for "just light the room". Cost: trivial; happy at renderScale 0.25.
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
     float aspect = uResolution.x / uResolution.y;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     float t = uTime * p_speed * 0.04;
+    // Reactive variant (p_react): beat swells with the tempo and bass + beat deepens the breath; brightness only.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
 
     // Breathing: eased sine on a long period, deepened by the parameter.
     float breath = 0.5 + 0.5 * sin(uTime * 6.2831853 / max(p_period, 2.0));
@@ -27,11 +31,11 @@ void main() {
     vec3 col = mix(c1, c2, g);
 
     // Breath: dimmer and cooler on the exhale, brighter and warmer on the inhale.
-    float lum = mix(1.0 - 0.45 * p_depth, 1.0, breath);
+    float lum = mix(1.0 - 0.45 * p_depth, 1.0, breath) * (1.0 - 0.12 * p_react + 0.2 * drive);
     col *= lum;
     col = mix(col, col * vec3(1.06, 0.99, 0.9), breath * 0.4 * p_depth);
 
     col *= 0.85 + 0.3 * uMood.x;
-    col *= 1.0 + p_pulse * 0.08 * uBeat.x;
+    col *= 1.0 + beat * 0.08;
     fragColor = vec4(col, 1.0);
 }

@@ -15,7 +15,8 @@
     { "id": "wave", "label": "Ondulação", "type": "float", "min": 0.0, "max": 2.0, "default": 1.0, "drift": 0.25 },
     { "id": "width", "label": "Largura", "type": "float", "min": 0.3, "max": 3.0, "default": 0.9, "drift": 0.2 },
     { "id": "opacity", "label": "Opacidade", "type": "float", "min": 0.2, "max": 1.0, "default": 0.75, "drift": 0.1 },
-    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" }
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.0, "group": "Reatividade" },
+    { "id": "react", "label": "Reação à música", "type": "float", "min": 0.0, "max": 1.0, "default": 0.0, "drift": 0.0, "group": "Reatividade" }
   ],
   "presets": [
     {
