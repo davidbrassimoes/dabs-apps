@@ -7,7 +7,7 @@
 ## Para a próxima sessão
 
 - 2026-10-07: decisões aplicadas (ver `../../projects/santa-vibes.md`, decisões 3–12). Falta: o teste da
-  `phone-app` num telemóvel (ligar por USB), a música de referência para afinar, o merge para `main`.
+  `phone-app` num telemóvel (ligar por USB) e a música de referência para afinar. Merge para `main` feito (PR #1).
 - O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
   enquanto ele correr (`--tv` ou `--autostart off`). Ao testar a TV com outra fonte, usar
   `--es source mic|phone` (em `auto` o PC ganha).
