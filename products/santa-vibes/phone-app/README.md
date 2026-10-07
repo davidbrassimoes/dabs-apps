@@ -45,6 +45,24 @@ cd native && cargo test --release     # o wrapper no PC (sem JNI)
 Na app: "Microfone" ou "Som do telemóvel"; a TV é encontrada pelo beacon (Wi-Fi, a app segura um
 `MulticastLock`) ou pelo IP escrito no campo.
 
+## Testado num telemóvel real, 2026-10-07 (Pixel 8, Android 17, Wi-Fi de casa)
+
+App instalada e conduzida por adb; loops reais (piano 123 BPM, rock ~102 BPM) pelas colunas do PC
+ou no próprio telemóvel; box com `--es source mic|phone` (o `pc-bridge-bg` também está a enviar).
+
+| | Resultado |
+|---|---|
+| Descoberta | encontrou a box pelo beacon em 1,3 s, sem IP escrito |
+| Microfone → box | `src=mic`, 62–64 pkt/s, peso 0,78 (reatividade 0,7), 30 fps, 0 B/s na box |
+| Microfone, valores | o som chega: com o piano, energia 0,92 e graves 0,90 no ecrã da app |
+| Microfone, tempo | **fraco**: quase sempre "sem tempo"; leituras soltas de 112 (piano, 123) e 106,6 (rock, ~102) |
+| Som do telemóvel | consentimento ("Partilhar ecrã inteiro") e captura do Files by Google: `src=phone`, 62 pkt/s, **123,8 BPM** no piano |
+| Spotify, YouTube Music | declaram `allowAudioPlaybackCapture`; não testados a tocar |
+
+O tempo errado de 181,5 BPM no primeiro segundo aparece em todas as fontes (PC, microfone, som do
+telemóvel): é do `signals-core` (o primeiro tempo só precisa de 2 estimativas iguais). Fica para a
+afinação, com o tempo pelo microfone.
+
 ## Testado em 2026-10-06 (emulador Android 16, x86_64; sem telemóvel real)
 
 | | Resultado |
@@ -55,7 +73,8 @@ Na app: "Microfone" ou "Som do telemóvel"; a TV é encontrada pelo beacon (Wi-F
 | Silêncio | 10 pkt/s com a flag de silêncio (pelo NAT do emulador perdem-se ~1 em 50) |
 | Som do telemóvel | consentimento ("ecrã inteiro"), serviço `mediaProjection` e envio funcionam |
 
-**Não verificado:**
+**Não verificado no emulador** (os três primeiros ficaram resolvidos no Pixel 8, em cima; o do campo do
+IP não se testou no telemóvel porque não foi preciso escrever nada):
 - O microfone do emulador deu um sinal sintético constante (energia 1,00, 101,9 BPM fixos), não o
   som da sala: a análise de um microfone real está por testar.
 - "Som do telemóvel" com música real: o Chrome do emulador tocou o loop mas a captura recebeu
@@ -67,6 +86,6 @@ Na app: "Microfone" ou "Som do telemóvel"; a TV é encontrada pelo beacon (Wi-F
 
 ## Por fazer
 
-- Testes num telemóvel real (os três pontos acima).
+- Tempo pelo microfone (eco da sala, distância às colunas) e o falso 181,5 BPM inicial: afinação.
 - Microfone: filtrar voz e picos curtos (ARQUITETURA.md) — fica para a afinação, se fizer falta.
 - Ícone e nome definitivos (dependem do nome do produto).

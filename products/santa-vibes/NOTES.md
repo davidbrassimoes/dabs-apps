@@ -6,8 +6,8 @@
 
 ## Para a próxima sessão
 
-- 2026-10-07: decisões aplicadas (ver `../../projects/santa-vibes.md`, decisões 3–12). Falta: o teste da
-  `phone-app` num telemóvel (ligar por USB) e a música de referência para afinar. Merge para `main` feito (PR #1).
+- 2026-10-07: decisões aplicadas e 1.4 testado num Pixel 8. Falta: a música de referência para afinar
+  (tempo pelo microfone fraco; falso 181,5 BPM no primeiro segundo em todas as fontes). Depois: 1.5.
 - O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
   enquanto ele correr (`--tv` ou `--autostart off`). Ao testar a TV com outra fonte, usar
   `--es source mic|phone` (em `auto` o PC ganha).
@@ -29,6 +29,15 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-07 — 1.4 num telemóvel real
+
+- Pixel 8, Android 17, ligado por USB; DABS ligou-o ao Wi-Fi de casa (estava nos dados móveis).
+- Descoberta pelo beacon em 1,3 s. Microfone até à box: o som chega (energia 0,92 com o piano),
+  mas o tempo pela sala é fraco. Som do telemóvel (Files by Google): 123,8 BPM no piano de 123.
+- Para medir só o telemóvel é preciso parar o `pc-bridge-bg` (também responde ao beacon do
+  `fake_tv`); neste PC o beacon do `fake_tv` às vezes sai pelo adaptador do WSL.
+- Ficheiro de teste copiado para o telemóvel e apagado no fim; `pc-bridge-bg` voltou a correr.
 
 ### 2026-10-07 — decisões de DABS aplicadas
 

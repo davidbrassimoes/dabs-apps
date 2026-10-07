@@ -1,7 +1,7 @@
 # santa-vibes
 
 **Dono:** DABS
-**Estado:** em construção (fase 0 feita; fase 1 em curso, 1.1 a 1.3 feitos, 1.4 à espera de um telemóvel real; ver `products/santa-vibes/docs/ROADMAP.md`)
+**Estado:** em construção (fase 0 feita; fase 1 em curso, 1.1 a 1.4 feitos; ver `products/santa-vibes/docs/ROADMAP.md`)
 **Destino:** pessoal; sideload na Google TV Streamer. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/santa-vibes/`
 
@@ -32,7 +32,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 8. **`pc-bridge` arranca com o Windows**, sem janela, com log em ficheiro (`--autostart on`). Ligado no PC
    de DABS. Feito.
 9. **Telemóvel**: Claude instala e conduz o teste da `phone-app` por adb; DABS põe música a tocar.
-   À espera de o telemóvel estar ligado ao PC (em 2026-10-07 já não estava).
+   Feito em 2026-10-07 num Pixel 8 (ver `phone-app/README.md`).
 10. **Merge** dos branches empilhados para `main` por PR, depois de a CI passar. Feito: PR #1.
 11. **Música de referência**: DABS escolhe 5–10 faixas que ouve, de géneros diferentes, com BPM conhecido.
 12. **Nome**: fica o de protótipo até haver intenção de publicar.
@@ -45,7 +45,6 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 
 ## À espera de DABS (ações, não decisões)
 
-- Ligar o telemóvel ao PC por USB (e aceitar a depuração) para o teste do 1.4 (decisão 9).
 - As faixas de referência (decisão 11), num sítio que o PC leia; ficam fora do repo.
 
 ## Próximos passos
@@ -58,7 +57,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.2: `pc-bridge` (2026-10-06)
 - [x] Fase 1, passo 1.3: receção na tv-app (2026-10-06)
 - [ ] Afinar a reação a olho com DABS, com a música de referência (decisão 11)
-- [~] Fase 1, passo 1.4: `phone-app` feita e testada no emulador; falta telemóvel real (decisão 9)
+- [x] Fase 1, passo 1.4: `phone-app`, testada num Pixel 8 (2026-10-07)
 - [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)
 - [x] Merge para `main` (decisão 10): PR #1, 2026-10-07
 - [ ] Fase 1, passo 1.5: MIDI clock e afinação da latência
