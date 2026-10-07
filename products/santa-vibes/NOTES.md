@@ -6,6 +6,10 @@
 
 ## Para a próxima sessão
 
+- 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
+  **À espera de DABS**: comparar na TV e escolher. Se a reativa ganhar, passa a predefinição (o
+  defeito de `look` na `MainActivity`, ou o `default` de `react` nas cenas) e decide-se se o
+  metrónomo sintético fica desligado também sem música.
 - 2026-10-07: decisões aplicadas e 1.4 testado num Pixel 8. Falta: a música de referência para afinar
   (tempo pelo microfone fraco; falso 181,5 BPM no primeiro segundo em todas as fontes). Depois: 1.5.
 - O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
@@ -29,6 +33,34 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-07 — versão reativa das cenas (decisão 13)
+
+- Parâmetro `react` em todas as cenas (0 = imagem de sempre, 1 = reativa), forçado pela tv-app com
+  `--es look current|reactive` ou ▲. Sem mudar o formato; convenção em `docs/FORMATO-CENA.md`.
+- Primeira tentativa (pulse ×3 sobre `uBeat.x`, graves em tamanho e forma) mediu só 1,9 % na nebula:
+  com música as bandas ficam quase no topo do AGC (graves 0,86–0,99 com o piano), por isso mexem pouco,
+  e o envelope do beat sobe num frame e cai em 0,18 s. Ficou o `groove()` (`lib/react.glsl`): cosseno
+  elevado ao quadrado sobre `uBeat.y`, pico em cada beat, sem saltos. `beat = mix(pulse·uBeat.x,
+  4·pulse·groove, react)`; `drive = react·(0,4·graves + 0,6·groove)` nos termos de forma.
+- Sem música a reativa ampliava o metrónomo sintético de 100 BPM (dobra de 2,9 % sem música); na reativa
+  o `Synth` fica sem beat e sem punch. Na atual não muda nada.
+- Medido na box (gravação 50 s, música 10–43 s pelo `pc-bridge-bg`; brilho médio fora do overlay; scripts
+  no scratchpad da sessão, método igual ao da página de estado):
+
+| Cena · música | Pulso no tempo, atual → reativa (% do brilho) | Pico a pico por beat | Movimento (dif. entre frames), atual → reativa |
+|---|---|---|---|
+| nebula · piano 123 | 0,33 → 5,29 | 0,7 → 10,2 % | 0,13 → 1,21 |
+| nebula · rock ~103 | 0,62 → 8,15 | 1,3 → 15,6 % | 0,14 → 1,25 |
+| halo · piano | 0,10 → 5,25 | 0,3 → 11,3 % | 0,07 → 1,96 |
+| liquid-light · piano | 0,54 → 4,71 | 1,3 → 9,8 % | 0,42 → 2,24 |
+| color-field · piano | 0,23 → 5,38 | 0,5 → 10,9 % | 0,10 → 1,08 |
+
+- Sem piscar: a parte da variação acima de 4 Hz desce na reativa (0,07–0,15 contra 0,10–0,22). Sem música
+  a reativa fica parada no ritmo (dobra ≤ 0,1 %). Custo: benchmark das 15 cenas a escala 0,5 igual ao ms
+  nas duas versões; 30/24 fps no limite em todas as gravações.
+- Não verificado: as outras 11 cenas só se viram compilar e no benchmark, não a olho; a autoria no
+  browser não foi aberta (o slider `react` aparece pelo `scene.json`).
 
 ### 2026-10-07 — 1.4 num telemóvel real
 
