@@ -162,7 +162,7 @@ class SignalHub(private val deviceId: Int, private val controlPort: Int = 0) {
         const val AUTO = -1
         const val NONE = 0
         private const val KINDS = 5
-        private val PRIORITY = intArrayOf(SignPacket.SOURCE_PC, SignPacket.SOURCE_PHONE_PLAYBACK, SignPacket.SOURCE_PHONE_MIC, SignPacket.SOURCE_MIDI)
+        private val PRIORITY = intArrayOf(SignPacket.SOURCE_PC, SignPacket.SOURCE_PHONE_PLAYBACK, SignPacket.SOURCE_PHONE_MIC)
         private const val PRESENT_NS = (SignalMixer.ABSENT_S * 1e9).toLong()
         private const val SOUND_NS = (SignalMixer.SILENT_S * 1e9).toLong()
 
@@ -170,7 +170,6 @@ class SignalHub(private val deviceId: Int, private val controlPort: Int = 0) {
             SignPacket.SOURCE_PC -> "pc"
             SignPacket.SOURCE_PHONE_MIC -> "mic"
             SignPacket.SOURCE_PHONE_PLAYBACK -> "phone"
-            SignPacket.SOURCE_MIDI -> "midi"
             else -> "none"
         }
 
@@ -179,7 +178,6 @@ class SignalHub(private val deviceId: Int, private val controlPort: Int = 0) {
             "pc" -> SignPacket.SOURCE_PC
             "mic" -> SignPacket.SOURCE_PHONE_MIC
             "phone" -> SignPacket.SOURCE_PHONE_PLAYBACK
-            "midi" -> SignPacket.SOURCE_MIDI
             else -> NONE
         }
     }

@@ -40,7 +40,7 @@ import android.widget.TextView
  *
  * Signals (step 1.3): the app listens on UDP 47800 and broadcasts its beacon on 47801.
  *   --ef reactivity 0.7   0 = Synth only, 1 = only the real source while it is present
- *   --es source auto      auto | pc | phone | mic | midi | none
+ *   --es source auto      auto | pc | phone | mic | none
  */
 class MainActivity : Activity() {
     private lateinit var glView: GLSurfaceView

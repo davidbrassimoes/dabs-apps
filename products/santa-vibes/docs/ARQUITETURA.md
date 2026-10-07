@@ -4,8 +4,7 @@
 
 ```
                 ┌──────────────── Fontes de sinal ────────────────┐
-  PC Windows    │ pc-bridge (Rust)     WASAPI loopback ─┐         │
-                │                      MIDI clock ──────┤         │
+  PC Windows    │ pc-bridge (Rust)     WASAPI loopback           │
   Telemóvel     │ phone-app (Kotlin+Rust)  mic / playback capture │
                 └───────────────────────────┬─────────────────────┘
                      signals-core (Rust): FFT, bandas, beat, tempo, mood
@@ -50,7 +49,6 @@ Fontes:
 - **PC** — `pc-bridge`, captura por loopback WASAPI.
 - **Telemóvel (microfone)** — som da sala; precisa de AGC e de filtrar a voz/picos curtos.
 - **Telemóvel (playback capture)** — `AudioPlaybackCapture` do Android 10+; consentimento por sessão; algumas apps bloqueiam.
-- **MIDI clock** — via `pc-bridge` (`midir`), fornece `bpm` e `beatPhase` exatos.
 - **Contexto** — hora do dia, nascer/pôr do sol, meteorologia; não substitui o áudio, **modula** paleta e temperatura.
 
 **Escolha da fonte** na TV: manual (página de controlo) ou automática por prioridade configurável (ex.: PC → telemóvel → nenhuma), com timeout de silêncio/ausência de pacotes.

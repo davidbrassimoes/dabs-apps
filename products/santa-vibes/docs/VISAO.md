@@ -10,7 +10,7 @@ Uma app que **produz imagem generativamente** para servir de ambiente e ilumina�
 
 | Eixo | Opções |
 |---|---|
-| **Reatividade** | nenhuma · áudio do PC (loopback) · telemóvel (microfone ou áudio do próprio telemóvel) · MIDI clock · contexto (hora do dia, meteorologia) |
+| **Reatividade** | nenhuma · áudio do PC (loopback) · telemóvel (microfone ou áudio do próprio telemóvel) · contexto (hora do dia, meteorologia) |
 | **Fonte de imagem** | nenhuma (puramente sintetizado) · pasta local · acervos open access (museus, NASA) · outras fontes · (futuro) imagens geradas por IA no PC |
 | **Estética / cena** | várias cenas para escolher, com parâmetros ajustáveis, playlists e transições |
 | **Saída** | perfil TV · perfil Projetor (ajustável ao projetor concreto) |

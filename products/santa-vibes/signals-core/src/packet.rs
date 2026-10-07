@@ -17,15 +17,14 @@ pub enum SourceKind {
     PcLoopback = 1,
     PhoneMic = 2,
     PhonePlayback = 3,
-    MidiClock = 4,
+    // 4 is reserved: it was MIDI clock, removed from the product (docs/decisoes/0003-sem-midi.md).
 }
 
 pub const FLAG_ONSET: u16 = 1 << 0;
 pub const FLAG_TEMPO_VALID: u16 = 1 << 1;
-pub const FLAG_MIDI_LOCKED: u16 = 1 << 2;
 pub const FLAG_SILENCE: u16 = 1 << 3;
 
-/// The flags implied by `s` (MIDI lock is the sender's business).
+/// The flags implied by `s` (bit 2 is reserved: it was the MIDI clock lock).
 pub fn flags_of(s: &Signals) -> u16 {
     let mut f = 0;
     if s.onset {

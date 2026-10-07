@@ -2,7 +2,7 @@
 
 Executáveis Rust (~1,5 MB cada, sem runtime; `pc-bridge` com consola e `pc-bridge-bg` sem janela): captura o que o PC está a tocar (loopback WASAPI
 via `cpal`), analisa com `signals-core` e envia pacotes `SIGN` por UDP unicast para cada TV que
-encontra pelo beacon `PNMB` (ou dada à mão). MIDI clock via `midir` fica para a Fase 1.5.
+encontra pelo beacon `PNMB` (ou dada à mão).
 
 Metas: < 2 % CPU, < 20 MB RAM (cumpridas, ver em baixo), arranque automático (feito em 2026-10-07, ver em baixo).
 
@@ -75,5 +75,5 @@ bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na t
 ## Por fazer
 
 - Ícone na área de notificação, se fizer falta.
-- MIDI clock (`midir`) e afinação da latência (`--lookahead`): 1.5.
+- Afinação da latência (`--lookahead`): 1.5.
 - Ponte WebSocket para o authoring: 1.6.
