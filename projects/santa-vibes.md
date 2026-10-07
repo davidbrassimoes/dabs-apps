@@ -33,7 +33,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
    de DABS. Feito.
 9. **Telemóvel**: Claude instala e conduz o teste da `phone-app` por adb; DABS põe música a tocar.
    À espera de o telemóvel estar ligado ao PC (em 2026-10-07 já não estava).
-10. **Merge** dos branches empilhados para `main` por PR, depois de a CI passar.
+10. **Merge** dos branches empilhados para `main` por PR, depois de a CI passar. Feito: PR #1.
 11. **Música de referência**: DABS escolhe 5–10 faixas que ouve, de géneros diferentes, com BPM conhecido.
 12. **Nome**: fica o de protótipo até haver intenção de publicar.
 
@@ -60,7 +60,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [ ] Afinar a reação a olho com DABS, com a música de referência (decisão 11)
 - [~] Fase 1, passo 1.4: `phone-app` feita e testada no emulador; falta telemóvel real (decisão 9)
 - [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)
-- [ ] Merge para `main` (decisão 10)
+- [x] Merge para `main` (decisão 10): PR #1, 2026-10-07
 - [ ] Fase 1, passo 1.5: MIDI clock e afinação da latência
 
 ## Histórico
