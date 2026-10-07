@@ -7,8 +7,8 @@
 ## Para a próxima sessão
 
 - 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
-  DABS escolheu: **a predefinição fica a atual** (merge no PR #4). Decidido também: se o metrónomo
-  sintético (100 BPM sem música) sai também da atual. DABS: fica (2026-10-07).
+  DABS escolheu: **a predefinição fica a atual** (merge no PR #4). A atual mantém o metrónomo
+  sintético (100 BPM sem música); só a reativa o desliga.
 - 2026-10-07: decisões aplicadas e 1.4 testado num Pixel 8. Falta: a música de referência para afinar
   (tempo pelo microfone fraco; falso 181,5 BPM no primeiro segundo em todas as fontes). Depois: 1.5.
 - O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
