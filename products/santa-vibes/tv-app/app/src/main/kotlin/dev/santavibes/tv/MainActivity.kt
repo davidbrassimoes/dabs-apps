@@ -134,7 +134,7 @@ class MainActivity : Activity() {
         hub = SignalHub(deviceId())
         hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
         renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
-        renderer.react = if (intent.getStringExtra("look") == "reactive") 1f else 0f
+        renderer.react = if (intent.getStringExtra("look") == "current") 0f else 1f // reactive by default (DABS, 2026-10-07)
         if (!benchMode) renderer.hub = hub
         renderer.paletteVariation.apply {
             rotate = intent.getBooleanExtra("rotate", true)
