@@ -65,6 +65,9 @@ fn lookahead_moves_the_beats_earlier() {
     };
     let shift = mean_offset(0.0) - mean_offset(100.0);
     assert!((shift - 0.1).abs() < 0.025, "shift {shift}");
+    // A negative lookahead delays them instead (the room's speakers can be slower than the TV).
+    let back = mean_offset(0.0) - mean_offset(-50.0);
+    assert!((back + 0.05).abs() < 0.025, "back {back}");
 }
 
 #[test]
