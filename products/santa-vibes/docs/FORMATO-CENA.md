@@ -38,6 +38,7 @@ Definidos em `shared/glsl/header.glsl`. As cenas **só** podem depender destes e
 | Uniform | Tipo | Significado |
 |---|---|---|
 | `uTime` | `float` | segundos desde o início da cena |
+| `uDeltaTime` | `float` | segundos desde o frame anterior **desta** cena (0 no primeiro); para o que avança por frame (feedback) não depender do fps. Formato 4 |
 | `uResolution` | `vec2` | resolução do alvo de render da cena (já com `renderScale`) |
 | `uBands` | `vec4` | `low`, `mid`, `high`, `energy` (rápidos) |
 | `uMood` | `vec4` | `moodEnergy`, `moodBrightness`, `centroid`, `reservado` |
@@ -94,13 +95,13 @@ Textura de um canal (`R8`), 256×256, filtro `LINEAR`, `REPEAT` nos dois eixos, 
 
 | Campo | Obrigatório | Descrição |
 |---|---|---|
-| `format` | sim | versão deste formato (`3`; os hosts aceitam também `1` e `2`) |
+| `format` | sim | versão deste formato (`4`; os hosts aceitam também `1` a `3`) |
 | `id`, `name` | sim | identificador e nome visível |
 | `description`, `tags` | não | para a página de controlo e playlists. **Convenção:** a primeira tag é o **estilo** (`ambient`, `psicadélico clássico`, `psicadélico tech`, `glitch`, `geométrico`); a autoria e a página de controlo agrupam as cenas por ela |
 | `fps` | não | limite de fps desta cena (defeito: o do perfil) |
 | `renderScale` | não | escala interna sugerida (defeito: a do perfil) |
 | `feedback` | não | `true` → o host fornece `uPrev` (ping-pong) |
-| `image` | não | `none` (defeito), `optional`, `required` |
+| `image` | não | `none` (defeito), `optional`, `required`. `optional`: a cena pode usar a imagem, nem que seja só através de `uPalette` (paleta extraída), sem ler `uImage`; funciona igual sem imagem. `required`: sem imagem não faz sentido |
 | `defaultPalette` | não | 5 cores hex usadas quando não há imagem nem preset |
 | `params` | sim | lista de parâmetros (pode ser vazia) |
 | `presets` | não | pontos de partida com nome (ver abaixo); exige `format: 2` |
@@ -145,3 +146,4 @@ O valor por defeito da cena (sem preset) é sempre uma escolha válida, por isso
 | 1 | Versão inicial. |
 | 2 | Campo opcional `presets` (2026-10-05). |
 | 3 | Uniform `uNoise` (rede de ruído gerada pelo host); `vnoise` passa a ler a textura (2026-10-05). |
+| 4 | Uniform `uDeltaTime`; significado de `image: optional` fixado (2026-10-07, DABS). |

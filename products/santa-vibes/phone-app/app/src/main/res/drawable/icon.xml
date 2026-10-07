@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder icon (a circle); the real one comes with the product name (open question 1). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+    <path android:fillColor="#5a4a8a" android:pathData="M24,4a20,20 0,1 1,0 40a20,20 0,1 1,0 -40z" />
+    <path android:fillColor="#f0d0a0" android:pathData="M24,14a10,10 0,1 1,0 20a10,10 0,1 1,0 -20z" />
+</vector>

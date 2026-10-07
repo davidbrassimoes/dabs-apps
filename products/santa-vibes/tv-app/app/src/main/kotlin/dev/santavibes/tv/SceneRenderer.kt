@@ -4,10 +4,10 @@ import android.opengl.EGL14
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
-import dev.santavibes.core.OutputGrade
-import dev.santavibes.core.ParamType
+import dev.santavibes.core.PaletteVariation
 import dev.santavibes.core.Profile
 import dev.santavibes.core.SceneFormat
+import dev.santavibes.core.SignalMixer
 import dev.santavibes.core.Synth
 import java.util.concurrent.atomic.AtomicInteger
 import javax.microedition.khronos.egl.EGLConfig
@@ -15,7 +15,9 @@ import javax.microedition.khronos.opengles.GL10
 
 /**
  * Scene pass into an FBO at renderScale (ping-pong for feedback scenes), then the shared
- * output pass (shared/glsl/output.frag) to the surface. Mirrors authoring/src/renderer.ts.
+ * output pass (shared/glsl/output.frag) to the surface. Mirrors authoring/src/renderer.ts:
+ * parameter drift and palette variation on the host, and scene changes crossfade over
+ * [transitionS] seconds (the outgoing [SceneSlot] keeps rendering until the fade ends).
  *
  * onDrawFrame allocates nothing: uniforms come from preallocated arrays, params are
  * walked by index, and scene switches (rare, user-driven) are the only place that
@@ -23,23 +25,21 @@ import javax.microedition.khronos.opengles.GL10
  */
 class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile) : GLSurfaceView.Renderer {
 
-    private class ScenePass(
-        val program: Int,
-        val feedback: Boolean,
-        val uTime: Int,
-        val uResolution: Int,
-        val uBands: Int,
-        val uMood: Int,
-        val uBeat: Int,
-        val uPalette: Int,
-        val uImage: Int,
-        val uImageInfo: Int,
-        val uPrev: Int,
-        val uNoise: Int,
-        val paramLoc: IntArray,
-        val paramColor: BooleanArray,
-        val paramOffset: IntArray,
-    )
+    // ---- host settings (set from the UI thread; the control page arrives in phase 3)
+    /** Crossfade between scenes, seconds (0 = cut). */
+    @Volatile var transitionS = 4.0
+    /**
+     * During a crossfade, render the outgoing scene every N frames (1 = always; 0 = hold its
+     * last frame). 2 by default (DABS, 2026-10-07): 13 of 15 transitions stay at the fps cap
+     * instead of 9, and the half-rate scene is fading out anyway (tv-app/README.md).
+     */
+    @Volatile var fadeEvery = 2
+    /** Global drift multiplier: 0 = off, 1 = as authored in scene.json. */
+    @Volatile var driftAmount = 1.0
+    /** Drift time runs at this rate (1 = real time). */
+    @Volatile var driftSpeed = 1.0
+    /** Rotation and hue drift; set its fields before the surface exists. */
+    val paletteVariation = PaletteVariation()
 
     // ---- shared with the UI thread
     @Volatile var sceneIndex = -1; private set
@@ -50,20 +50,17 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     @Volatile var renderHeight = 0; private set
     @Volatile var halfFloat = false; private set
     @Volatile var sceneTime = 0.0; private set
+    @Volatile var driftTime = 0.0; private set
+    /** 0..1 while crossfading between scenes, 1 otherwise. */
+    @Volatile var transition = 1.0; private set
     val stats = FrameStats()
     private val pendingStep = AtomicInteger(0)
 
-    /**
-     * Benchmark (step 0.5): set before the surface exists. Renders without vsync and walks
-     * output-pass-only, then every scene x scale, logging one "bench" line per step.
-     */
-    class Bench(val scales: DoubleArray, val sceneIds: Set<String>?, val warmS: Double = 2.0, val measureS: Double = 4.0)
-
-    var bench: Bench? = null
+    /** Benchmark (step 0.5): set before the surface exists. See [Benchmark]. */
+    var bench: Benchmark.Config? = null
 
     /** Scene to open first (intent extra "scene"); ignored when unknown. */
     var initialSceneId: String? = null
-    @Volatile var benchDone = false; private set
 
     /** Ask the GL thread to move `delta` scenes forward/back (D-pad). */
     fun step(delta: Int) {
@@ -76,73 +73,64 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var halfOk = false
     private var black = 0
     private var noise = 0
-    private var scene: ScenePass? = null
-    private val targets = arrayOfNulls<Gl.Target>(2)
-    private var targetCount = 0
-    private var ping = 0
+    /** Every scene compiled once per GL context (0 = failed, see [programErrors]); no compile hitch on a switch. */
+    private var programs = IntArray(0)
+    private var programErrors = arrayOfNulls<String>(0)
+    private var cur: SceneSlot? = null
+    private var out: SceneSlot? = null // outgoing scene during a transition
+    private var fadeS = 0.0
     private val synth = Synth()
-    private var palette = FloatArray(15)
-    private var values = FloatArray(0)
+    /** Real signals blended into the Synth (step 1.3); reactivity is set from the UI thread. */
+    val mixer = SignalMixer()
+    /** Set by the activity; null = Synth only. */
+    @Volatile var hub: SignalHub? = null
+    /** Source fed to the mixer at the last frame (SignPacket.SOURCE_*, 0 = none) and its weight. */
+    @Volatile var signalSource = 0; private set
+    @Volatile var signalWeight = 0.0; private set
+    private val palette = FloatArray(15)
     private val imageInfo = floatArrayOf(0f, 1f, 0f, 0f)
     private var lastFrameNs = 0L
-    private var scaleOverride = 0.0 // > 0: replaces the scene/profile renderScale (benchmark)
+    private var benchmark: Benchmark? = null
+    /** > 0: replaces the scene/profile renderScale (benchmark). */
+    internal var scaleOverride = 0.0
+    /** True while benchmarking the output pass alone. */
+    internal var skipScenePass = false
 
-    // ---- benchmark state (GL thread)
-    private var benchOrder = IntArray(0)
-    private var benchSceneIdx = -1 // -1 = output pass only
-    private var benchScaleIdx = 0
-    private var benchStartNs = 0L
-    private var benchN = 0
-    private val benchIntervals = FloatArray(4096)
-    private val benchCpu = FloatArray(4096)
-    private var skipScenePass = false
+    // ---- per-transition frame pacing, logged when the fade ends
+    private var fadeFrames = 0
+    private var fadeIntervalSum = 0.0
+    private var fadeIntervalMax = 0f
+    private var fadeCpuMax = 0f
 
-    private var output = 0
-    private var oScene = -1
-    private var oScenePrev = -1
-    private var oMix = -1
-    private var oResolution = -1
-    private var oNoise = -1
-    private var oDitherOffset = -1
-    private var oGrade = -1
-    private var oGradeOffset = -1
-    private var oInvGamma = -1
-    private var oLevels = -1
-    private var oDither = -1
-    private val grade = OutputGrade().apply { compute(profile) }
-    private var frameCount = 0
+    private var output: OutputPass? = null
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         // A new EGL context: every GL object from before is gone.
-        scene = null
-        targetCount = 0
+        cur = null
+        out = null
+        transition = 1.0
         halfOk = Gl.hasExtension("GL_EXT_color_buffer_half_float") || Gl.hasExtension("GL_EXT_color_buffer_float")
         black = Gl.blackTexture()
         noise = Gl.noiseTexture()
-        output = Gl.program(lib.outputFrag)
-        fun u(n: String) = GLES30.glGetUniformLocation(output, n)
-        oScene = u("uScene"); oScenePrev = u("uScenePrev"); oMix = u("uMix")
-        oResolution = u("uResolution"); oNoise = u("uNoise"); oDitherOffset = u("uDitherOffset")
-        oGrade = u("uGrade"); oGradeOffset = u("uGradeOffset"); oInvGamma = u("uInvGamma"); oLevels = u("uLevels"); oDither = u("uDither")
+        output = OutputPass(lib.outputFrag, profile)
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
+        compileAll()
         bench?.let { b ->
             EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0) // measure GPU cost, not vsync
-            benchOrder = lib.scenes.indices.filter { b.sceneIds == null || lib.scenes[it].def.id in b.sceneIds }.toIntArray()
-            benchSceneIdx = -1
-            benchScaleIdx = 0
-            skipScenePass = true
-            Log.i(SceneLibrary.TAG, "bench start: ${benchOrder.size} scenes x ${b.scales.size} scales, warm ${b.warmS}s, measure ${b.measureS}s, vsync off")
+            benchmark = Benchmark(b, lib, this)
         }
         val wanted = lib.scenes.indexOfFirst { it.def.id == initialSceneId }
         val first = if (sceneIndex in lib.scenes.indices) sceneIndex else if (wanted >= 0) wanted else 0
         sceneIndex = -1
-        if (lib.scenes.isNotEmpty()) loadScene(first)
+        if (lib.scenes.isNotEmpty()) loadScene(first, 0.0)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         surfaceW = width
         surfaceH = height
-        ensureTargets(force = true)
+        cur?.ensureTargets(width, height, halfOk, force = true)
+        out?.ensureTargets(width, height, halfOk, force = true)
+        publishTargetInfo()
         Log.i(SceneLibrary.TAG, "surface ${width}x$height")
     }
 
@@ -151,202 +139,169 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val step = pendingStep.getAndSet(0)
         if (step != 0 && lib.scenes.isNotEmpty()) {
             val n = lib.scenes.size
-            loadScene(((sceneIndex + step) % n + n) % n)
+            loadScene(((sceneIndex + step) % n + n) % n, if (bench == null) transitionS else 0.0)
         }
         val dt = if (lastFrameNs == 0L) 0.0 else minOf((now - lastFrameNs) / 1e9, 0.25)
         val intervalMs = if (lastFrameNs == 0L) 0f else ((now - lastFrameNs) / 1e6).toFloat()
         lastFrameNs = now
 
-        val pass = scene
-        val dst = if (pass == null || targetCount == 0) null else if (pass.feedback) targets[1 - ping] else targets[0]
-        if (pass == null || dst == null) {
+        val slot = cur
+        if (slot == null || slot.width == 0) {
             GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
             GLES30.glClearColor(0f, 0f, 0f, 1f)
             GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
             return
         }
-        sceneTime += dt
-        synth.update(dt, sceneTime)
+        slot.time += dt
+        sceneTime = slot.time
+        driftTime += dt * driftSpeed
+        synth.update(dt, slot.time)
+        signalSource = hub?.drain(mixer, now) ?: 0
+        mixer.update(dt, synth)
+        signalWeight = mixer.realWeight
+        paletteVariation.write(palette, driftTime)
 
-        // --- scene pass -> FBO at renderScale (skipped while benchmarking the output pass alone)
-        val src = if (pass.feedback) targets[ping] else null
-        if (!skipScenePass) {
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, dst.fbo)
-        GLES30.glViewport(0, 0, dst.width, dst.height)
-        GLES30.glUseProgram(pass.program)
-        GLES30.glUniform1f(pass.uTime, sceneTime.toFloat())
-        GLES30.glUniform2f(pass.uResolution, dst.width.toFloat(), dst.height.toFloat())
-        GLES30.glUniform4fv(pass.uBands, 1, synth.bands, 0)
-        GLES30.glUniform4fv(pass.uMood, 1, synth.mood, 0)
-        GLES30.glUniform4fv(pass.uBeat, 1, synth.beat, 0)
-        GLES30.glUniform3fv(pass.uPalette, 5, palette, 0)
-        GLES30.glUniform4fv(pass.uImageInfo, 1, imageInfo, 0)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, black)
-        GLES30.glUniform1i(pass.uImage, 0)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, src?.tex ?: black)
-        GLES30.glUniform1i(pass.uPrev, 1)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, noise)
-        GLES30.glUniform1i(pass.uNoise, 2)
-        for (i in pass.paramLoc.indices) {
-            val off = pass.paramOffset[i]
-            if (pass.paramColor[i]) GLES30.glUniform3fv(pass.paramLoc[i], 1, values, off)
-            else GLES30.glUniform1f(pass.paramLoc[i], values[off])
-        }
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
-        if (pass.feedback) ping = 1 - ping
+        // --- scene passes -> FBOs at renderScale (skipped while benchmarking the output pass alone)
+        var dst: Gl.Target? = null
+        var prev: Gl.Target? = null
+        var mix = 1f
+        if (skipScenePass) {
+            dst = slot.latest() // same texture fetch cost as a real frame
+        } else {
+            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, true, driftTime, driftAmount)
+            val o = out
+            if (o != null) {
+                val f = if (fadeS > 0) minOf(1.0, transition + dt / fadeS) else 1.0
+                transition = f
+                if (f >= 1.0) {
+                    endTransition(o)
+                } else {
+                    o.time += dt
+                    val every = fadeEvery
+                    prev = if (every > 0 && fadeFrames % every == 0) {
+                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, false, driftTime, driftAmount)
+                    } else {
+                        o.latest()
+                    }
+                    mix = (f * f * (3 - 2 * f)).toFloat()
+                }
+            }
         }
 
         // --- output pass -> surface at native resolution
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
-        GLES30.glViewport(0, 0, surfaceW, surfaceH)
-        GLES30.glUseProgram(output)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, dst.tex)
-        GLES30.glUniform1i(oScene, 0)
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, black)
-        GLES30.glUniform1i(oScenePrev, 1)
-        GLES30.glUniform1f(oMix, 1f) // crossfade arrives with step 0.6
-        GLES30.glUniform2f(oResolution, surfaceW.toFloat(), surfaceH.toFloat())
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, noise)
-        GLES30.glUniform1i(oNoise, 2)
-        frameCount++
-        GLES30.glUniform2f(oDitherOffset, ((frameCount * 73) and 255).toFloat(), ((frameCount * 151) and 255).toFloat())
-        GLES30.glUniformMatrix3fv(oGrade, 1, false, grade.mat, 0)
-        GLES30.glUniform3fv(oGradeOffset, 1, grade.offset, 0)
-        GLES30.glUniform1f(oInvGamma, grade.invGamma)
-        GLES30.glUniform2fv(oLevels, 1, grade.levels, 0)
-        GLES30.glUniform1f(oDither, profile.dither)
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
+        output?.draw(dst?.tex ?: black, prev?.tex ?: black, if (prev != null) mix else 1f, noise, surfaceW, surfaceH)
 
         val cpuMs = ((System.nanoTime() - now) / 1e6).toFloat()
         stats.record(now, intervalMs, cpuMs)
-        val b = bench
-        if (b != null && !benchDone) benchTick(b, now, intervalMs, cpuMs)
-    }
-
-    // ------------------------------------------------------------ benchmark (allocates only between steps)
-
-    private fun benchTick(b: Bench, now: Long, intervalMs: Float, cpuMs: Float) {
-        if (benchStartNs == 0L) benchStartNs = now
-        val elapsed = (now - benchStartNs) / 1e9
-        if (elapsed >= b.warmS && intervalMs > 0f && benchN < benchIntervals.size) {
-            benchIntervals[benchN] = intervalMs
-            benchCpu[benchN] = cpuMs
-            benchN++
+        if (prev != null && intervalMs > 0f) {
+            fadeFrames++
+            fadeIntervalSum += intervalMs
+            if (intervalMs > fadeIntervalMax) fadeIntervalMax = intervalMs
+            if (cpuMs > fadeCpuMax) fadeCpuMax = cpuMs
         }
-        if (elapsed < b.warmS + b.measureS) return
-
-        // Step finished: log it, then move on.
-        val label = if (benchSceneIdx < 0) "output-only" else lib.scenes[benchOrder[benchSceneIdx]].def.id
-        var sum = 0.0
-        var sumCpu = 0.0
-        for (i in 0 until benchN) { sum += benchIntervals[i]; sumCpu += benchCpu[i] }
-        val avg = if (benchN > 0) sum / benchN else 0.0
-        java.util.Arrays.sort(benchIntervals, 0, benchN)
-        val p95 = if (benchN > 0) benchIntervals[((benchN - 1) * 95) / 100] else 0f
-        Log.i(
-            SceneLibrary.TAG,
-            "bench scene=%s scale=%.2f render=%dx%d frames=%d avg=%.2f ms p95=%.2f ms fps=%.1f cpu=%.2f ms".format(
-                java.util.Locale.ROOT, label, if (benchSceneIdx < 0) 0.0 else renderScale, renderWidth, renderHeight,
-                benchN, avg, p95, if (avg > 0) 1000.0 / avg else 0.0, if (benchN > 0) sumCpu / benchN else 0.0,
-            ),
-        )
-        benchN = 0
-        benchStartNs = 0L
-        if (benchSceneIdx < 0) {
-            skipScenePass = false
-            benchSceneIdx = 0
-            benchScaleIdx = 0
-        } else if (++benchScaleIdx >= b.scales.size) {
-            benchScaleIdx = 0
-            if (++benchSceneIdx >= benchOrder.size) {
-                benchDone = true
-                scaleOverride = 0.0
-                Log.i(SceneLibrary.TAG, "bench done")
-                return
-            }
-        }
-        val target = benchOrder[benchSceneIdx]
-        scaleOverride = b.scales[benchScaleIdx]
-        if (target != sceneIndex) loadScene(target) else {
-            renderScale = scaleOverride
-            ensureTargets(force = true)
-        }
+        benchmark?.let { if (!it.done) it.tick(now, intervalMs, cpuMs) }
     }
 
     // ------------------------------------------------------------ scene switching (not per frame)
 
-    private fun loadScene(index: Int) {
+    /** Switch to scene `index`; with `fade` > 0 the current scene crossfades out over `fade` seconds. */
+    internal fun loadScene(index: Int, fade: Double) {
         val entry = lib.scenes[index]
         val def = entry.def
-        val composed = lib.compose(entry)
-        val program = try {
-            Gl.sceneProgram(composed)
-        } catch (e: Gl.ShaderError) {
-            lastError = "${def.id}: ${e.message}"
-            Log.e(SceneLibrary.TAG, "compile failed in ${def.id}:\n${e.message}")
-            if (scene == null) sceneIndex = index // nothing else to show; keep the index so D-pad moves on
+        val scale = if (scaleOverride > 0) scaleOverride else def.renderScale ?: profile.renderScale
+        val program = programs.getOrElse(index) { 0 }
+        if (program == 0) {
+            lastError = "${def.id}: ${programErrors.getOrNull(index)}"
+            if (cur == null) sceneIndex = index // nothing else to show; keep the index so D-pad moves on
             return
         }
-        scene?.let { GLES30.glDeleteProgram(it.program) }
-        fun u(n: String) = GLES30.glGetUniformLocation(program, n)
-        val n = def.params.size
-        val loc = IntArray(n)
-        val color = BooleanArray(n)
-        val offset = IntArray(n)
-        var size = 0
-        for (i in 0 until n) {
-            val p = def.params[i]
-            loc[i] = u("p_${p.id}")
-            color[i] = p.type == ParamType.COLOR
-            offset[i] = size
-            size += if (color[i]) 3 else 1
+        val slot = SceneSlot.create(index, def, program, scale)
+        val prev = cur
+        out?.let { endTransition(it) }
+        if (prev != null && fade > 0) {
+            out = prev
+            fadeS = fade
+            transition = 0.0
+            fadeFrames = 0; fadeIntervalSum = 0.0; fadeIntervalMax = 0f; fadeCpuMax = 0f
+        } else {
+            prev?.destroy()
         }
-        val v = FloatArray(size)
-        for (i in 0 until n) {
-            val p = def.params[i]
-            val c = p.defaultColor
-            if (c != null) System.arraycopy(c, 0, v, offset[i], 3) else v[offset[i]] = p.default.toFloat()
-        }
-        values = v
-        palette = SceneFormat.palette(def)
-        scene = ScenePass(
-            program, def.feedback,
-            u("uTime"), u("uResolution"), u("uBands"), u("uMood"), u("uBeat"),
-            u("uPalette"), u("uImage"), u("uImageInfo"), u("uPrev"), u("uNoise"),
-            loc, color, offset,
-        )
+        cur = slot
+        slot.ensureTargets(surfaceW, surfaceH, halfOk, force = true)
+        System.arraycopy(SceneFormat.palette(def), 0, palette, 0, 15)
+        paletteVariation.setPalettes(def.id, PaletteVariation.scenePalettes(def), driftTime)
         sceneIndex = index
         lastError = null
         fpsCap = def.fps ?: profile.maxFps
-        renderScale = if (scaleOverride > 0) scaleOverride else def.renderScale ?: profile.renderScale
+        renderScale = scale
         sceneTime = 0.0
-        ensureTargets(force = true)
+        publishTargetInfo()
         stats.reset(System.nanoTime())
-        Log.i(SceneLibrary.TAG, "scene ${def.id} (${index + 1}/${lib.scenes.size}) · ${renderWidth}x$renderHeight · ${fpsCap} fps cap · feedback=${def.feedback}")
+        Log.i(
+            SceneLibrary.TAG,
+            "scene ${def.id} (${index + 1}/${lib.scenes.size}) · ${renderWidth}x$renderHeight · $fpsCap fps cap · feedback=${def.feedback}" +
+                (if (out != null) " · crossfade ${fade}s from ${prev?.def?.id}" else "") +
+                " · palettes ${paletteVariation.size}",
+        )
     }
 
-    private fun ensureTargets(force: Boolean) {
-        val pass = scene ?: return
-        if (surfaceW == 0) return
-        val w = maxOf(1, Math.round(surfaceW * renderScale).toInt())
-        val h = maxOf(1, Math.round(surfaceH * renderScale).toInt())
-        val want = if (pass.feedback) 2 else 1
-        val t0 = targets[0]
-        if (!force && t0 != null && t0.width == w && t0.height == h && targetCount == want) return
-        for (i in 0 until targetCount) targets[i]?.let(Gl::destroy)
-        targets[0] = null
-        targets[1] = null
-        for (i in 0 until want) targets[i] = Gl.target(w, h, halfOk)
-        targetCount = want
-        ping = 0
-        renderWidth = w
-        renderHeight = h
-        halfFloat = targets[0]?.halfFloat == true
+    /**
+     * Compile every scene and draw each once into a 1x1 target, so drivers that finish
+     * compiling lazily (on first draw) do it here and not in the middle of a crossfade.
+     */
+    private fun compileAll() {
+        val t0 = System.nanoTime()
+        val n = lib.scenes.size
+        programs = IntArray(n)
+        programErrors = arrayOfNulls(n)
+        val warm = Gl.target(1, 1, halfOk)
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, warm.fbo)
+        GLES30.glViewport(0, 0, 1, 1)
+        for (i in 0 until n) {
+            val def = lib.scenes[i].def
+            try {
+                programs[i] = Gl.sceneProgram(lib.compose(lib.scenes[i]))
+                GLES30.glUseProgram(programs[i])
+                GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
+            } catch (e: Gl.ShaderError) {
+                programErrors[i] = e.message
+                Log.e(SceneLibrary.TAG, "compile failed in ${def.id}:\n${e.message}")
+            }
+        }
+        GLES30.glFinish()
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+        Gl.destroy(warm)
+        Log.i(SceneLibrary.TAG, "compiled $n scenes in %.0f ms".format(java.util.Locale.ROOT, (System.nanoTime() - t0) / 1e6))
+    }
+
+    /** Benchmark: re-create the current targets at [scaleOverride]. */
+    internal fun applyScaleOverride() {
+        val slot = cur ?: return
+        slot.renderScale = scaleOverride
+        renderScale = scaleOverride
+        slot.ensureTargets(surfaceW, surfaceH, halfOk, force = true)
+        publishTargetInfo()
+    }
+
+    private fun endTransition(o: SceneSlot) {
+        if (fadeFrames > 0) {
+            Log.i(
+                SceneLibrary.TAG,
+                "transition ${o.def.id} -> ${cur?.def?.id}: frames=%d interval avg=%.2f max=%.2f ms cpu max=%.2f ms".format(
+                    java.util.Locale.ROOT, fadeFrames, fadeIntervalSum / fadeFrames, fadeIntervalMax, fadeCpuMax,
+                ),
+            )
+        }
+        o.destroy()
+        out = null
+        transition = 1.0
+        fadeFrames = 0
+    }
+
+    private fun publishTargetInfo() {
+        val slot = cur ?: return
+        renderWidth = slot.width
+        renderHeight = slot.height
+        halfFloat = slot.halfFloat
     }
 }

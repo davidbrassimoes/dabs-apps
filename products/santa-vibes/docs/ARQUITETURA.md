@@ -72,7 +72,7 @@ Detalhes em `FONTES-IMAGEM.md`.
 
 Shader GLSL ES 3.00 + esquema de parâmetros. Contrato completo em `FORMATO-CENA.md`. Por cima das cenas:
 - **Drift**: cada parâmetro com `drift > 0` vagueia lentamente dentro do seu intervalo, à volta do valor definido pelo utilizador. Algoritmo exato em [Drift de parâmetros](#drift-de-parâmetros).
-- **Transições** entre cenas: crossfade das duas saídas ao longo de N segundos (4 por defeito; 0 = corte). Cada cena tem o seu slot (programa, FBOs, ping-pong, relógio); durante a transição a cena que sai continua a ser renderizada com os uniforms congelados (só tempo, resolução e sinais avançam) e o passe de saída mistura as duas com `uScenePrev` + `uMix` (já suavizado com `smoothstep`). Fora das transições só se renderiza uma cena; durante, o custo de GPU é a soma das duas.
+- **Transições** entre cenas: crossfade das duas saídas ao longo de N segundos (4 por defeito; 0 = corte). Cada cena tem o seu slot (programa, FBOs, ping-pong, relógio); durante a transição a cena que sai continua a ser renderizada, a meio ritmo (um frame sim, um não; decisão de DABS de 2026-10-07, para caber no orçamento da box), com os uniforms congelados (só tempo, resolução e sinais avançam; `uDeltaTime` conta o tempo desde o último frame dela) e o passe de saída mistura as duas com `uScenePrev` + `uMix` (já suavizado com `smoothstep`). Fora das transições só se renderiza uma cena; durante, o custo de GPU é a soma das duas.
 - **Playlists/rotação** automática e **presets** (cena + valores de parâmetros + fonte de imagem).
 
 #### Drift de parâmetros

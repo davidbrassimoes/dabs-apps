@@ -26,7 +26,21 @@ import android.widget.TextView
  *
  * Benchmark (step 0.5), from adb:
  *   am start -n dev.santavibes.tv/.MainActivity --ez bench true [--es scales 0.25,0.33,0.4,0.5] [--es scenes aurora,nebula]
- * renders continuously without vsync and logs "bench" lines (see SceneRenderer.Bench).
+ * renders continuously without vsync and logs "bench" lines (see Benchmark).
+ *
+ * Host settings (step 0.6) until the control page exists (phase 3), all optional:
+ *   --ef transition 4     crossfade between scenes in seconds (0 = cut)
+ *   --ef drift 1          drift amount (0 = off, 1 = as authored)
+ *   --ef driftSpeed 1     drift time rate (1 = real time)
+ * Box defaults (DABS, 2026-10-07): palette rotation on (180 s each, 20 s fade), no hue drift,
+ * reactivity 0.7, outgoing scene at half rate during a crossfade.
+ *   --ez rotate false     rotate through the scene's palettes (default on)
+ *   --ef hold 180         seconds on each palette; --ef fade 20 palette crossfade seconds
+ *   --ef hue 0            hue drift amplitude in degrees (0 = off)
+ *
+ * Signals (step 1.3): the app listens on UDP 47800 and broadcasts its beacon on 47801.
+ *   --ef reactivity 0.7   0 = Synth only, 1 = only the real source while it is present
+ *   --es source auto      auto | pc | phone | mic | midi | none
  */
 class MainActivity : Activity() {
     private lateinit var glView: GLSurfaceView
@@ -57,8 +71,23 @@ class MainActivity : Activity() {
     private var allocAtLastLog = 0L
     private var allocTimeNs = 0L
     private var allocRate = 0L // bytes/s allocated by the whole process, last window
+    private var loggedSource = -1
+    private val lastReceived = LongArray(5)
+    private var lastReceivedNs = 0L
+    private var packetRate = 0f // packets/s of the chosen source, last tick
     private val tick = object : Runnable {
         override fun run() {
+            val src = renderer.signalSource
+            val nowRx = System.nanoTime()
+            if (lastReceivedNs != 0L && src > 0) {
+                packetRate = (hub.received[src] - lastReceived[src]) * 1e9f / (nowRx - lastReceivedNs)
+            }
+            System.arraycopy(hub.received, 0, lastReceived, 0, 5)
+            lastReceivedNs = nowRx
+            if (src != loggedSource) {
+                loggedSource = src
+                Log.i(SceneLibrary.TAG, "signals: source " + SignalHub.kindName(src))
+            }
             val s = renderer.stats
             if (s.seq != loggedSeq) {
                 loggedSeq = s.seq
@@ -70,10 +99,10 @@ class MainActivity : Activity() {
                 val id = renderer.sceneIndex.let { if (it >= 0) library.scenes[it].def.id else "-" }
                 Log.i(
                     SceneLibrary.TAG,
-                    "stats scene=$id frames=${s.winFrames} fps=%.1f interval avg=%.2f p95=%.2f max=%.2f ms cpu avg=%.2f p95=%.2f ms render=%dx%d %s cap=%d alloc=%d B/s".format(
+                    "stats scene=$id frames=${s.winFrames} fps=%.1f interval avg=%.2f p95=%.2f max=%.2f ms cpu avg=%.2f p95=%.2f ms render=%dx%d %s cap=%d alloc=%d B/s src=%s w=%.2f bpm=%.1f pkt/s=%.0f".format(
                         s.winFps, s.winIntervalAvg, s.winIntervalP95, s.winIntervalMax, s.winCpuAvg, s.winCpuP95,
                         renderer.renderWidth, renderer.renderHeight, if (renderer.halfFloat) "RGBA16F" else "RGBA8",
-                        renderer.fpsCap, allocRate,
+                        renderer.fpsCap, allocRate, SignalHub.kindName(src), renderer.signalWeight, renderer.mixer.realBpm, packetRate,
                     ),
                 )
             }
@@ -83,6 +112,7 @@ class MainActivity : Activity() {
     }
 
     private lateinit var library: SceneLibrary
+    private lateinit var hub: SignalHub
     private var benchMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +125,21 @@ class MainActivity : Activity() {
         if (benchMode) {
             val scales = (intent.getStringExtra("scales") ?: "0.25,0.33,0.4,0.5").split(",").map { it.trim().toDouble() }.toDoubleArray()
             val ids = intent.getStringExtra("scenes")?.split(",")?.map { it.trim() }?.toSet()
-            renderer.bench = SceneRenderer.Bench(scales, ids)
+            renderer.bench = Benchmark.Config(scales, ids)
+        }
+        renderer.transitionS = intent.getFloatExtra("transition", renderer.transitionS.toFloat()).toDouble()
+        renderer.fadeEvery = intent.getIntExtra("fadeEvery", renderer.fadeEvery)
+        renderer.driftAmount = intent.getFloatExtra("drift", renderer.driftAmount.toFloat()).toDouble()
+        renderer.driftSpeed = intent.getFloatExtra("driftSpeed", renderer.driftSpeed.toFloat()).toDouble()
+        hub = SignalHub(deviceId())
+        hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
+        renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
+        if (!benchMode) renderer.hub = hub
+        renderer.paletteVariation.apply {
+            rotate = intent.getBooleanExtra("rotate", true)
+            holdS = intent.getFloatExtra("hold", holdS.toFloat()).toDouble()
+            fadeS = intent.getFloatExtra("fade", fadeS.toFloat()).toDouble()
+            hueDeg = intent.getFloatExtra("hue", hueDeg.toFloat()).toDouble()
         }
 
         glView = GLSurfaceView(this).apply {
@@ -129,12 +173,14 @@ class MainActivity : Activity() {
         running = true
         nextDueNs = 0L
         if (!benchMode) Choreographer.getInstance().postFrameCallback(frameCallback)
+        if (!benchMode) hub.start()
         ui.post(tick)
     }
 
     override fun onPause() {
         running = false
         ui.removeCallbacks(tick)
+        hub.stop()
         glView.onPause()
         super.onPause()
     }
@@ -162,9 +208,32 @@ class MainActivity : Activity() {
         sb.append("%.1f fps · %.1f ms/frame · cpu %.2f ms · cap %d".format(s.fps, s.intervalMs, s.cpuMs, r.fpsCap)).append('\n')
         sb.append("%dx%d %s · renderScale %.2f · t=%.0fs".format(r.renderWidth, r.renderHeight, if (r.halfFloat) "RGBA16F" else "RGBA8", r.renderScale, r.sceneTime)).append('\n')
         if (s.seq > 0) sb.append("10 s: avg %.2f · p95 %.2f · max %.2f ms · alloc %d B/s".format(s.winIntervalAvg, s.winIntervalP95, s.winIntervalMax, allocRate)).append('\n')
+        val pv = r.paletteVariation
+        sb.append("drift %.1f · t=%.0fs · paleta %d/%d%s%s · crossfade %.1fs%s".format(
+            r.driftAmount, r.driftTime, pv.current + 1, pv.size,
+            if (pv.rotate) " (rodar ${pv.holdS.toInt()}s)" else "",
+            if (pv.hueDeg != 0.0) " · matiz ±${pv.hueDeg.toInt()}°" else "",
+            r.transitionS, if (r.transition < 1.0) " · a misturar %.0f%%".format(r.transition * 100) else "",
+        )).append('\n')
+        val src = r.signalSource
+        sb.append(if (src == 0) "sinal: sintético" else "sinal: %s · %.0f pkt/s · peso %.2f · %s".format(
+            SignalHub.kindName(src), packetRate, r.signalWeight,
+            if (r.mixer.realBpm > 0) "%.1f bpm".format(r.mixer.realBpm) else "sem tempo",
+        )).append(" · reatividade %.1f".format(r.mixer.reactivity)).append('\n')
         r.lastError?.let { sb.append("ERRO: ").append(it).append('\n') }
         sb.append("◀ ▶ cena · OK overlay")
         return sb.toString()
+    }
+
+    /** Random, kept across restarts: the beacon's deviceId (PROTOCOLO-SIGNALS.md). */
+    private fun deviceId(): Int {
+        val prefs = getSharedPreferences("santavibes", MODE_PRIVATE)
+        if (!prefs.contains("deviceId")) prefs.edit().putInt("deviceId", java.util.Random().nextInt()).apply()
+        return prefs.getInt("deviceId", 0)
+    }
+
+    private companion object {
+        const val DEFAULT_REACTIVITY = 0.7f
     }
 
     private fun allocatedBytes(): Long = Debug.getRuntimeStat("art.gc.bytes-allocated")?.toLongOrNull() ?: 0L

@@ -7,12 +7,16 @@
 // units and each emitted dot has a fixed size in those units, so the image is the
 // same at any renderScale; the flow step is in uv units too. Trails fade towards
 // a dim palette background instead of black, so the room never goes dark.
+//
+// Frame-rate independence (format 4): movement, fade and emission scale with
+// uDeltaTime, normalised so that 30 fps (k = 1) looks exactly as authored.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
 
 const float CELLS = 48.0; // emission cells per screen height
 
 void main() {
+    float k = uDeltaTime * 30.0; // frames at 30 fps since this scene's last frame
     vec2 uv = gl_FragCoord.xy / uResolution;
     vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0);
     vec2 n = uv * aspect; // normalised: height = 1
@@ -20,7 +24,7 @@ void main() {
     // Flow field.
     vec2 p = n * p_scale + vec2(0.0, uTime * 0.02);
     float speed = p_flow * (0.6 + 0.8 * uMood.x);
-    vec2 v = curlNoise(p, 3) * speed * 0.006;
+    vec2 v = curlNoise(p, 3) * speed * 0.006 * k;
 
     // Background the trails decay towards: a slow, dim palette wash.
     float bgk = vnoise(n * 1.5 + uTime * 0.015);
@@ -28,7 +32,7 @@ void main() {
 
     // Advect previous frame and fade towards the background.
     vec3 prev = texture(uPrev, uv - v / aspect).rgb;
-    vec3 col = bg + (prev - bg) * p_decay;
+    vec3 col = bg + (prev - bg) * pow(p_decay, k);
 
     // Sparse emission of soft dots, re-rolled 12 times per second; more on beats.
     vec2 g = n * CELLS;
@@ -40,7 +44,7 @@ void main() {
     float spot = smoothstep(0.4, 0.0, length(g - cell - centre)) * step(1.0 - rate, seed);
 
     float pc = tri(vnoise(p * 0.5 + uTime * 0.01) + uMood.y * 0.3);
-    col += spot * palette(0.45 + 0.55 * pc) * 0.75;
+    col += spot * palette(0.45 + 0.55 * pc) * 0.75 * min(k, 2.0);
 
     fragColor = vec4(min(col, vec3(1.0)), 1.0);
 }

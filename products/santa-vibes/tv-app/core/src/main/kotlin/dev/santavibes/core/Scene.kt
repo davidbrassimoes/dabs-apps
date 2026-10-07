@@ -1,6 +1,6 @@
 package dev.santavibes.core
 
-// Scene and profile model. Mirrors docs/FORMATO-CENA.md (format 3) and
+// Scene and profile model. Mirrors docs/FORMATO-CENA.md (format 4) and
 // authoring/src/scene.ts. Parsed once at load time; nothing here runs per frame.
 
 enum class ParamType { FLOAT, INT, BOOL, COLOR }
@@ -59,7 +59,7 @@ class Profile(
 )
 
 object SceneFormat {
-    val SUPPORTED = setOf(1, 2, 3)
+    val SUPPORTED = setOf(1, 2, 3, 4)
     private val FALLBACK_PALETTE = listOf("#101018", "#2a2a48", "#5a4a8a", "#c07a6a", "#f0d0a0")
 
     class InvalidScene(message: String) : RuntimeException(message)

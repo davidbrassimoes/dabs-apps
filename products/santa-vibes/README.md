@@ -34,4 +34,6 @@ Nem todos são precisos logo na Fase 0 — ver `docs/ROADMAP.md`.
 - `CLAUDE.md` — instruções para o Claude Code (e um bom resumo para humanos)
 - `docs/VISAO.md` · `docs/ARQUITETURA.md` · `docs/ROADMAP.md`
 - `docs/FORMATO-CENA.md` · `docs/PROTOCOLO-SIGNALS.md` · `docs/FONTES-IMAGEM.md`
+- `docs/REPO.md` — mapa do repositório, comandos, convenções, ambiente
 - `docs/decisoes/` — decisões registadas
+- `NOTES.md` — onde a última sessão parou
