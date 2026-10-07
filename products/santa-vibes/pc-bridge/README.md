@@ -1,10 +1,10 @@
 # pc-bridge — emissor de sinais no Windows (Fase 1.2)
 
-Binário Rust único (~1,4 MB, sem runtime): captura o que o PC está a tocar (loopback WASAPI
+Executáveis Rust (~1,5 MB cada, sem runtime; `pc-bridge` com consola e `pc-bridge-bg` sem janela): captura o que o PC está a tocar (loopback WASAPI
 via `cpal`), analisa com `signals-core` e envia pacotes `SIGN` por UDP unicast para cada TV que
 encontra pelo beacon `PNMB` (ou dada à mão). MIDI clock via `midir` fica para a Fase 1.5.
 
-Metas: < 2 % CPU, < 20 MB RAM (cumpridas, ver em baixo), arranque automático opcional (por fazer).
+Metas: < 2 % CPU, < 20 MB RAM (cumpridas, ver em baixo), arranque automático (feito em 2026-10-07, ver em baixo).
 
 ## Como compilar, correr e testar
 
@@ -22,6 +22,23 @@ cargo run --release --example fake_tv       # finge ser a TV: beacon + mostra o 
 De 5 em 5 s a bridge escreve uma linha: áudio/silêncio, bpm (`?` = ainda sem tempo), energia,
 bandas, beats/s e pacotes/s enviados. Na primeira vez o Windows pode pedir autorização da
 firewall para o `pc-bridge.exe` (escuta o beacon em UDP 47801): permitir em redes privadas.
+
+## Arranque com o Windows (decisão de DABS, 2026-10-07)
+
+Há dois executáveis com o mesmo código: `pc-bridge` (consola) e `pc-bridge-bg` (sem janela; escreve em
+`%LOCALAPPDATA%\SantaVibes\pc-bridge.log`, uma linha de estado por minuto; acima de 1 MB o log passa a
+`pc-bridge.log.old`).
+
+```
+target/release/pc-bridge.exe --autostart on    # copia o pc-bridge-bg.exe para %LOCALAPPDATA%\SantaVibes\,
+                                               # regista-o em HKCU\...\CurrentVersion\Run e arranca-o
+target/release/pc-bridge.exe --autostart off   # pára-o e tira o registo
+```
+
+Depois de recompilar, correr `--autostart on` outra vez instala a versão nova. Com o de fundo a correr,
+uma bridge de consola não consegue escutar o beacon (porto ocupado): usar `--tv` ou desligar o de fundo.
+A firewall pode pedir autorização para o `pc-bridge-bg.exe` na primeira vez (é outro caminho).
+Ligado no PC de DABS em 2026-10-07.
 
 ## Comportamento
 
@@ -57,7 +74,6 @@ bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na t
 
 ## Por fazer
 
-- Arranque automático com o Windows (atalho em `shell:startup` ou tarefa agendada) e, se fizer
-  falta, ícone na área de notificação. Sem consola: compilar com `windows_subsystem` e log em ficheiro.
+- Ícone na área de notificação, se fizer falta.
 - MIDI clock (`midir`) e afinação da latência (`--lookahead`): 1.5.
 - Ponte WebSocket para o authoring: 1.6.
