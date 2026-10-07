@@ -57,6 +57,7 @@ interface SceneProgram {
   program: WebGLProgram;
   feedback: boolean;
   uTime: WebGLUniformLocation | null;
+  uDeltaTime: WebGLUniformLocation | null;
   uResolution: WebGLUniformLocation | null;
   uBands: WebGLUniformLocation | null;
   uMood: WebGLUniformLocation | null;
@@ -75,6 +76,8 @@ interface Slot {
   targets: Target[];
   ping: number;
   time: number;
+  /** Slot time at its last render (-1 = never); gives uDeltaTime. */
+  rendered: number;
 }
 
 interface OutputProgram {
@@ -186,6 +189,7 @@ export class Renderer {
       program,
       feedback: scene.feedback === true,
       uTime: u('uTime'),
+      uDeltaTime: u('uDeltaTime'),
       uResolution: u('uResolution'),
       uBands: u('uBands'),
       uMood: u('uMood'),
@@ -201,14 +205,14 @@ export class Renderer {
     if (pending > 0 && this.cur) {
       if (this.out) this.destroySlot(this.out);
       this.out = this.cur;
-      this.cur = { scene: prog, targets: [], ping: 0, time: 0 };
+      this.cur = { scene: prog, targets: [], ping: 0, time: 0, rendered: -1 };
       this.fade = 0;
       this.fadeS = pending;
     } else if (this.cur) {
       gl.deleteProgram(this.cur.scene.program);
       this.cur.scene = prog;
     } else {
-      this.cur = { scene: prog, targets: [], ping: 0, time: 0 };
+      this.cur = { scene: prog, targets: [], ping: 0, time: 0, rendered: -1 };
     }
     this.ensureTargets();
     if (fresh) this.clearSlot(this.cur);
@@ -252,7 +256,10 @@ export class Renderer {
   }
 
   resetTime(): void {
-    if (this.cur) this.cur.time = 0;
+    if (this.cur) {
+      this.cur.time = 0;
+      this.cur.rendered = -1;
+    }
     this.lastRender = 0;
   }
 
@@ -380,6 +387,8 @@ export class Renderer {
     gl.useProgram(scene.program);
 
     if (scene.uTime) gl.uniform1f(scene.uTime, slot.time);
+    if (scene.uDeltaTime) gl.uniform1f(scene.uDeltaTime, slot.rendered < 0 ? 0 : slot.time - slot.rendered);
+    slot.rendered = slot.time;
     if (scene.uResolution) gl.uniform2f(scene.uResolution, dst.width, dst.height);
     if (scene.uBands) gl.uniform4fv(scene.uBands, signals.bands);
     if (scene.uMood) gl.uniform4fv(scene.uMood, signals.mood);

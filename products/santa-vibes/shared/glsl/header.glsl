@@ -1,10 +1,11 @@
 #version 300 es
-// Santa Vibes scene contract v3 — see docs/FORMATO-CENA.md
+// Santa Vibes scene contract v4 — see docs/FORMATO-CENA.md
 // Prepended by the host to every scene. Scene files must NOT contain #version.
 precision highp float;
 precision highp int;
 
 uniform float uTime;          // seconds since scene start
+uniform float uDeltaTime;     // seconds since this scene's previous frame (0 on its first), v4
 uniform vec2  uResolution;    // render target size (renderScale applied)
 
 uniform vec4  uBands;         // low, mid, high, energy (fast)

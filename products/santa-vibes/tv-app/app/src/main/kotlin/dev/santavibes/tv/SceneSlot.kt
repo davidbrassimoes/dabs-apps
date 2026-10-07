@@ -18,6 +18,7 @@ internal class SceneSlot private constructor(
     val def: SceneDef,
     private val program: Int,
     private val uTime: Int,
+    private val uDeltaTime: Int,
     private val uResolution: Int,
     private val uBands: Int,
     private val uMood: Int,
@@ -40,6 +41,9 @@ internal class SceneSlot private constructor(
     private var targetCount = 0
     private var ping = 0
     var time = 0.0
+    /** [time] at the last [render] (-1 = never): uDeltaTime is per slot, so a scene rendered
+     *  every other frame during a crossfade still advances per second. */
+    private var rendered = -1.0
     val width: Int get() = targets[0]?.width ?: 0
     val height: Int get() = targets[0]?.height ?: 0
     val halfFloat: Boolean get() = targets[0]?.halfFloat == true
@@ -74,6 +78,8 @@ internal class SceneSlot private constructor(
         GLES30.glViewport(0, 0, dst.width, dst.height)
         GLES30.glUseProgram(program)
         GLES30.glUniform1f(uTime, time.toFloat())
+        GLES30.glUniform1f(uDeltaTime, if (rendered < 0) 0f else (time - rendered).toFloat())
+        rendered = time
         GLES30.glUniform2f(uResolution, dst.width.toFloat(), dst.height.toFloat())
         GLES30.glUniform4fv(uBands, 1, bands, 0)
         GLES30.glUniform4fv(uMood, 1, mood, 0)
@@ -149,7 +155,7 @@ internal class SceneSlot private constructor(
             }
             return SceneSlot(
                 index, def, program,
-                u("uTime"), u("uResolution"), u("uBands"), u("uMood"), u("uBeat"),
+                u("uTime"), u("uDeltaTime"), u("uResolution"), u("uBands"), u("uMood"), u("uBeat"),
                 u("uPalette"), u("uImage"), u("uImageInfo"), u("uPrev"), u("uNoise"),
                 loc, color, offset, drift, v, renderScale,
             )
