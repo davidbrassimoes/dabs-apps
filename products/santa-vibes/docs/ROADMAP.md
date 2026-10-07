@@ -44,7 +44,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 - [x] **1.2 `pc-bridge` (Rust, Windows)** (2026-10-06; ver `pc-bridge/README.md`: 60 pkt/s sem perdas, 1,6 % de um núcleo, 11,9 MB; pacotes chegam à box; por fazer: arranque automático e ícone) — captura por loopback WASAPI (`cpal`), escuta do beacon, envio unicast a ~60 Hz. Ícone na área de notificação (opcional) ou serviço discreto. (O MIDI clock que estava aqui saiu do produto: ADR 0003.)
 - [x] **1.3 Receção na `tv-app`** (2026-10-06; ver `tv-app/README.md`: descoberta pelo beacon, 60 pkt/s sem alocações, regresso ao Synth em ≤ 3 s; falta afinar a reação a olho) — `SignalHub` (thread própria, socket UDP, sem alocações por pacote), beacon, escolha da fonte (manual/automática), mixer de reatividade com o `Synth`.
 - [x] **1.4 `phone-app` (Android)** (2026-10-07: testada num Pixel 8 até à box, microfone e som de uma app; o tempo pelo microfone fica para a afinação — ver `phone-app/README.md`) — UI mínima: escolher microfone ou playback capture, estado da ligação. Foreground service do tipo `microphone`/`mediaProjection`. `signals-core` via NDK (`cargo-ndk`) + JNI.
-- [ ] **1.5 Afinação da latência** (comparar o beat visto na TV com o ouvido na sala). O MIDI clock que estava neste passo saiu do produto (ADR 0003, 2026-10-07).
+- [ ] **1.5 Afinação da latência** (comparar o beat visto na TV com o ouvido na sala). 2026-10-07: medido uma vez, `pc-bridge` a -10 ms; falta confirmar (`NOTES.md`). O MIDI clock que estava neste passo saiu do produto (ADR 0003, 2026-10-07).
 - [ ] **1.6 Ponte opcional para o authoring** — o authoring recebe os sinais reais (WebSocket local servido pela bridge), para afinar cenas reativas no PC.
 
 **Critérios de aceitação:**

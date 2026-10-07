@@ -6,6 +6,9 @@
 
 ## Para a próxima sessão
 
+- 2026-10-07: 1.5 a meio. MIDI retirado (ADR 0003). `pc-bridge` com `--lookahead` -10 ms (uma medição).
+  **Falta:** a segunda medição com -10, para confirmar que o erro fica abaixo de ~15 ms, e uma com o
+  rock. Precisa da TV ligada; o Pixel 8 já está virado para a TV. Depois fecha-se o 1.5.
 - 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
   DABS escolheu: **a predefinição é a reativa** (`look` por defeito `reactive`); a atual fica a
   um ▲ e mantém o metrónomo sintético (100 BPM sem música). O `default` de `react` nas cenas fica 0:
@@ -33,6 +36,31 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-07 — 1.5: sem MIDI; latência medida na sala
+
+- DABS tirou o MIDI clock do produto (ADR 0003). O `sourceKind` 4 e o bit 2 das flags ficam
+  reservados; o layout e a versão do pacote não mudam. A fixture foi regenerada sem o caso MIDI.
+- **Método** (`scripts/latency.py`):
+  - O Pixel 8 está virado para a TV. A câmara abre por adb mesmo bloqueado
+    (`STILL_IMAGE_CAMERA_SECURE`), com toque em Vídeo e no obturador.
+  - O PC toca cliques a 115 BPM e a TV mostra o `halo` na versão reativa.
+  - A hora dos cliques sai da correlação do áudio do vídeo com a faixa, porque pelo microfone da
+    sala os cliques são fracos e a deteção por limiar falhou.
+  - O pico de brilho da TV sai da primeira harmónica, por fase do beat.
+- **Resultado com 60 ms:** a imagem chegou 71 ± 6 ms **antes** do som (15 blocos de 8 beats; a TV
+  fixou 115,0 BPM). O `pc-bridge` passa a -10 ms por defeito. O `signals-core` aceita agora um
+  lookahead negativo: o `fract` passou a `rem_euclid`, com teste.
+- **Hipótese, por confirmar:** o loopback apanha o áudio antes do buffer de saída e das colunas.
+  Se a segunda medição não der perto de 0, as causas a ver, da mais barata para a mais cara:
+  - viés de fase do tempo com cliques vs. música;
+  - a parte `drive` (graves, sem previsão) a puxar o pico;
+  - a câmara a ajustar a exposição.
+- **Não medido:** a fonte do telemóvel (continua com 60 ms). O valor vale para esta sala e estas
+  colunas; o projetor vai pedir uma medição própria.
+- A segunda medição não se fez: a TV entrou em standby a meio, às ~23h, e não a voltei a ligar.
+- `pc-bridge --autostart on` chamado de um script fica à espera, porque o processo de fundo herda
+  os handles do pai. Está anotado no README e não foi corrigido.
 
 ### 2026-10-07 — versão reativa das cenas (decisão 13)
 
