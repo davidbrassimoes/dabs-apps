@@ -28,8 +28,12 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     // ---- host settings (set from the UI thread; the control page arrives in phase 3)
     /** Crossfade between scenes, seconds (0 = cut). */
     @Volatile var transitionS = 4.0
-    /** During a crossfade, render the outgoing scene every N frames (1 = always; 0 = hold its last frame). */
-    @Volatile var fadeEvery = 1
+    /**
+     * During a crossfade, render the outgoing scene every N frames (1 = always; 0 = hold its
+     * last frame). 2 by default (DABS, 2026-10-07): 13 of 15 transitions stay at the fps cap
+     * instead of 9, and the half-rate scene is fading out anyway (tv-app/README.md).
+     */
+    @Volatile var fadeEvery = 2
     /** Global drift multiplier: 0 = off, 1 = as authored in scene.json. */
     @Volatile var driftAmount = 1.0
     /** Drift time runs at this rate (1 = real time). */

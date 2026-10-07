@@ -103,7 +103,7 @@ Uma janela de 10 s por cena, com o limite de fps de cada cena: **todas no limite
 
 ### Drift, paleta e crossfade (passo 0.6), 2026-10-06
 
-Definições do host por extras do intent até haver página de controlo (Fase 3); por defeito: crossfade 4 s, drift 1, paleta sem rodar e sem matiz (como no authoring).
+Definições do host por extras do intent até haver página de controlo (Fase 3); por defeito (decisão de DABS, 2026-10-07): crossfade 4 s com a cena que sai a meio ritmo, drift 1, paleta a rodar (180 s cada, transição de 20 s), sem matiz, reatividade 0,7. Até 2026-10-06 eram iguais ao authoring (paleta parada, reatividade 1, `fadeEvery 1`).
 
 ```
 am start -n dev.santavibes.tv/.MainActivity [--ef transition 4] [--ef drift 1] [--ef driftSpeed 1]
@@ -122,7 +122,7 @@ No fim de cada crossfade o logcat mostra `transition <de> -> <para>: frames=… 
 | 2 (a cena que sai a meio ritmo) | 13 de 15 | liquid-light → marble 35,0 ms, ink-bloom → nebula 37,4 ms |
 | 0 (a cena que sai fica parada no último frame) | 15 de 15 | — |
 
-Transições de/para breath e halo ficam a 41,5 ms porque essas cenas têm limite de 24 fps (é o esperado). Por defeito fica `fadeEvery 1`, o comportamento documentado, até DABS decidir (ver `projects/santa-vibes.md`).
+Transições de/para breath e halo ficam a 41,5 ms porque essas cenas têm limite de 24 fps (é o esperado). Por defeito `fadeEvery 2` desde 2026-10-07 (decisão de DABS; `ARQUITETURA.md` atualizada).
 
 **Alocações:** com drift, rotação de paleta e matiz ligados, o padrão de `alloc` é igual ao de drift desligado (só o bloco TLAB periódico do log da UI); o código novo não aloca por frame.
 

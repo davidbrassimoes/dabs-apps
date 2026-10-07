@@ -32,12 +32,14 @@ import android.widget.TextView
  *   --ef transition 4     crossfade between scenes in seconds (0 = cut)
  *   --ef drift 1          drift amount (0 = off, 1 = as authored)
  *   --ef driftSpeed 1     drift time rate (1 = real time)
- *   --ez rotate true      rotate through the scene's palettes
+ * Box defaults (DABS, 2026-10-07): palette rotation on (180 s each, 20 s fade), no hue drift,
+ * reactivity 0.7, outgoing scene at half rate during a crossfade.
+ *   --ez rotate false     rotate through the scene's palettes (default on)
  *   --ef hold 180         seconds on each palette; --ef fade 20 palette crossfade seconds
  *   --ef hue 0            hue drift amplitude in degrees (0 = off)
  *
  * Signals (step 1.3): the app listens on UDP 47800 and broadcasts its beacon on 47801.
- *   --ef reactivity 1     0 = Synth only, 1 = the real source while it is present
+ *   --ef reactivity 0.7   0 = Synth only, 1 = only the real source while it is present
  *   --es source auto      auto | pc | phone | mic | midi | none
  */
 class MainActivity : Activity() {
@@ -131,10 +133,10 @@ class MainActivity : Activity() {
         renderer.driftSpeed = intent.getFloatExtra("driftSpeed", renderer.driftSpeed.toFloat()).toDouble()
         hub = SignalHub(deviceId())
         hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
-        renderer.mixer.reactivity = intent.getFloatExtra("reactivity", 1f).toDouble()
+        renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
         if (!benchMode) renderer.hub = hub
         renderer.paletteVariation.apply {
-            rotate = intent.getBooleanExtra("rotate", rotate)
+            rotate = intent.getBooleanExtra("rotate", true)
             holdS = intent.getFloatExtra("hold", holdS.toFloat()).toDouble()
             fadeS = intent.getFloatExtra("fade", fadeS.toFloat()).toDouble()
             hueDeg = intent.getFloatExtra("hue", hueDeg.toFloat()).toDouble()
@@ -228,6 +230,10 @@ class MainActivity : Activity() {
         val prefs = getSharedPreferences("santavibes", MODE_PRIVATE)
         if (!prefs.contains("deviceId")) prefs.edit().putInt("deviceId", java.util.Random().nextInt()).apply()
         return prefs.getInt("deviceId", 0)
+    }
+
+    private companion object {
+        const val DEFAULT_REACTIVITY = 0.7f
     }
 
     private fun allocatedBytes(): Long = Debug.getRuntimeStat("art.gc.bytes-allocated")?.toLongOrNull() ?: 0L
