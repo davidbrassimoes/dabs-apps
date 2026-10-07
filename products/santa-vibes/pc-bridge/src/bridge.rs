@@ -14,6 +14,10 @@ const SILENT_HZ: u32 = 10;
 /// No callback for this long counts as "nothing playing": the sender feeds silence.
 const STALE_MS: u64 = 150;
 const DEVICE_POLL: Duration = Duration::from_secs(2);
+/// Default `--lookahead`. Measured 2026-10-07 in DABS's room (phone video of the TV with the PC's
+/// speakers, 115 BPM clicks): with 60 ms the picture peaked 71 ± 6 ms before the heard click, so
+/// -10 ms. Negative because loopback sees the audio before the output buffer and the speakers.
+pub const PC_LOOKAHEAD_MS: f32 = -10.0;
 
 pub struct Args {
     pub tvs: Vec<SocketAddr>,
@@ -30,7 +34,7 @@ pub fn parse_args(mut it: impl Iterator<Item = String>) -> Result<Args, String> 
     let mut a = Args {
         tvs: Vec::new(),
         device: None,
-        cfg: Config::default(),
+        cfg: Config { lookahead_ms: PC_LOOKAHEAD_MS, ..Config::default() },
         quiet: false,
         list: false,
         autostart: None,

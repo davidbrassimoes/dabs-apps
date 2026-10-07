@@ -38,6 +38,8 @@ target/release/pc-bridge.exe --autostart off   # pára-o e tira o registo
 Depois de recompilar, correr `--autostart on` outra vez instala a versão nova. Com o de fundo a correr,
 uma bridge de consola não consegue escutar o beacon (porto ocupado): usar `--tv` ou desligar o de fundo.
 A firewall pode pedir autorização para o `pc-bridge-bg.exe` na primeira vez (é outro caminho).
+Um script que leia o output do `--autostart on` fica à espera: o processo de fundo herda os handles
+(Windows). Correr num terminal, ou com o output para um ficheiro.
 Ligado no PC de DABS em 2026-10-07.
 
 ## Comportamento
@@ -75,5 +77,22 @@ bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na t
 ## Por fazer
 
 - Ícone na área de notificação, se fizer falta.
-- Afinação da latência (`--lookahead`): 1.5.
+- Confirmar o `--lookahead` de -10 ms com uma segunda medição na sala (1.5).
 - Ponte WebSocket para o authoring: 1.6.
+
+## Latência (`--lookahead`), 1.5
+
+Por defeito **-10 ms** (`PC_LOOKAHEAD_MS` em `src/bridge.rs`). O valor é medido, não estimado.
+
+- **Como se mede:** o Pixel 8 grava a TV e o som das colunas do PC no mesmo vídeo, enquanto o PC
+  toca cliques a 115 BPM e a TV mostra o `halo` na versão reativa. A 120 BPM o beat cairia sempre
+  no mesmo frame a 30 fps.
+- **Como se analisa:** a hora de cada clique sai da correlação do áudio do vídeo com a faixa
+  inteira. A fase do pico de brilho da TV dentro de cada beat sai da primeira harmónica. Os
+  scripts estão descritos em `NOTES.md`.
+- **2026-10-07, com 60 ms:** o pico de brilho chegou **71 ± 6 ms antes** do clique ouvido (15
+  blocos de 8 beats). Daí -10 ms.
+- **Porque é negativo:** o loopback vê o áudio antes do buffer de saída e das colunas, e a TV
+  mostra mais depressa do que o som chega à sala.
+- **Depende da sala:** outras colunas, Bluetooth ou o projetor mudam o valor. A `phone-app` fica
+  em 60 ms, porque esse caminho não foi medido.
