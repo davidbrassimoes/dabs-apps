@@ -82,7 +82,7 @@ pub fn start(device: Device, cfg: Config, epoch: Instant) -> Result<Capture, Str
     let on_error = move |e: cpal::Error| match e.kind() {
         ErrorKind::Xrun | ErrorKind::DeviceChanged | ErrorKind::RealtimeDenied => {}
         _ => {
-            eprintln!("capture: {e}");
+            crate::say!("capture: {e}");
             err_shared.broken.store(true, Ordering::Relaxed);
         }
     };

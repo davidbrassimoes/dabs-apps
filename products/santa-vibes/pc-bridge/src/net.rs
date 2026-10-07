@@ -64,7 +64,7 @@ pub fn listen_beacons(targets: Arc<Targets>) -> std::io::Result<()> {
                 if let Some(b) = decode_beacon(&buf[..n]) {
                     let addr = SocketAddr::new(from.ip(), b.signal_port);
                     if targets.saw(addr, b.device_id) {
-                        println!("TV found: {addr} (id {:08x}, control port {})", b.device_id, b.control_port);
+                        crate::say!("TV found: {addr} (id {:08x}, control port {})", b.device_id, b.control_port);
                     }
                 }
             }
