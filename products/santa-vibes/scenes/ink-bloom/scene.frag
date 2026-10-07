@@ -4,6 +4,7 @@
 // at a hashed position; the beat can add drops. Cost: curlNoise(3) + 5 texture taps.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
@@ -13,7 +14,9 @@ void main() {
     float t = uTime * 0.05 * p_speed;
 
     // Slow currents.
-    vec2 v = curlNoise(p + vec2(t, -t * 0.7), 3) * 0.0012 * p_flow;
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
+    // Reactive variant (p_react): bass + beat stirs the currents, beat drops grow and land harder.
+    vec2 v = curlNoise(p + vec2(t, -t * 0.7), 3) * 0.0012 * p_flow * (1.0 + 2.0 * drive);
     vec2 q = uv - v / aspect;
 
     // Diffusion: cross blur of the advected previous frame.
@@ -43,7 +46,8 @@ void main() {
     float kb = floor(uTime * 6.0);
     vec2 c2 = hash22(vec2(kb * 0.77 + 9.1, kb * 1.91 + 4.2)) * 0.7 + 0.15;
     float d2 = length((uv - c2) * aspect);
-    float drop2 = uBeat.w * p_pulse * smoothstep(0.07, 0.02, d2);
+    float grow = 1.0 + 0.8 * p_react;
+    float drop2 = uBeat.w * p_pulse * (1.0 + 1.5 * p_react) * smoothstep(0.07 * grow, 0.02 * grow, d2);
     vec3 ink2 = palette(0.75 + 0.25 * tri(kb * 0.17));
 
     // Ink is added, not blended, so overlapping drops get richer rather than greyer.

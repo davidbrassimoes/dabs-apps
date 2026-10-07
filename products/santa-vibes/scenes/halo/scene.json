@@ -15,7 +15,8 @@
     { "id": "softness", "label": "Suavidade", "type": "float", "min": 0.01, "max": 0.5, "default": 0.12, "drift": 0.15 },
     { "id": "glow", "label": "Halo", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.1 },
     { "id": "wander", "label": "Deriva", "type": "float", "min": 0.0, "max": 1.0, "default": 0.6, "drift": 0.0 },
-    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" }
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" },
+    { "id": "react", "label": "Reação à música", "type": "float", "min": 0.0, "max": 1.0, "default": 0.0, "drift": 0.0, "group": "Reatividade" }
   ],
   "presets": [
     {

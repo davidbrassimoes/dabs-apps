@@ -36,6 +36,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     @Volatile var fadeEvery = 2
     /** Global drift multiplier: 0 = off, 1 = as authored in scene.json. */
     @Volatile var driftAmount = 1.0
+    /** Forced into every scene's `react` param: 0 = the current look, 1 = the reactive one. */
+    @Volatile var react = 0f
     /** Drift time runs at this rate (1 = real time). */
     @Volatile var driftSpeed = 1.0
     /** Rotation and hue drift; set its fields before the surface exists. */
@@ -155,6 +157,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         slot.time += dt
         sceneTime = slot.time
         driftTime += dt * driftSpeed
+        // The reactive look reacts to music only: no synthetic metronome (beat, punch) without it.
+        synth.beatEnabled = react == 0f
+        synth.punch = if (react == 0f) 0.5 else 0.0 // 0.5: the Synth default
         synth.update(dt, slot.time)
         signalSource = hub?.drain(mixer, now) ?: 0
         mixer.update(dt, synth)
@@ -168,7 +173,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         if (skipScenePass) {
             dst = slot.latest() // same texture fetch cost as a real frame
         } else {
-            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, true, driftTime, driftAmount)
+            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, true, driftTime, driftAmount, react)
             val o = out
             if (o != null) {
                 val f = if (fadeS > 0) minOf(1.0, transition + dt / fadeS) else 1.0
@@ -179,7 +184,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
                     o.time += dt
                     val every = fadeEvery
                     prev = if (every > 0 && fadeFrames % every == 0) {
-                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, false, driftTime, driftAmount)
+                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, false, driftTime, driftAmount, react)
                     } else {
                         o.latest()
                     }

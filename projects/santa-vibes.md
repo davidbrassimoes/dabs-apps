@@ -36,6 +36,9 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 10. **Merge** dos branches empilhados para `main` por PR, depois de a CI passar. Feito: PR #1.
 11. **Música de referência**: DABS escolhe 5–10 faixas que ouve, de géneros diferentes, com BPM conhecido.
 12. **Nome**: fica o de protótipo até haver intenção de publicar.
+13. **Cenas mais reativas** (2026-10-07, DABS): a imagem quase não reage à música (pulso de ~0,35 %
+    do brilho aos 123 BPM). Faz-se uma versão mais reativa das 15 cenas, alternável na box com a
+    atual sem reinstalar; DABS compara as duas na TV antes de a reativa passar a predefinição.
 
 ## Por decidir
 
@@ -56,6 +59,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.1: `signals-core` (Rust) (2026-10-06)
 - [x] Fase 1, passo 1.2: `pc-bridge` (2026-10-06)
 - [x] Fase 1, passo 1.3: receção na tv-app (2026-10-06)
+- [ ] Versão reativa das cenas, alternável na box, para DABS comparar na TV (decisão 13)
 - [ ] Afinar a reação a olho com DABS, com a música de referência (decisão 11)
 - [x] Fase 1, passo 1.4: `phone-app`, testada num Pixel 8 (2026-10-07)
 - [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)

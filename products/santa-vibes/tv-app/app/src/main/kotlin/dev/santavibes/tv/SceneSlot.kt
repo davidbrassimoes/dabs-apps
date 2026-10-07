@@ -33,6 +33,8 @@ internal class SceneSlot private constructor(
     private val paramOffset: IntArray,
     /** Drift spectrum per param; null where the param never drifts. */
     private val paramDrift: Array<Drift.Spec?>,
+    /** Location of `p_react` (the scene param the host forces, FORMATO-CENA.md); -1 if absent. */
+    private val reactLoc: Int,
     /** Base values (user/preset), floats and colours packed at [paramOffset]. */
     val values: FloatArray,
     var renderScale: Double,
@@ -69,7 +71,7 @@ internal class SceneSlot private constructor(
      */
     fun render(
         bands: FloatArray, mood: FloatArray, beat: FloatArray, palette: FloatArray, imageInfo: FloatArray, black: Int, noise: Int,
-        full: Boolean, driftTime: Double, driftAmount: Double,
+        full: Boolean, driftTime: Double, driftAmount: Double, react: Float,
     ): Gl.Target? {
         if (targetCount == 0) return null
         val dst = (if (def.feedback) targets[1 - ping] else targets[0]) ?: return null
@@ -109,6 +111,8 @@ internal class SceneSlot private constructor(
                 }
             }
         }
+        // After the params, so the host value wins; also for the outgoing scene of a crossfade.
+        if (reactLoc >= 0) GLES30.glUniform1f(reactLoc, react)
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
         if (def.feedback) ping = 1 - ping
         return dst
@@ -130,6 +134,9 @@ internal class SceneSlot private constructor(
     }
 
     companion object {
+        /** The scene param the host forces to [SceneRenderer.react] (0 = current look, 1 = reactive). */
+        const val REACT_PARAM = "react"
+
         /** A slot for an already compiled scene `program` (see [SceneRenderer]'s program cache). */
         fun create(index: Int, def: SceneDef, program: Int, renderScale: Double): SceneSlot {
             fun u(n: String) = GLES30.glGetUniformLocation(program, n)
@@ -157,7 +164,7 @@ internal class SceneSlot private constructor(
                 index, def, program,
                 u("uTime"), u("uDeltaTime"), u("uResolution"), u("uBands"), u("uMood"), u("uBeat"),
                 u("uPalette"), u("uImage"), u("uImageInfo"), u("uPrev"), u("uNoise"),
-                loc, color, offset, drift, v, renderScale,
+                loc, color, offset, drift, u("p_$REACT_PARAM"), v, renderScale,
             )
         }
     }

@@ -4,6 +4,7 @@
 // of oil on water. Cost: 2 x fbm(3) + up to 8 blob evaluations per pixel.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 float blobField(vec2 p, float t, float count, float size) {
     float f = 0.0;
@@ -26,12 +27,15 @@ void main() {
     float aspect = uResolution.x / uResolution.y;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     float t = uTime * p_speed * 0.5;
+    // Reactive variant (p_react): beat swells with the tempo on the blobs, bass + beat warps the liquid, mids shift the colour.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
 
     // Liquid warp: blobs become drops, not circles.
     vec2 w = vec2(fbm(p * 1.4 + t * 0.15, 3), fbm(p * 1.4 - t * 0.11 + 3.1, 3)) - 0.5;
-    vec2 q = p + w * p_warp * 0.35;
+    vec2 q = p + w * (p_warp + 1.2 * drive) * 0.35;
 
-    float size = p_size * (1.0 + p_pulse * 0.15 * uBeat.x) * (0.9 + 0.2 * uMood.x);
+    float size = p_size * (1.0 + beat * 0.15) * (0.9 + 0.2 * uMood.x);
     float f = blobField(q, t, p_blobs, size);
 
     float inside = smoothstep(0.9, 1.3, f);
@@ -39,7 +43,7 @@ void main() {
     float core = smoothstep(1.3, 4.0, f);
 
     // Oil colour drifts through the palette with the field value and the mood.
-    float hue = tri(f * 0.12 + t * 0.05 + uMood.y * 0.3 + q.x * 0.1);
+    float hue = tri(f * 0.12 + t * 0.05 + uMood.y * 0.3 + q.x * 0.1 + 0.12 * p_react * uBands.y);
     vec3 oil = palette(0.45 + 0.55 * hue);
     oil = mix(oil, palette(1.0), core * 0.35);
 

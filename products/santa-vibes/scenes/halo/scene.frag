@@ -2,16 +2,20 @@
 // Deliberately minimal (Turrell / Rothko): maximum light, no fine detail, so it looks
 // good on a weak projector and can run at very low renderScale. Cost: trivial.
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
     float aspect = uResolution.x / uResolution.y;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     float t = uTime * p_speed * 0.08;
+    // Reactive variant (p_react): beat swells with the tempo on the radius, bass + beat widens the glow.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
 
     // The orb wanders on a slow Lissajous path and breathes on a 25 s cycle.
     vec2 c = vec2(sin(t * 0.7), cos(t * 0.53)) * vec2(0.18, 0.12) * p_wander;
-    float breathe = 1.0 + 0.06 * sin(uTime * 0.25) + p_pulse * 0.08 * uBeat.x;
+    float breathe = 1.0 + 0.06 * sin(uTime * 0.25) + beat * 0.08;
     float radius = p_size * breathe * (0.9 + 0.2 * uMood.x);
     float r = length(p - c);
 
@@ -26,6 +30,6 @@ void main() {
     vec3 field = mix(palette(0.08), palette(0.32), fieldMix) * (0.75 + 0.25 * uMood.y);
 
     vec3 col = mix(field, orbCol, orb);
-    col += inner * p_glow * 0.35 * exp(-max(r - radius, 0.0) * 4.5);
+    col += inner * (p_glow + 0.6 * drive) * 0.35 * exp(-max(r - radius, 0.0) * 4.5);
     fragColor = vec4(col, 1.0);
 }

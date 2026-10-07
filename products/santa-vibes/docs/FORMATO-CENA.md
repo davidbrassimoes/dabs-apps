@@ -135,6 +135,7 @@ O valor por defeito da cena (sem preset) é sempre uma escolha válida, por isso
 
 - **Pensar no projetor**: luminosidade média, cor saturada, formas grandes; evitar depender de pretos profundos e de detalhe fino.
 - **Reatividade lenta por defeito**: usar `uMood` para mudanças de carácter e `uBeat.x` com moderação (respirar, não piscar). Expor um parâmetro tipo `pulse` para o utilizador dosear.
+- **Parâmetro `react`** (convenção desde 2026-10-07, sem mudar o formato): float 0..1, defeito 0, sem drift, grupo `Reatividade`. Com 0 a cena tem o aspeto de sempre; com 1, a versão reativa (o beat e os graves mexem em tamanho, forma ou cor). Os hosts podem forçá-lo em todas as cenas (a tv-app faz isso com `--es look`). Para o pulso no ritmo sem piscar, `groove()` de `lib/react.glsl` dá uma subida suave que tem o pico em cada beat (a partir de `uBeat.y`), em vez do envelope `uBeat.x`, que salta.
 - **Custo**: preferir poucas oitavas de ruído; evitar loops longos por pixel; cenas `feedback` funcionam bem a `renderScale` baixa.
 - **Sem banding**: o passe de saída faz dithering; não é preciso repetir na cena.
 - Nada de estado global fora de `uPrev`; a cena deve poder recomeçar a qualquer momento.

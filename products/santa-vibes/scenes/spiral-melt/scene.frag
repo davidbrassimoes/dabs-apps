@@ -8,6 +8,7 @@
 // on radius, not on the band index, which would also change across the cut.
 #include "lib/noise.glsl"
 #include "lib/color.glsl"
+#include "lib/react.glsl"
 
 const float TAU = 6.28318530718;
 
@@ -25,14 +26,17 @@ void main() {
     float aspect = uResolution.x / uResolution.y;
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     float t = uTime * p_speed * 0.12;
+    // Reactive variant (p_react): beat swells with the tempo, bass + beat melts the rings, mids shift the colour cycle.
+    float beat = mix(p_pulse * uBeat.x, p_pulse * 4.0 * groove(), p_react);
+    float drive = p_react * (0.4 * uBands.x + 0.6 * groove());
 
     // Melt: warp the plane so rings sag and drip.
     vec2 w = vec2(fbm(p * 1.2 + t * 0.4, 3), fbm(p * 1.2 - t * 0.3 + 5.0, 3)) - 0.5;
-    vec2 q = p + w * p_melt * 0.45;
+    vec2 q = p + w * (p_melt + 1.0 * drive) * 0.45;
 
     float r = length(q);
     float turn = atan(q.y, q.x) / TAU; // -0.5..0.5, jumps by 1 on the cut
-    float cycle = t * 0.08 + uMood.y * 0.3;
+    float cycle = t * 0.08 + uMood.y * 0.3 + 0.12 * p_react * uBands.y;
 
     // p_twist 0..3 -> 0..~4.7 arm pairs; each integer step is seamless.
     float s = p_twist * 1.5708;
@@ -42,6 +46,6 @@ void main() {
 
     // Centre glows a little; edges stay luminous.
     col *= 0.85 + 0.3 * exp(-r * 2.0) * (0.7 + 0.5 * uMood.x);
-    col *= 1.0 + p_pulse * 0.12 * uBeat.x;
+    col *= 1.0 + beat * 0.12;
     fragColor = vec4(col, 1.0);
 }
