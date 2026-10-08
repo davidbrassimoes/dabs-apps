@@ -63,6 +63,7 @@ dev-server.mjs     servidor sem dependências + esbuild em watch
 index.html         esqueleto da página (sem framework)
 style.css
 scripts/smoke.mjs  teste de fumo headless (DevTools Protocol, sem dependências)
+scripts/gallery/   galeria de ecrãs: um HTML só com todas as cenas a correr (o artifact "Santa Vibes Ecrãs")
 test/              testes da composição; test/fixtures/compose-cases.json é o contrato partilhado com a tv-app
 src/
   main.ts          arranque, painéis, hot reload, loop
@@ -80,6 +81,18 @@ src/
   ui.ts            widgets DOM e painel de parâmetros gerado do scene.json
   hot.ts           cliente SSE
 ```
+
+## Galeria de ecrãs
+
+`npm run gallery -- --out <ficheiro.html>` gera um HTML único (~110 KB, sem dependências em runtime)
+com todas as cenas a correr: uma "TV" com comando (◀ ▶ ▲ OK, overlay como na box), presets,
+versão atual/reativa, imagem (exemplo gerado ou ficheiro), perfil TV/projetor, e miniaturas vivas
+de todas as cenas por estilo. Embute `scenes/`, `shared/glsl/` e `shared/profiles/` e usa o
+`renderer.ts` daqui, por isso mostra o que a box mostra (menos os sinais reais: a "música simulada"
+é um metrónomo a 112 BPM). As miniaturas partilham um só contexto WebGL.
+
+Publicado em https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L; volta a gerar-se e publicar-se
+quando entra ou muda uma cena ou um preset.
 
 ## Hot reload
 
