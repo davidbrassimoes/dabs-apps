@@ -31,6 +31,7 @@
 | Som que o PC toca (loopback, `pc-bridge`) | Calcular os sinais para a TV | Só em memória, ~6 s de função de onsets e 40 ms de PCM | Processo do `pc-bridge` |
 | Som da sala (microfone) ou das apps (playback capture), `phone-app` | Igual | Igual | Processo da `phone-app`, só com o serviço ligado e a notificação visível |
 | `deviceId` da TV (número aleatório) | Distinguir TVs no beacon | Enquanto a app estiver instalada | Preferências da tv-app |
+| Imagens da pasta de DABS no servidor (`/mnt/drive2/santa-vibes/imagens`) | Mostrar na TV e tirar a paleta | Na cache da box até sair da pasta ou pela LRU (300 MB) | Servidor de casa e `files/images` da tv-app; não saem da rede de casa |
 
 ## Encontrado e não resolvido
 
@@ -38,6 +39,17 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-08 — 2.1 imagens reais (ImageProvider)
+
+- Pasta de DABS criada no servidor: `/mnt/drive2/santa-vibes/imagens` (vazia; DABS enche).
+  **Falta DABS:** o Apache só a serve com um link (sem `sudo` para mim):
+  `ssh -t dave@192.168.1.200 sudo ln -s /mnt/drive2/santa-vibes/imagens /var/www/html/santa-vibes`.
+  Até lá a fonte `server` falha em silêncio e a TV usa a cache e os acervos.
+- Testado com um `python3 -m http.server` temporário na pasta (porta 8099, já parado) e 3 imagens
+  de teste geradas com ffmpeg; uma imagem de orientação também (apagada). As 3 de teste continuam na
+  pasta, para DABS ver a fonte a funcionar; apagar quando quiser.
+- Medições em `tv-app/README.md`. Paleta por k-means em OKLab (`PaletteExtract.kt` / `extract.ts`).
 
 ### 2026-10-08 — 1.6 sinais reais no authoring
 

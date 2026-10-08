@@ -16,6 +16,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
+import dev.santavibes.core.ImageSources
 
 /**
  * Fullscreen renderer. Remote: ◀ ▶ change scene, OK toggles the diagnostic overlay.
@@ -113,6 +114,7 @@ class MainActivity : Activity() {
 
     private lateinit var library: SceneLibrary
     private lateinit var hub: SignalHub
+    private var imageProvider: ImageProvider? = null
     private var benchMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,6 +137,11 @@ class MainActivity : Activity() {
         hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
         renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
         renderer.react = if (intent.getStringExtra("look") == "current") 0f else 1f // reactive by default (DABS, 2026-10-07)
+        ImageSources.parseSelection(intent.getStringExtra("images"))?.let { sel ->
+            val server = intent.getStringExtra("imageServer") ?: DEFAULT_IMAGE_SERVER
+            imageProvider = ImageProvider(java.io.File(filesDir, "images"), sel, ImageFetchers(server))
+            renderer.images = ImageStage(imageProvider!!).apply { holdS = intent.getFloatExtra("imageHold", holdS.toFloat()).toDouble() }
+        }
         if (!benchMode) renderer.hub = hub
         renderer.paletteVariation.apply {
             rotate = intent.getBooleanExtra("rotate", true)
@@ -175,6 +182,7 @@ class MainActivity : Activity() {
         nextDueNs = 0L
         if (!benchMode) Choreographer.getInstance().postFrameCallback(frameCallback)
         if (!benchMode) hub.start()
+        if (!benchMode) imageProvider?.start()
         ui.post(tick)
     }
 
@@ -182,6 +190,7 @@ class MainActivity : Activity() {
         running = false
         ui.removeCallbacks(tick)
         hub.stop()
+        imageProvider?.stop()
         glView.onPause()
         super.onPause()
     }
@@ -227,6 +236,11 @@ class MainActivity : Activity() {
             if (r.mixer.realBpm > 0) "%.1f bpm".format(r.mixer.realBpm) else "sem tempo",
         )).append(" · reatividade %.1f".format(r.mixer.reactivity)).append('\n')
         sb.append("versão: ").append(if (r.react > 0f) "reativa" else "atual").append('\n')
+        renderer.images?.let { st ->
+            val p = imageProvider
+            sb.append("imagem: ").append(st.shown?.credit()?.take(60) ?: "-").append(" · cache ").append(p?.cached ?: 0)
+                .append(" · ").append(p?.status ?: "").append('\n')
+        }
         r.lastError?.let { sb.append("ERRO: ").append(it).append('\n') }
         sb.append("◀ ▶ cena · ▲ versão · OK overlay")
         return sb.toString()
@@ -243,6 +257,8 @@ class MainActivity : Activity() {
 
     private companion object {
         const val DEFAULT_REACTIVITY = 0.7f
+        /** The home server's image folder (NOTES.md, 2.1); DABS fills it. */
+        const val DEFAULT_IMAGE_SERVER = "http://192.168.1.200/santa-vibes/"
     }
 
     private fun allocatedBytes(): Long = Debug.getRuntimeStat("art.gc.bytes-allocated")?.toLongOrNull() ?: 0L

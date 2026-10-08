@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HTTPS everywhere (the image collections), except the home server's image folder, which
+     Apache serves over plain HTTP on the local network (ROADMAP 2.1, NOTES.md). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">192.168.1.200</domain>
+    </domain-config>
+</network-security-config>
