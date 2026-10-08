@@ -85,7 +85,7 @@ class ImageIndexTest {
         assertEquals(ImageSources.ALL.toSet(), ImageSources.parseSelection(null))
         assertEquals(ImageSources.ALL.toSet(), ImageSources.parseSelection("all"))
         assertNull(ImageSources.parseSelection("off"))
-        assertEquals(setOf("aic", "server"), ImageSources.parseSelection("aic, server, bogus"))
+        assertEquals(setOf("met", "server"), ImageSources.parseSelection("met, server, aic"))
         assertNull(ImageSources.parseSelection("bogus"))
     }
 }

@@ -40,6 +40,15 @@
 
 ## Registo
 
+### 2026-10-08 — 2.2 e 2.4 acervos: Met e NASA (AIC bloqueada)
+
+- A AIC (primeira proposta) responde às imagens IIIF com um desafio Cloudflare a clientes que não são
+  browsers. Não se contorna (seria contornar deteção de bots). O Met passa a primeiro acervo.
+- O Met retirou o `/v1/search` a 2026-10-01; usa-se o `/v1.1/search`. O filtro de domínio público da
+  pesquisa deixa passar objetos que não o são: confirma-se por objeto.
+- NASA Image Library sem chave. Na box: +14 Met e +14 NASA na primeira atualização; 31 em cache (2 MB).
+- `--es images` por defeito `all` = server, met, nasa.
+
 ### 2026-10-08 — 2.1 imagens reais (ImageProvider)
 
 - Pasta de DABS criada no servidor: `/mnt/drive2/santa-vibes/imagens` (vazia; DABS enche).
