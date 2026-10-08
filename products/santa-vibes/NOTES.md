@@ -7,7 +7,7 @@
 ## Para a próxima sessão
 
 - 2026-10-08: **fases 1 e 2 feitas, menos a confirmação do 1.5.** Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
-  À espera de DABS: (1) o link do Apache para a pasta de imagens (comando no registo 2.1); (2) o Pixel 8
+  Link do Apache feito por DABS (2026-10-08; a box lê `http://192.168.1.200/santa-vibes/`). À espera de DABS: (2) o Pixel 8
   ligado e virado para a TV ligada, para a 2.ª medição de latência, a do rock e o teste do microfone;
   (3) ver na TV as cenas novas e as imagens. Depois: reinstalar a `phone-app` (tracker novo) e a Fase 3.
 - 2026-10-07: 1.5 a meio. MIDI retirado (ADR 0003). `pc-bridge` com `--lookahead` -10 ms (uma medição).
@@ -63,7 +63,7 @@
 ### 2026-10-08 — 2.1 imagens reais (ImageProvider)
 
 - Pasta de DABS criada no servidor: `/mnt/drive2/santa-vibes/imagens` (vazia; DABS enche).
-  **Falta DABS:** o Apache só a serve com um link (sem `sudo` para mim):
+  Link do Apache feito por DABS em 2026-10-08 (verificado: 200 e a box lê a listagem):
   `ssh -t dave@192.168.1.200 sudo ln -s /mnt/drive2/santa-vibes/imagens /var/www/html/santa-vibes`.
   Até lá a fonte `server` falha em silêncio e a TV usa a cache e os acervos.
 - Testado com um `python3 -m http.server` temporário na pasta (porta 8099, já parado) e 3 imagens
