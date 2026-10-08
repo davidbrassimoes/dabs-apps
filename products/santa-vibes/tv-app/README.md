@@ -14,7 +14,8 @@ core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição
         drift de parâmetros (Drift), variação de paleta (PaletteVariation), pacotes de sinais
         (SignPacket) e mixer de reatividade (SignalMixer, SequenceGate).
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
-app/    Android: MainActivity (ecrã inteiro, comando, overlay), SceneRenderer (cenas, crossfade, passe de saída),
+app/    Android: Player (tudo o que põe cenas no ecrã: biblioteca, renderer, sinais, imagens, ritmo de frames,
+        overlay, logcat), MainActivity (a app: extras do adb e comando), SantaDream (protetor de ecrã), SceneRenderer (cenas, crossfade, passe de saída),
         SceneSlot (uma cena: programa, FBOs, relógio), OutputPass, SignalHub (receção UDP e beacon),
         Benchmark (passo 0.5), SceneLibrary (assets),
         Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
@@ -35,6 +36,19 @@ adb -s 192.168.1.27:5555 logcat -s SantaVibes   # cena, GL, e de 10 em 10 s: fps
 ```
 
 No comando: **◀ ▶** trocam de cena (mesma ordem da autoria: por estilo, depois id); **OK** mostra/esconde o overlay de diagnóstico. A app também aparece no launcher da TV.
+
+**Protetor de ecrã (3.1).** O `SantaDream` usa o mesmo `Player` com as predefinições da box e uma cena
+ao acaso; qualquer tecla fecha-o. A Google TV Streamer não mostra protetores de terceiros nas
+definições, por isso escolhe-se por adb (e volta-se ao da Google com a segunda linha):
+
+```
+adb -s 192.168.1.27:5555 shell settings put secure screensaver_components dev.santavibes.tv/.SantaDream
+adb -s 192.168.1.27:5555 shell settings put secure screensaver_components com.google.android.apps.tv.dreamx/.service.Backdrop
+```
+
+Arranca ao fim de `screen_off_timeout` sem mexer no comando (na box de DABS, 10 min). `cmd dreams
+start-dreaming` pede root; para testar, baixar o tempo (`settings put system screen_off_timeout 15000`)
+e repô-lo (600000) no fim.
 
 **Zero alocações por frame**: a linha `stats` do logcat inclui `alloc=… B/s` (bytes alocados por todo o processo, contador do ART). Com o overlay escondido deve ficar em 0 (com um bloco TLAB de 3–32 KB de vez em quando, do log da UI); com o overlay visível sobe para ~55 KB/s (o texto refeito 2× por segundo, na thread de UI), por isso mede-se sempre com ele escondido.
 
@@ -168,6 +182,13 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
   a 100 BPM sintéticos.
 - O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
   `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.
+
+### Protetor de ecrã (3.1), 2026-10-08
+
+Na box, com o tempo de inatividade a 15 s: o sistema abriu o `SantaDream` (`dumpsys dreams`), cena
+`veils` a 30,0 fps (p95 33,5 ms, cpu 1,2 ms), RGBA16F. `alloc` a 1,6–1,9 MB/s enquanto o
+`ImageProvider` descarregava 20 imagens da NASA; depois 0 B/s (3 KB/s de vez em quando). OK fechou-o.
+Antes, a app com o `Player` novo: `halo` a 24,1 fps, `alloc=0`. Definições da box repostas.
 
 ### Imagens reais (2.1), 2026-10-08
 

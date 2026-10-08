@@ -1,25 +1,14 @@
 package dev.santavibes.tv
 
 import android.app.Activity
-import android.graphics.Color
-import android.graphics.Typeface
-import android.opengl.GLSurfaceView
+import android.content.Intent
 import android.os.Bundle
-import android.os.Debug
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import android.view.Choreographer
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
-import android.widget.TextView
-import dev.santavibes.core.ImageSources
 
 /**
- * Fullscreen renderer. Remote: ◀ ▶ change scene, OK toggles the diagnostic overlay.
+ * The app: a [Player] fullscreen. Remote: ◀ ▶ change scene, ▲ switches the look, OK toggles the overlay.
  * Frames are paced by Choreographer (vsync) at the scene's fps cap, so the GL thread
  * only renders when asked (RENDERMODE_WHEN_DIRTY).
  *
@@ -44,224 +33,62 @@ import dev.santavibes.core.ImageSources
  *   --es source auto      auto | pc | phone | mic | none
  */
 class MainActivity : Activity() {
-    private lateinit var glView: GLSurfaceView
-    private lateinit var renderer: SceneRenderer
-    private lateinit var overlay: TextView
-    private val ui = Handler(Looper.getMainLooper())
-    private var running = false
-
-    // ---- frame pacing
-    private var nextDueNs = 0L
-    private val frameCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (!running) return
-            val interval = 1_000_000_000L / maxOf(1, renderer.fpsCap)
-            // Request when the next frame is due (within half a 60 Hz vsync); keeps e.g.
-            // 24 fps on a 60 Hz display as a 2-3-2-3 vsync cadence instead of 20 fps.
-            if (frameTimeNanos >= nextDueNs - 8_000_000L) {
-                glView.requestRender()
-                nextDueNs += interval
-                if (frameTimeNanos - nextDueNs > interval) nextDueNs = frameTimeNanos + interval
-            }
-            Choreographer.getInstance().postFrameCallback(this)
-        }
-    }
-
-    // ---- overlay + logcat summary (UI thread, twice a second; never on the GL thread)
-    private var loggedSeq = 0
-    private var allocAtLastLog = 0L
-    private var allocTimeNs = 0L
-    private var allocRate = 0L // bytes/s allocated by the whole process, last window
-    private var loggedSource = -1
-    private val lastReceived = LongArray(5)
-    private var lastReceivedNs = 0L
-    private var packetRate = 0f // packets/s of the chosen source, last tick
-    private val tick = object : Runnable {
-        override fun run() {
-            val src = renderer.signalSource
-            val nowRx = System.nanoTime()
-            if (lastReceivedNs != 0L && src > 0) {
-                packetRate = (hub.received[src] - lastReceived[src]) * 1e9f / (nowRx - lastReceivedNs)
-            }
-            System.arraycopy(hub.received, 0, lastReceived, 0, 5)
-            lastReceivedNs = nowRx
-            if (src != loggedSource) {
-                loggedSource = src
-                Log.i(SceneLibrary.TAG, "signals: source " + SignalHub.kindName(src))
-            }
-            val s = renderer.stats
-            if (s.seq != loggedSeq) {
-                loggedSeq = s.seq
-                val now = System.nanoTime()
-                val alloc = allocatedBytes()
-                if (allocTimeNs != 0L) allocRate = ((alloc - allocAtLastLog) * 1_000_000_000L) / maxOf(1L, now - allocTimeNs)
-                allocAtLastLog = alloc
-                allocTimeNs = now
-                val id = renderer.sceneIndex.let { if (it >= 0) library.scenes[it].def.id else "-" }
-                Log.i(
-                    SceneLibrary.TAG,
-                    "stats scene=$id frames=${s.winFrames} fps=%.1f interval avg=%.2f p95=%.2f max=%.2f ms cpu avg=%.2f p95=%.2f ms render=%dx%d %s cap=%d alloc=%d B/s src=%s w=%.2f bpm=%.1f pkt/s=%.0f look=%s".format(
-                        s.winFps, s.winIntervalAvg, s.winIntervalP95, s.winIntervalMax, s.winCpuAvg, s.winCpuP95,
-                        renderer.renderWidth, renderer.renderHeight, if (renderer.halfFloat) "RGBA16F" else "RGBA8",
-                        renderer.fpsCap, allocRate, SignalHub.kindName(src), renderer.signalWeight, renderer.mixer.realBpm, packetRate, lookName(),
-                    ),
-                )
-            }
-            if (overlay.visibility == View.VISIBLE) overlay.text = overlayText()
-            ui.postDelayed(this, 500)
-        }
-    }
-
-    private lateinit var library: SceneLibrary
-    private lateinit var hub: SignalHub
-    private var imageProvider: ImageProvider? = null
-    private var benchMode = false
+    private lateinit var player: Player
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        library = SceneLibrary(assets)
-        renderer = SceneRenderer(library, library.profile("tv"))
-        renderer.initialSceneId = intent.getStringExtra("scene")
-        benchMode = intent.getBooleanExtra("bench", false)
-        if (benchMode) {
-            val scales = (intent.getStringExtra("scales") ?: "0.25,0.33,0.4,0.5").split(",").map { it.trim().toDouble() }.toDoubleArray()
-            val ids = intent.getStringExtra("scenes")?.split(",")?.map { it.trim() }?.toSet()
-            renderer.bench = Benchmark.Config(scales, ids)
-        }
-        renderer.transitionS = intent.getFloatExtra("transition", renderer.transitionS.toFloat()).toDouble()
-        renderer.fadeEvery = intent.getIntExtra("fadeEvery", renderer.fadeEvery)
-        renderer.driftAmount = intent.getFloatExtra("drift", renderer.driftAmount.toFloat()).toDouble()
-        renderer.driftSpeed = intent.getFloatExtra("driftSpeed", renderer.driftSpeed.toFloat()).toDouble()
-        hub = SignalHub(deviceId())
-        hub.mode = SignalHub.parseMode(intent.getStringExtra("source"))
-        renderer.mixer.reactivity = intent.getFloatExtra("reactivity", DEFAULT_REACTIVITY).toDouble()
-        renderer.react = if (intent.getStringExtra("look") == "current") 0f else 1f // reactive by default (DABS, 2026-10-07)
-        ImageSources.parseSelection(intent.getStringExtra("images"))?.let { sel ->
-            val server = intent.getStringExtra("imageServer") ?: DEFAULT_IMAGE_SERVER
-            imageProvider = ImageProvider(java.io.File(filesDir, "images"), sel, ImageFetchers(server))
-            renderer.images = ImageStage(imageProvider!!).apply { holdS = intent.getFloatExtra("imageHold", holdS.toFloat()).toDouble() }
-        }
-        if (!benchMode) renderer.hub = hub
-        renderer.paletteVariation.apply {
-            rotate = intent.getBooleanExtra("rotate", true)
-            holdS = intent.getFloatExtra("hold", holdS.toFloat()).toDouble()
-            fadeS = intent.getFloatExtra("fade", fadeS.toFloat()).toDouble()
-            hueDeg = intent.getFloatExtra("hue", hueDeg.toFloat()).toDouble()
-        }
-
-        glView = GLSurfaceView(this).apply {
-            setEGLContextClientVersion(3)
-            setEGLConfigChooser(8, 8, 8, 8, 0, 0)
-            preserveEGLContextOnPause = true
-            setRenderer(renderer)
-            renderMode = if (benchMode) GLSurfaceView.RENDERMODE_CONTINUOUSLY else GLSurfaceView.RENDERMODE_WHEN_DIRTY
-        }
-        overlay = TextView(this).apply {
-            typeface = Typeface.MONOSPACE
-            textSize = 14f
-            setTextColor(Color.WHITE)
-            setBackgroundColor(0x99000000.toInt())
-            setPadding(24, 16, 24, 16)
-            visibility = View.GONE
-        }
-        val root = FrameLayout(this)
-        root.addView(glView)
-        root.addView(overlay, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.START).apply {
-            setMargins(32, 32, 32, 32)
-        })
-        setContentView(root)
-        Log.i(SceneLibrary.TAG, "${library.scenes.size} scenes: ${library.scenes.joinToString { it.def.id }}")
+        player = Player(this, options(intent))
+        setContentView(player.view)
     }
 
     override fun onResume() {
         super.onResume()
         hideSystemUi()
-        glView.onResume()
-        running = true
-        nextDueNs = 0L
-        if (!benchMode) Choreographer.getInstance().postFrameCallback(frameCallback)
-        if (!benchMode) hub.start()
-        if (!benchMode) imageProvider?.start()
-        ui.post(tick)
+        player.start()
     }
 
     override fun onPause() {
-        running = false
-        ui.removeCallbacks(tick)
-        hub.stop()
-        imageProvider?.stop()
-        glView.onPause()
+        player.stop()
         super.onPause()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_NEXT -> renderer.step(1)
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> renderer.step(-1)
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                renderer.react = 1f - renderer.react
-                Log.i(SceneLibrary.TAG, "look=${lookName()}")
-                if (overlay.visibility == View.VISIBLE) overlay.text = overlayText()
-            }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
-                overlay.visibility = if (overlay.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-                overlay.text = overlayText()
-            }
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_NEXT -> player.step(1)
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> player.step(-1)
+            KeyEvent.KEYCODE_DPAD_UP -> player.toggleLook()
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BUTTON_A -> player.toggleOverlay()
             else -> return super.onKeyDown(keyCode, event)
         }
         return true
     }
 
-    private fun overlayText(): String {
-        val r = renderer
-        val s = r.stats
-        val i = r.sceneIndex
-        val def = if (i >= 0) library.scenes[i].def else null
-        val sb = StringBuilder()
-        sb.append(def?.name ?: "-").append(" (").append(def?.id ?: "-").append(") · ").append(i + 1).append('/').append(library.scenes.size).append('\n')
-        sb.append("%.1f fps · %.1f ms/frame · cpu %.2f ms · cap %d".format(s.fps, s.intervalMs, s.cpuMs, r.fpsCap)).append('\n')
-        sb.append("%dx%d %s · renderScale %.2f · t=%.0fs".format(r.renderWidth, r.renderHeight, if (r.halfFloat) "RGBA16F" else "RGBA8", r.renderScale, r.sceneTime)).append('\n')
-        if (s.seq > 0) sb.append("10 s: avg %.2f · p95 %.2f · max %.2f ms · alloc %d B/s".format(s.winIntervalAvg, s.winIntervalP95, s.winIntervalMax, allocRate)).append('\n')
-        val pv = r.paletteVariation
-        sb.append("drift %.1f · t=%.0fs · paleta %d/%d%s%s · crossfade %.1fs%s".format(
-            r.driftAmount, r.driftTime, pv.current + 1, pv.size,
-            if (pv.rotate) " (rodar ${pv.holdS.toInt()}s)" else "",
-            if (pv.hueDeg != 0.0) " · matiz ±${pv.hueDeg.toInt()}°" else "",
-            r.transitionS, if (r.transition < 1.0) " · a misturar %.0f%%".format(r.transition * 100) else "",
-        )).append('\n')
-        val src = r.signalSource
-        sb.append(if (src == 0) "sinal: sintético" else "sinal: %s · %.0f pkt/s · peso %.2f · %s".format(
-            SignalHub.kindName(src), packetRate, r.signalWeight,
-            if (r.mixer.realBpm > 0) "%.1f bpm".format(r.mixer.realBpm) else "sem tempo",
-        )).append(" · reatividade %.1f".format(r.mixer.reactivity)).append('\n')
-        sb.append("versão: ").append(if (r.react > 0f) "reativa" else "atual").append('\n')
-        renderer.images?.let { st ->
-            val p = imageProvider
-            sb.append("imagem: ").append(st.shown?.credit()?.take(60) ?: "-").append(" · cache ").append(p?.cached ?: 0)
-                .append(" · ").append(p?.status ?: "").append('\n')
-        }
-        r.lastError?.let { sb.append("ERRO: ").append(it).append('\n') }
-        sb.append("◀ ▶ cena · ▲ versão · OK overlay")
-        return sb.toString()
+    private fun options(i: Intent): Player.Options {
+        fun f(key: String) = if (i.hasExtra(key)) i.getFloatExtra(key, 0f).toDouble() else null
+        val bench = if (i.getBooleanExtra("bench", false)) {
+            val scales = (i.getStringExtra("scales") ?: "0.25,0.33,0.4,0.5").split(",").map { it.trim().toDouble() }.toDoubleArray()
+            Benchmark.Config(scales, i.getStringExtra("scenes")?.split(",")?.map { it.trim() }?.toSet())
+        } else null
+        return Player.Options(
+            sceneId = i.getStringExtra("scene"),
+            bench = bench,
+            transitionS = f("transition"),
+            fadeEvery = if (i.hasExtra("fadeEvery")) i.getIntExtra("fadeEvery", 2) else null,
+            drift = f("drift"),
+            driftSpeed = f("driftSpeed"),
+            source = i.getStringExtra("source"),
+            reactivity = f("reactivity") ?: Player.DEFAULT_REACTIVITY,
+            reactive = i.getStringExtra("look") != "current",
+            images = i.getStringExtra("images"),
+            imageServer = i.getStringExtra("imageServer") ?: Player.DEFAULT_IMAGE_SERVER,
+            imageHoldS = f("imageHold"),
+            rotate = i.getBooleanExtra("rotate", true),
+            holdS = f("hold"),
+            fadeS = f("fade"),
+            hueDeg = f("hue"),
+        )
     }
-
-    private fun lookName() = if (renderer.react > 0f) "reactive" else "current"
-
-    /** Random, kept across restarts: the beacon's deviceId (PROTOCOLO-SIGNALS.md). */
-    private fun deviceId(): Int {
-        val prefs = getSharedPreferences("santavibes", MODE_PRIVATE)
-        if (!prefs.contains("deviceId")) prefs.edit().putInt("deviceId", java.util.Random().nextInt()).apply()
-        return prefs.getInt("deviceId", 0)
-    }
-
-    private companion object {
-        const val DEFAULT_REACTIVITY = 0.7f
-        /** The home server's image folder (NOTES.md, 2.1); DABS fills it. */
-        const val DEFAULT_IMAGE_SERVER = "http://192.168.1.200/santa-vibes/"
-    }
-
-    private fun allocatedBytes(): Long = Debug.getRuntimeStat("art.gc.bytes-allocated")?.toLongOrNull() ?: 0L
 
     @Suppress("DEPRECATION")
     private fun hideSystemUi() {
