@@ -76,7 +76,6 @@ bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na t
 ## Por fazer
 
 - Ícone na área de notificação, se fizer falta.
-- Confirmar o `--lookahead` de -10 ms com uma segunda medição na sala (1.5).
 - (feito 2026-10-08) Feed WebSocket local para o authoring (`src/ws.rs`, `--ws`), sem dependência nova.
 
 ## Latência (`--lookahead`), 1.5
@@ -93,5 +92,9 @@ Por defeito **-10 ms** (`PC_LOOKAHEAD_MS` em `src/bridge.rs`). O valor é medido
   blocos de 8 beats). Daí -10 ms.
 - **Porque é negativo:** o loopback vê o áudio antes do buffer de saída e das colunas, e a TV
   mostra mais depressa do que o som chega à sala.
+- **Confirmado 2026-10-08, com -10 ms:** cliques a 115 BPM, -13 ms (blocos -21 ± 26); cliques a 73 BPM, +20 ms
+  (+18 ± 18; tempo lento, sem a ambiguidade de meio beat); loop de rock (102,95 BPM), +20 ms (+33 ± 36). Tudo
+  dentro de um frame a 30 fps; a média (+9 ms) é menor que a variação, por isso fica -10.
+  Cuidado ao medir: uma gravação com o telemóvel a mexer deu um falso "meio beat".
 - **Depende da sala:** outras colunas, Bluetooth ou o projetor mudam o valor. A `phone-app` fica
   em 60 ms, porque esse caminho não foi medido.

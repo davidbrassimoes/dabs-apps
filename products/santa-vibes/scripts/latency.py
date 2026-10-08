@@ -8,6 +8,7 @@
 3. uv run --no-project --with numpy python -I latency.py <phone.mp4> <crop w:h:x:y of the TV>
    with env FFMPEG, FFPROBE (paths) and CLICKS (the wav). Positive delay_ms = the picture is late.
    New --lookahead = old - delay_ms.
+   Real music: any clip with 4 s of silence first; BPM and BEAT0 (offset of its first beat) from the clip.
 """
 import json
 import os
@@ -27,6 +28,7 @@ def run(cmd):
 # --- audio: locate the whole click track in the phone recording by cross-correlation
 CLICKS = os.environ["CLICKS"]  # the WAV that was played: 4 s silence, then clicks every 60/BPM s
 BPM = float(os.environ.get("BPM", "115"))
+BEAT0 = float(os.environ.get("BEAT0", "0"))  # seconds from the clip's start (after the 4 s) to its first beat
 sr = 16000
 
 
@@ -44,7 +46,7 @@ xc_ratio = float(np.abs(r[lag]) / np.median(np.abs(r)))
 a_start = float(run([FP, "-v", "error", "-select_streams", "a:0", "-show_entries", "stream=start_time",
                      "-of", "default=nw=1:nk=1", path]).decode().split()[0])
 T = 60.0 / BPM
-t0 = a_start + lag / sr + 4.0  # first click as heard by the phone, in video time
+t0 = a_start + lag / sr + 4.0 + BEAT0  # first beat as heard by the phone, in video time
 n_clicks = int((len(c) / sr - 4.0) / T)
 on = t0 + T * np.arange(n_clicks)
 keep = np.ones(n_clicks, bool)

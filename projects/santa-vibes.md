@@ -1,7 +1,7 @@
 # santa-vibes
 
 **Dono:** DABS
-**Estado:** em construção (fases 0 a 2 feitas, falta confirmar a latência do 1.5; a seguir a Fase 3; ver `products/santa-vibes/docs/ROADMAP.md`)
+**Estado:** em construção (fases 0 a 2 feitas; a seguir a Fase 3; ver `products/santa-vibes/docs/ROADMAP.md`)
 **Destino:** pessoal; sideload na Google TV Streamer. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/santa-vibes/`
 
