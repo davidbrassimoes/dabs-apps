@@ -81,7 +81,8 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.5: afinação da latência, -10 ms (MIDI retirado, decisão 14) (2026-10-08)
 - [x] Fase 2: imagens reais (servidor, Met, NASA) e duas cenas híbridas (2026-10-08)
 - [x] Galeria de ecrãs gerada do repo (decisão 15) (2026-10-08)
-- [ ] Fase 3: 3.1 protetor de ecrã; 3.2 página de controlo (maqueta ao gate primeiro); 3.3 presets na box com exportar; 3.4 persistência
+- [x] Fase 3, passo 3.1: protetor de ecrã (`SantaDream`) (2026-10-08)
+- [ ] Fase 3: 3.2 página de controlo (maqueta ao gate primeiro); 3.3 presets na box com exportar; 3.4 persistência
 - [ ] Depois da Fase 3: laboratório de presets no `authoring`; skill para escrever cenas novas
 
 ## Histórico
