@@ -15,7 +15,7 @@
 | Fonte | Acesso | Tamanho controlado | Notas | Verificado |
 |---|---|---|---|---|
 | **Pasta local** | ficheiros na box ou partilha do PC | redimensionar ao importar | as tuas fotos; zero dependências | — |
-| **Servidor de casa** (candidato) | pasta servida por HTTP pelo Apache já instalado; a box lê com `HttpURLConnection` (SMB pediria biblioteca nova) | o servidor redimensiona e prepara a pasta (cron) | pode também descarregar os acervos à noite; a box usa a cache quando ele está desligado | 2026-10-06 (hardware) |
+| **Servidor de casa** (feito 2.1, fonte `server`) | pasta `/mnt/drive2/santa-vibes/imagens` que DABS enche, servida pelo Apache em `http://192.168.1.200/santa-vibes/` (listagem de diretório); a box lê com `HttpURLConnection` | não: a box reduz ao descodificar (≤ 1024 px) | imagens pessoais de DABS; o que sai da pasta sai da cache da box na atualização seguinte | 2026-10-08 |
 | **Art Institute of Chicago** | API pública, sem chave | sim, IIIF | filtro de domínio público; boa primeira fonte | por verificar |
 | **The Met** | API pública, sem chave | não (imagem "small"/original) | filtro de domínio público | por verificar |
 | **Rijksmuseum** | dados abertos / IIIF | sim | a API mudou recentemente — confirmar o modelo atual | por verificar |
@@ -27,5 +27,5 @@
 ## Extração de paleta
 
 - Uma vez por imagem, ao carregar, numa thread de background.
-- Reduzir a imagem (ex.: 64×64), k-means ou median cut para 5 cores, ordenar por luminância.
+- Reduzir a imagem a 64×64, **k-means em OKLab** para 5 cores (decidido 2026-10-08: determinístico, início nos quantis de luminosidade 10/30/50/70/90 %, 12 iterações), ordenar por luminância. `PaletteExtract.kt` na tv-app e `extract.ts` na autoria, verificados pela mesma fixture.
 - Guardar a paleta nos metadados da cache para não recalcular.

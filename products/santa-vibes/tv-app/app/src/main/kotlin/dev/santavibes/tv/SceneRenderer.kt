@@ -38,6 +38,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     @Volatile var driftAmount = 1.0
     /** Forced into every scene's `react` param: 0 = the current look, 1 = the reactive one. */
     @Volatile var react = 0f
+    /** Real images (2.1); null = none (`--es images off`). Set by the activity before the surface. */
+    var images: ImageStage? = null
+    private var imagePaletteVersion = 0
     /** Drift time runs at this rate (1 = real time). */
     @Volatile var driftSpeed = 1.0
     /** Rotation and hue drift; set its fields before the surface exists. */
@@ -98,11 +101,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     /** True while benchmarking the output pass alone. */
     internal var skipScenePass = false
 
-    // ---- per-transition frame pacing, logged when the fade ends
-    private var fadeFrames = 0
-    private var fadeIntervalSum = 0.0
-    private var fadeIntervalMax = 0f
-    private var fadeCpuMax = 0f
+    private val fadePacing = FadePacing()
 
     private var output: OutputPass? = null
 
@@ -113,6 +112,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         transition = 1.0
         halfOk = Gl.hasExtension("GL_EXT_color_buffer_half_float") || Gl.hasExtension("GL_EXT_color_buffer_float")
         black = Gl.blackTexture()
+        images?.onSurfaceCreated()
         noise = Gl.noiseTexture()
         output = OutputPass(lib.outputFrag, profile)
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
@@ -164,6 +164,14 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         signalSource = hub?.drain(mixer, now) ?: 0
         mixer.update(dt, synth)
         signalWeight = mixer.realWeight
+        val st = images
+        if (st != null) {
+            st.frame(dt)
+            if (st.paletteVersion != imagePaletteVersion) { // a new image: its palette leads the rotation
+                imagePaletteVersion = st.paletteVersion
+                if (st.usedBy(slot.def)) paletteVariation.setPalettes(slot.def.id, st.palettesFor(slot.def), driftTime)
+            }
+        }
         paletteVariation.write(palette, driftTime)
 
         // --- scene passes -> FBOs at renderScale (skipped while benchmarking the output pass alone)
@@ -173,7 +181,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         if (skipScenePass) {
             dst = slot.latest() // same texture fetch cost as a real frame
         } else {
-            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, true, driftTime, driftAmount, react)
+            dst = slot.render(mixer.bands, mixer.mood, mixer.beat, palette, st?.infoFor(slot.def) ?: imageInfo, st?.textureFor(slot.def, black) ?: black, black, noise, true, driftTime, driftAmount, react)
             val o = out
             if (o != null) {
                 val f = if (fadeS > 0) minOf(1.0, transition + dt / fadeS) else 1.0
@@ -183,8 +191,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
                 } else {
                     o.time += dt
                     val every = fadeEvery
-                    prev = if (every > 0 && fadeFrames % every == 0) {
-                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, imageInfo, black, noise, false, driftTime, driftAmount, react)
+                    prev = if (every > 0 && fadePacing.frames % every == 0) {
+                        o.render(mixer.bands, mixer.mood, mixer.beat, palette, st?.infoFor(o.def) ?: imageInfo, st?.textureFor(o.def, black) ?: black, black, noise, false, driftTime, driftAmount, react)
                     } else {
                         o.latest()
                     }
@@ -198,12 +206,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
 
         val cpuMs = ((System.nanoTime() - now) / 1e6).toFloat()
         stats.record(now, intervalMs, cpuMs)
-        if (prev != null && intervalMs > 0f) {
-            fadeFrames++
-            fadeIntervalSum += intervalMs
-            if (intervalMs > fadeIntervalMax) fadeIntervalMax = intervalMs
-            if (cpuMs > fadeCpuMax) fadeCpuMax = cpuMs
-        }
+        if (prev != null && intervalMs > 0f) fadePacing.record(intervalMs, cpuMs)
         benchmark?.let { if (!it.done) it.tick(now, intervalMs, cpuMs) }
     }
 
@@ -227,14 +230,14 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
             out = prev
             fadeS = fade
             transition = 0.0
-            fadeFrames = 0; fadeIntervalSum = 0.0; fadeIntervalMax = 0f; fadeCpuMax = 0f
+            fadePacing.reset()
         } else {
             prev?.destroy()
         }
         cur = slot
         slot.ensureTargets(surfaceW, surfaceH, halfOk, force = true)
         System.arraycopy(SceneFormat.palette(def), 0, palette, 0, 15)
-        paletteVariation.setPalettes(def.id, PaletteVariation.scenePalettes(def), driftTime)
+        paletteVariation.setPalettes(def.id, images?.palettesFor(def) ?: PaletteVariation.scenePalettes(def), driftTime)
         sceneIndex = index
         lastError = null
         fpsCap = def.fps ?: profile.maxFps
@@ -289,18 +292,11 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     }
 
     private fun endTransition(o: SceneSlot) {
-        if (fadeFrames > 0) {
-            Log.i(
-                SceneLibrary.TAG,
-                "transition ${o.def.id} -> ${cur?.def?.id}: frames=%d interval avg=%.2f max=%.2f ms cpu max=%.2f ms".format(
-                    java.util.Locale.ROOT, fadeFrames, fadeIntervalSum / fadeFrames, fadeIntervalMax, fadeCpuMax,
-                ),
-            )
-        }
+        fadePacing.log(o.def.id, cur?.def?.id)
         o.destroy()
         out = null
         transition = 1.0
-        fadeFrames = 0
+        fadePacing.reset()
     }
 
     private fun publishTargetInfo() {

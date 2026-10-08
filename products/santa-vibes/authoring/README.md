@@ -73,6 +73,7 @@ src/
   gl.ts            WebGL2: programas, FBOs, timer de GPU
   renderer.ts      passe de cena (ping-pong) + passe de saída, limite de fps, estatísticas
   signals.ts       sinais sintéticos (uBands / uMood / uBeat)
+  extract.ts       paleta de uma imagem (k-means em OKLab), gémea da tv-app (fixture palette-extract-cases.json)
   sign.ts          leitura dos pacotes SIGN (mesma fixture que a tv-app e o signals-core)
   mixer.ts         port do SignalMixer da tv-app (fixture mixer-cases.json, gerada pelo teste Kotlin)
   bridge.ts        WebSocket local do pc-bridge (1.6): sinais reais misturados como na TV

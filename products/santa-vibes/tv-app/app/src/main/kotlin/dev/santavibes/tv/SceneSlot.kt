@@ -70,7 +70,7 @@ internal class SceneSlot private constructor(
      * gets time, resolution and signals.
      */
     fun render(
-        bands: FloatArray, mood: FloatArray, beat: FloatArray, palette: FloatArray, imageInfo: FloatArray, black: Int, noise: Int,
+        bands: FloatArray, mood: FloatArray, beat: FloatArray, palette: FloatArray, imageInfo: FloatArray, image: Int, black: Int, noise: Int,
         full: Boolean, driftTime: Double, driftAmount: Double, react: Float,
     ): Gl.Target? {
         if (targetCount == 0) return null
@@ -88,7 +88,7 @@ internal class SceneSlot private constructor(
         GLES30.glUniform4fv(uBeat, 1, beat, 0)
         GLES30.glUniform4fv(uImageInfo, 1, imageInfo, 0)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, black)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, image)
         GLES30.glUniform1i(uImage, 0)
         GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, src?.tex ?: black)

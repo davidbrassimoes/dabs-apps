@@ -168,3 +168,38 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
   a 100 BPM sintéticos.
 - O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
   `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.
+
+### Imagens reais (2.1), 2026-10-08
+
+```
+am start -n dev.santavibes.tv/.MainActivity [--es images all|off|server,aic,met,nasa] [--ef imageHold 60]
+    [--es imageServer http://192.168.1.200/santa-vibes/]
+```
+
+- **`ImageProvider`**, numa thread de fundo:
+  - pede candidatos às fontes escolhidas, no arranque e a cada 30 min;
+  - descarrega até 20 novos por fonte, com 1 s entre pedidos;
+  - extrai a paleta (`PaletteExtract`, k-means em OKLab);
+  - guarda em `files/images/` com `index.json`, numa cache LRU de 300 MB;
+  - descodifica a próxima imagem a ≤ 1024 px, já virada para o GL.
+  - Sem rede, roda pelo que está em cache.
+  - Da pasta de casa, o que DABS apagar sai da cache.
+- **`ImageStage`**, na thread de GL:
+  - uma textura com mipmaps;
+  - fica `imageHold` s em cada imagem; `uImageInfo.z` desce em 2 s, troca e sobe em 2 s;
+  - com uma imagem só, não troca;
+  - nas cenas com `image ≠ none`, a paleta da imagem passa à frente na rotação.
+- **Rede:** HTTPS em todo o lado; HTTP sem TLS só para `192.168.1.200` (`res/xml/network_security_config.xml`).
+- **Overlay:** linha `imagem: <crédito> · cache N · <estado>`.
+
+Medido na box com 3 imagens de teste servidas do servidor de casa, na `nebula`:
+
+| | Resultado |
+|---|---|
+| Upload por troca (`glTexImage2D` + mipmaps, 1024×640) | 3,3–5,9 ms |
+| Render durante as trocas | 30,0 fps · p95 33,5–33,7 ms |
+| Offline (servidor inacessível) | continua a rodar pelas 4 imagens em cache |
+| Orientação | imagem vermelho em cima / azul em baixo aparece igual na TV |
+
+O contador `alloc` da linha `stats` é do processo inteiro: sobe (~0,3 MB/s) nas janelas em que a
+thread de fundo descodifica, não no render.
