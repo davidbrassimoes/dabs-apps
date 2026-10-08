@@ -6,6 +6,10 @@
 
 ## Para a próxima sessão
 
+- 2026-10-08: **fases 1 e 2 feitas, menos a confirmação do 1.5.** Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
+  À espera de DABS: (1) o link do Apache para a pasta de imagens (comando no registo 2.1); (2) o Pixel 8
+  ligado e virado para a TV ligada, para a 2.ª medição de latência, a do rock e o teste do microfone;
+  (3) ver na TV as cenas novas e as imagens. Depois: reinstalar a `phone-app` (tracker novo) e a Fase 3.
 - 2026-10-07: 1.5 a meio. MIDI retirado (ADR 0003). `pc-bridge` com `--lookahead` -10 ms (uma medição).
   **Falta:** a segunda medição com -10, para confirmar que o erro fica abaixo de ~15 ms, e uma com o
   rock. Precisa da TV ligada e do Pixel 8 (em 2026-10-08 já não estava ligado ao PC).
