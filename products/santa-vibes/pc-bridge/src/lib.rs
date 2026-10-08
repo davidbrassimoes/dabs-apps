@@ -8,3 +8,4 @@ pub mod bridge;
 pub mod capture;
 pub mod log;
 pub mod net;
+pub mod ws;

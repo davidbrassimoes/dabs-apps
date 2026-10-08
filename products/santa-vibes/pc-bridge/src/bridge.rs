@@ -1,7 +1,7 @@
 //! The bridge loop: capture, analyse, send `SIGN` packets ~60 Hz (10 Hz in silence) to
 //! every TV found by its beacon or given with --tv.
 
-use crate::{capture, net, say};
+use crate::{capture, net, say, ws};
 use signals_core::packet::{encode_sign, flags_of, SourceKind, BEACON_PORT, SIGNAL_PORT};
 use signals_core::Config;
 use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
@@ -27,6 +27,8 @@ pub struct Args {
     pub list: bool,
     /// `--autostart on|off` (console executable only).
     pub autostart: Option<bool>,
+    /// Local WebSocket port for the authoring tool (`--ws <port>|off`); None = off.
+    pub ws: Option<u16>,
     pub stats_every: Duration,
 }
 
@@ -39,6 +41,7 @@ pub fn parse_args(mut it: impl Iterator<Item = String>) -> Result<Args, String> 
         list: false,
         autostart: None,
         stats_every: Duration::from_secs(5),
+        ws: Some(ws::DEFAULT_PORT),
     };
     while let Some(k) = it.next() {
         let mut val = || it.next().ok_or(format!("{k} needs a value"));
@@ -51,6 +54,10 @@ pub fn parse_args(mut it: impl Iterator<Item = String>) -> Result<Args, String> 
             }
             "--device" => a.device = Some(val()?),
             "--lookahead" => a.cfg.lookahead_ms = val()?.parse().map_err(|_| "--lookahead takes ms")?,
+            "--ws" => {
+                let v = val()?;
+                a.ws = if v == "off" { None } else { Some(v.parse().map_err(|_| "--ws takes a port or off")?) };
+            }
             "--quiet" => a.quiet = true,
             "--list" => a.list = true,
             "--autostart" => {
@@ -62,7 +69,7 @@ pub fn parse_args(mut it: impl Iterator<Item = String>) -> Result<Args, String> 
             }
             "-h" | "--help" => {
                 println!(
-                    "pc-bridge [--tv <ip>[:port]]... [--device <name part>] [--lookahead <ms>] [--quiet]\npc-bridge --list\npc-bridge --autostart on|off"
+                    "pc-bridge [--tv <ip>[:port]]... [--device <name part>] [--lookahead <ms>] [--ws <port>|off] [--quiet]\npc-bridge --list\npc-bridge --autostart on|off"
                 );
                 std::process::exit(0);
             }
@@ -82,6 +89,13 @@ pub fn run(args: Args) -> ! {
         say!("beacon port {BEACON_PORT} unavailable ({e}); only --tv targets will get packets");
     }
     let sock = UdpSocket::bind(("0.0.0.0", 0)).expect("UDP socket");
+    let ws_clients = Arc::new(ws::Clients::default());
+    if let Some(port) = args.ws {
+        match ws::serve(port, ws_clients.clone()) {
+            Ok(()) => say!("authoring feed on ws://127.0.0.1:{port}"),
+            Err(e) => say!("ws port {port} unavailable ({e}); no authoring feed"),
+        }
+    }
 
     let mut cap: Option<capture::Capture> = None;
     let mut next_try = Instant::now();
@@ -166,6 +180,7 @@ pub fn run(args: Args) -> ! {
                         sent += 1;
                     }
                 }
+                ws_clients.broadcast(&pkt);
                 if !args.quiet && now >= next_stats {
                     next_stats = now + args.stats_every;
                     let secs = args.stats_every.as_secs_f32();

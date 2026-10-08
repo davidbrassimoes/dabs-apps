@@ -3,6 +3,9 @@
 //   auto   — slow LFOs + a metronome beat (stand-in for the host's Synth)
 //   manual — slider values, plus the metronome beat if enabled
 // Both keep the arrays below filled every frame; the renderer uploads them as-is.
+// With `mixer` set (ROADMAP 1.6), the pc-bridge's real signals are blended over them, the TV's way.
+
+import type { SignalMixer } from './mixer.ts';
 
 export interface ManualSignals {
   low: number;
@@ -19,6 +22,8 @@ export class Signals {
   readonly mood = new Float32Array(4); // moodEnergy, moodBrightness, centroid, reserved
   readonly beat = new Float32Array(4); // envelope, phase, bpm, onset
 
+  /** Real source (the pc-bridge) blended over the synthetic signals; null = synthetic only. */
+  mixer: SignalMixer | null = null;
   auto = true;
   beatEnabled = true;
   bpm = 100;
@@ -95,6 +100,13 @@ export class Signals {
     this.beat[1] = this.phase;
     this.beat[2] = this.beatEnabled ? this.bpm : 0;
     this.beat[3] = onset;
+    const mx = this.mixer;
+    if (mx) {
+      mx.update(dt, this); // reads the synthetic arrays, then they are replaced by the blend
+      this.bands.set(mx.bands);
+      this.mood.set(mx.mood);
+      this.beat.set(mx.beat);
+    }
   }
 }
 
