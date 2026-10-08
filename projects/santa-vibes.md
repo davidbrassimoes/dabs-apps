@@ -51,7 +51,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 
 ## À espera de DABS (ações, não decisões)
 
-- As faixas de referência (decisão 11), num sítio que o PC leia; ficam fora do repo.
+- (feito 2026-10-08) As faixas de referência: DABS deixou-me escolher na pasta `MUSIC` do servidor.
 
 ## Próximos passos
 
@@ -63,7 +63,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.2: `pc-bridge` (2026-10-06)
 - [x] Fase 1, passo 1.3: receção na tv-app (2026-10-06)
 - [x] Versão reativa das cenas, alternável na box; predefinição é a reativa (decisão 13) (2026-10-07)
-- [ ] Afinar a reação a olho com DABS, com a música de referência (decisão 11)
+- [x] Afinar o tempo com música de DABS (decisão 11) (2026-10-08)
 - [x] Fase 1, passo 1.4: `phone-app`, testada num Pixel 8 (2026-10-07)
 - [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)
 - [x] Merge para `main` (decisão 10): PR #1, 2026-10-07

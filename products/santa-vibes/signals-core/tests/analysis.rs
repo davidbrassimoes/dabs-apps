@@ -192,3 +192,50 @@ fn without_a_tempo_beats_come_from_onsets() {
         assert!(f - h >= 0.0 && f - h < 0.06, "hit {h} fired at {f}");
     }
 }
+
+#[test]
+fn music_after_silence_never_reads_the_range_edge() {
+    // The step from silence into music used to give 181.5 BPM (the top of the lag range) for
+    // about a second before the real tempo (seen with every source, 2026-10-07).
+    let sr = 48000;
+    let (k, _) = kicks(sr, 10.0, 0.5, |_| 120.0);
+    let mut audio = vec![0.0; 4 * sr as usize];
+    audio.extend(k);
+    let mut readings = Vec::new();
+    run(sr, Config::default(), &audio, |_, a| {
+        let s = a.peek();
+        if s.tempo_valid {
+            readings.push(s.bpm);
+        }
+    });
+    assert!(!readings.is_empty(), "never locked");
+    assert!(readings.iter().all(|&b| b < 175.0), "edge tempo seen: {:?}", readings.iter().fold(0.0f32, |m, &b| m.max(b)));
+    assert_bpm(*readings.last().unwrap(), 120.0, "after silence");
+}
+
+#[test]
+fn a_double_time_layer_does_not_flip_the_tempo() {
+    // Music often supports both levels (85 and 170 in a rock song); flipping between them makes
+    // the picture pulse twice as fast and back. Once locked, double or half confirms the tempo.
+    let sr = 48000;
+    let (slow, _) = kicks(sr, 24.0, 0.5, |_| 90.0);
+    let (fast, _) = kicks(sr, 24.0, 0.6, |_| 180.0);
+    let start = 8 * sr as usize;
+    let audio: Vec<f32> = slow.iter().enumerate().map(|(i, &x)| x + if i >= start { fast[i] } else { 0.0 }).collect();
+    let mut late = Vec::new();
+    run(sr, Config::default(), &audio, |t, a| {
+        let s = a.peek();
+        if s.tempo_valid && t > 6.0 {
+            late.push(s.bpm);
+        }
+    });
+    assert!(late.iter().all(|&b| (b / 90.0 - 1.0).abs() < 0.04), "flipped: {:?}", late.iter().fold(0.0f32, |m, &b| m.max(b)));
+}
+
+#[test]
+fn long_silence_forgets_the_tempo() {
+    let sr = 48000;
+    let (mut audio, _) = kicks(sr, 8.0, 0.5, |_| 120.0);
+    audio.extend(vec![0.0; 4 * sr as usize]);
+    assert!(!last(sr, &audio).tempo_valid, "tempo kept through 4 s of silence");
+}
