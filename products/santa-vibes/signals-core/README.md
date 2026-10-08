@@ -68,12 +68,22 @@ Com loops reais (WAVs de freesound na pasta Downloads do dono, não estão no re
 tempo no nome (piano elétrico, 123 BPM) dá 123,3–124,1. Nos loops de bateria fixa 75, 65, ~102 e
 ~126–130 BPM; sem o tempo verdadeiro, não sei se 65 e 75 são metade do real.
 
-## O que falta (passos seguintes)
+## Afinação com música real (2026-10-08)
 
-- **Afinar com música real** (1.2 e 1.5): erros de oitava (metade/dobro do tempo), a constante de
-  confiança, a sensação das bandas e do mood numa sala. Se o tempo sair a metade em música com
-  bateria, as correções por ordem de custo: puxar o prior para 120–130; dar mais peso a `acf[L/2]`;
-  usar só a banda baixa na função de onsets para o tempo.
-- `lookahead_ms` real: medir a latência da cadeia toda (1.5).
-- Build para Android (`cargo-ndk`) e a camada JNI: 1.4.
-- Não está em `scripts/check` nem na CI: a decisão está em `projects/santa-vibes.md`.
+8 faixas da pasta de música de DABS (hip-hop, rock, eletrónica, electro, folk, jazz, hardcore, rock
+lento ao vivo) mais os dois loops de teste, cada uma com 5 s de silêncio antes. BPM de referência
+de um estimador offline independente (faixa inteira). Ver `NOTES.md` para a tabela.
+
+- **O falso 181,5 BPM** era o topo do intervalo de lags: a passagem de silêncio para música não
+  tem pico e o máximo caía na ponta. Aparecia em 8 de 10 faixas; agora 0. Um máximo numa ponta não
+  conta.
+- **Metade / dobro:** depois de fixado, o dobro ou a metade confirma o tempo em vez de o trocar.
+  Mudanças de nível: 76 → 23 (0 nas faixas com batida clara).
+- O primeiro tempo pede 4 estimativas iguais (era 2): fixa ~0,5 s mais tarde.
+- 3 s de silêncio esquecem o tempo (música nova).
+- **Fica por resolver:** hardcore e jazz acertam ~50 % (referência também incerta); introduções em
+  tercina dão 4:3 nos primeiros segundos; a faixa lenta ao vivo fixa só ao fim de ~12 s.
+
+## O que falta
+
+- Tempo pelo microfone do telemóvel: repetir o teste com estas faixas.

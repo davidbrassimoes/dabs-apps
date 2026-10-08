@@ -59,9 +59,9 @@ ou no próprio telemóvel; box com `--es source mic|phone` (o `pc-bridge-bg` tam
 | Som do telemóvel | consentimento ("Partilhar ecrã inteiro") e captura do Files by Google: `src=phone`, 62 pkt/s, **123,8 BPM** no piano |
 | Spotify, YouTube Music | declaram `allowAudioPlaybackCapture`; não testados a tocar |
 
-O tempo errado de 181,5 BPM no primeiro segundo aparece em todas as fontes (PC, microfone, som do
-telemóvel): é do `signals-core` (o primeiro tempo só precisa de 2 estimativas iguais). Fica para a
-afinação, com o tempo pelo microfone.
+O tempo errado de 181,5 BPM no primeiro segundo vinha do `signals-core` e está corrigido
+(2026-10-08, `signals-core/README.md`). A app instalada no Pixel 8 ainda é a anterior: reinstalar.
+O tempo pelo microfone continua por afinar.
 
 ## Testado em 2026-10-06 (emulador Android 16, x86_64; sem telemóvel real)
 
@@ -86,6 +86,6 @@ IP não se testou no telemóvel porque não foi preciso escrever nada):
 
 ## Por fazer
 
-- Tempo pelo microfone (eco da sala, distância às colunas) e o falso 181,5 BPM inicial: afinação.
+- Tempo pelo microfone (eco da sala, distância às colunas): afinação.
 - Microfone: filtrar voz e picos curtos (ARQUITETURA.md) — fica para a afinação, se fizer falta.
 - Ícone e nome definitivos (dependem do nome do produto).

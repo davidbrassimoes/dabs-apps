@@ -71,8 +71,7 @@ Bridge e `fake_tv` no mesmo PC, dois loops reais tocados pelas colunas (piano el
 Até à box: `--tv 192.168.1.27` com `nc -u -l -p 47800` na box (adb) recebeu 69 pacotes de 56
 bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na tv-app (1.3).
 
-**Visto e por afinar**: no primeiro segundo de música apareceu 181,5 BPM antes de acertar em 123
-(o primeiro tempo só precisa de 2 estimativas iguais). Fica para a afinação com música real.
+**Corrigido 2026-10-08:** o falso 181,5 BPM no primeiro segundo de música (ver `signals-core/README.md`).
 
 ## Por fazer
 

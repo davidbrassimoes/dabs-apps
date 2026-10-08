@@ -8,7 +8,9 @@
 
 - 2026-10-07: 1.5 a meio. MIDI retirado (ADR 0003). `pc-bridge` com `--lookahead` -10 ms (uma medição).
   **Falta:** a segunda medição com -10, para confirmar que o erro fica abaixo de ~15 ms, e uma com o
-  rock. Precisa da TV ligada; o Pixel 8 já está virado para a TV. Depois fecha-se o 1.5.
+  rock. Precisa da TV ligada e do Pixel 8 (em 2026-10-08 já não estava ligado ao PC).
+- 2026-10-08: tempo afinado com 8 faixas de DABS (registo abaixo). Falta: o microfone do telemóvel com
+  estas faixas e reinstalar a `phone-app` (ainda tem o tracker antigo).
 - 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
   DABS escolheu: **a predefinição é a reativa** (`look` por defeito `reactive`); a atual fica a
   um ▲ e mantém o metrónomo sintético (100 BPM sem música). O `default` de `react` nas cenas fica 0:
@@ -36,6 +38,35 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-08 — afinação do tempo com música de DABS
+
+- Faixas (decisão 11; DABS deixou-me escolher na pasta `MUSIC` do servidor, só leitura; cópias só no
+  scratchpad da sessão): De La Soul "Eye Know", QOTSA "No One Knows", Aphex Twin "Pulsewidth",
+  Drexciya "Species Of The Pod", Neil Young "Heart Of Gold", Steve Coleman "Twister", Bad Brains
+  "I Against I", Pink Floyd "Breathe" (BBC 1974, ao vivo). Mais os dois loops de teste.
+- Referência: estimador offline independente (fluxo espectral, autocorrelação da faixa inteira, pente
+  de 4 harmónicos) e tempo local por janelas de 10 s. Confiança baixa no hardcore (~145) e no jazz
+  (~169): picos fracos. Certo = a 4 % da referência, da metade ou do dobro.
+- Cada faixa com 5 s de silêncio antes (como na cadeia real). Antes → depois:
+
+| Faixa | Ref. BPM | 1.º tempo lido | Tempo errado antes de acertar (s) | % certo | Mudanças de nível |
+|---|---|---|---|---|---|
+| electro | 139,6 | 181,45 → 139,2 | 1,95 → 0 | 100 → 100 | 12 → 0 |
+| eletrónica | 119,4 | 181,45 → 160,3 | 6,6 → 5,9 | 100 → 100 | 0 → 0 |
+| folk | 85,4 | 181,45 → 165,3 | 0,5 → 0 | 100 → 100 | 13 → 0 |
+| hardcore | 145,4 (?) | 181,45 → 151,8 | 1,5 → 0,25 | 47 → 46 | 10 → 9 |
+| hip-hop | 109,1 | 145,9 → 145,9 | 1,5 → 1,2 | 93 → 91 | 0 → 0 |
+| jazz | 169 (?) | 181,45 → 163,6 | 0,5 → 0 | 48 → 53 | 14 → 8 |
+| rock | 171 | 181,45 → 163,1 | 1,7 → 0,5 | 100 → 100 | 17 → 0 |
+| lento ao vivo | 62 | 181,45 → 60,4 | 2,0 → 0 | 63 → 63 | 10 → 0 |
+| piano (loop) | 123 | 181,45 → 123,7 | 1,7 → 0 | 56 → 54 | 0 → 0 |
+| rock (loop) | 102,5 | 142,95 → 105,2 | 1,7 → 0 | 100 → 100 | 0 → 0 |
+
+- Na cadeia real (PC → TV), hip-hop a partir do silêncio: 108,9–109,4 BPM.
+- Custo: fixa ~0,5 s mais tarde; a faixa lenta ao vivo só ao fim de ~12 s.
+- Os 4:3 iniciais (eletrónica, hip-hop) são introduções ambíguas; não os forcei.
+- Scripts (`refbpm.py`, `tempo_eval.py`) ficaram no scratchpad; o método está aqui.
 
 ### 2026-10-07 — 1.5: sem MIDI; latência medida na sala
 
