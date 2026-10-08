@@ -1,0 +1,36 @@
+{
+  "format": 4,
+  "id": "melt-painting",
+  "name": "Pintura derretida",
+  "description": "A imagem atual escorre devagar por correntes de fluxo e volta a aparecer aos poucos, como tinta fresca. Sem imagem, derrete um campo de cor da paleta. A música agita as correntes.",
+  "tags": ["psicadélico clássico", "imagem", "feedback", "orgânico", "lento"],
+  "fps": 30,
+  "renderScale": 0.35,
+  "feedback": true,
+  "image": "optional",
+  "defaultPalette": ["#1a1423", "#3d2c4e", "#8e5572", "#e3a587", "#f6e2c4"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.35, "drift": 0.15 },
+    { "id": "scale", "label": "Escala do fluxo", "type": "float", "min": 0.5, "max": 6.0, "default": 1.8, "drift": 0.2 },
+    { "id": "flow", "label": "Correntes", "type": "float", "min": 0.0, "max": 3.0, "default": 1.0, "drift": 0.25 },
+    { "id": "drip", "label": "Escorrer", "type": "float", "min": 0.0, "max": 1.0, "default": 0.35, "drift": 0.2 },
+    { "id": "hold", "label": "Memória da imagem", "type": "float", "min": 0.0, "max": 1.0, "default": 0.4, "drift": 0.15 },
+    { "id": "glaze", "label": "Velatura da paleta", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.1 },
+    { "id": "pulse", "label": "Agitar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.35, "drift": 0.0, "group": "Reatividade" },
+    { "id": "react", "label": "Reação à música", "type": "float", "min": 0.0, "max": 1.0, "default": 0.0, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "fresco",
+      "name": "Fresco",
+      "params": { "flow": 0.6, "drip": 0.15, "hold": 0.7, "glaze": 0.15 },
+      "palette": ["#2b2118", "#5c4b3b", "#a3875f", "#d9c3a0", "#f2ead8"]
+    },
+    {
+      "id": "lava",
+      "name": "Lava",
+      "params": { "flow": 1.8, "drip": 0.7, "hold": 0.2, "glaze": 0.5 },
+      "palette": ["#1b0b0b", "#5e1414", "#b8321a", "#f2861f", "#ffd166"]
+    }
+  ]
+}

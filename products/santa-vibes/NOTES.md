@@ -40,6 +40,13 @@
 
 ## Registo
 
+### 2026-10-08 — 2.3 cenas híbridas
+
+- `melt-painting` e `light-mosaic` (17 cenas). Vistas no authoring (headless, sem imagem) e na box com imagens
+  da NASA e do Met; 30 fps. Primeiro corte deixava zonas negras com imagens do espaço: corrigido.
+- A `melt-painting` usa feedback: nada multiplica o frame (acumularia); a música mexe só no fluxo.
+- Não vistas por DABS.
+
 ### 2026-10-08 — 2.2 e 2.4 acervos: Met e NASA (AIC bloqueada)
 
 - A AIC (primeira proposta) responde às imagens IIIF com um desafio Cloudflare a clientes que não são
