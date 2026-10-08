@@ -73,6 +73,9 @@ src/
   gl.ts            WebGL2: programas, FBOs, timer de GPU
   renderer.ts      passe de cena (ping-pong) + passe de saída, limite de fps, estatísticas
   signals.ts       sinais sintéticos (uBands / uMood / uBeat)
+  sign.ts          leitura dos pacotes SIGN (mesma fixture que a tv-app e o signals-core)
+  mixer.ts         port do SignalMixer da tv-app (fixture mixer-cases.json, gerada pelo teste Kotlin)
+  bridge.ts        WebSocket local do pc-bridge (1.6): sinais reais misturados como na TV
   ui.ts            widgets DOM e painel de parâmetros gerado do scene.json
   hot.ts           cliente SSE
 ```
@@ -87,3 +90,12 @@ src/
 | `shared/profiles/<atual>.json` | relê o perfil |
 | pasta nova/removida em `scenes/` | atualiza a lista de cenas |
 | `src/**/*.ts` | esbuild reconstrói e a página recarrega |
+
+## Sinais reais do PC (1.6)
+
+Em **Sinais → Fonte**, "PC (pc-bridge)" liga ao `pc-bridge` que corre neste PC
+(`ws://127.0.0.1:47810`) e mistura os sinais reais com os sintéticos como a TV, com o mesmo mixer
+e a reatividade 0,7 por defeito. A linha de estado mostra pacotes/s, peso e BPM. Sem o `pc-bridge`
+fica "à espera" e tenta de novo a cada 2 s.
+
+Verificado sem abrir o browser: `node scripts/smoke.mjs --only nebula --pc` (com música no PC).

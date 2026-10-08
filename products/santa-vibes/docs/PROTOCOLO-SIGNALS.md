@@ -64,6 +64,13 @@ O emissor usa o IP de origem do beacon como destino. Se receber beacons de vári
 | 3 | silêncio (abaixo do limiar) |
 | 4–15 | reservados (`0`) |
 
+## Canal local para o authoring (1.6)
+
+O `pc-bridge` também serve os mesmos pacotes `SIGN` num WebSocket local, `ws://127.0.0.1:47810`
+(`--ws <porta>|off`): um frame binário de 56 bytes por pacote, ao mesmo ritmo do UDP, só para
+páginas servidas deste PC (cabeçalho `Origin` local). Não é um canal para a TV, que continua só
+em UDP; serve para afinar cenas reativas no browser.
+
 ## Regras
 
 - O emissor envia a ~60 Hz enquanto houver captura ativa; em silêncio pode baixar para 10 Hz com o bit 3 ligado.

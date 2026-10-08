@@ -10,6 +10,8 @@
 //   --transitions  instead of the per-scene checks, stay on one page and step through the
 //                  scenes (like the D-pad): GPU ms and a screenshot <from>-to-<to>.png mid-crossfade
 //   --presets      also apply each preset in scene.json and save <scene>@<preset>.png (settle N each)
+//   --pc           pick "PC (pc-bridge)" as the signal source on the first scene and log the
+//                  bridge status line every 2 s for 3 x settle (play music on the PC meanwhile)
 //
 // For every scene listed by /api/scenes: loads it, waits, collects console output and
 // the in-page error overlay, reads the stats line and saves a screenshot <out>/<scene>.png.
@@ -46,6 +48,7 @@ const ONLY = opt('--only', '').split(',').filter(Boolean);
 const SETTLE = Number(opt('--settle', '4')) * 1000;
 const PRESETS = args.includes('--presets');
 const TRANSITIONS = args.includes('--transitions');
+const PC = args.includes('--pc');
 if (!BROWSER) {
   console.error('No Chromium browser found; pass --browser <path>.');
   process.exit(2);
@@ -150,6 +153,26 @@ try {
   if (ONLY.length) scenes = scenes.filter((s) => ONLY.includes(s));
   console.log(`browser: ${BROWSER} (${USE_GPU ? 'GPU via ANGLE/D3D11' : 'SwiftShader, software'})`);
   console.log(`scenes: ${scenes.join(', ')}`);
+
+  if (PC) {
+    await cdp.send('Page.navigate', { url: `${URL_BASE}#${scenes[0]}` }, sessionId);
+    await sleep(Math.max(3000, SETTLE));
+    const picked = await evaluate(`(() => {
+      const sel = [...document.querySelectorAll('select')].find((s) => [...s.options].some((o) => o.value === 'pc'));
+      if (!sel) return false;
+      sel.value = 'pc';
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    })()`);
+    if (!picked) failed = true;
+    for (let i = 0; i < (3 * SETTLE) / 2000; i++) {
+      await sleep(2000);
+      console.log(`pc: ${await evaluate("document.getElementById('bridge-status')?.textContent ?? '(no status)'")}`);
+    }
+    const shot = await cdp.send('Page.captureScreenshot', { format: 'png' }, sessionId);
+    fs.writeFileSync(path.join(OUT, `${scenes[0]}-pc.png`), Buffer.from(shot.data, 'base64'));
+    scenes = [];
+  }
 
   if (TRANSITIONS) {
     const stats = () => evaluate("document.getElementById('stats').textContent");

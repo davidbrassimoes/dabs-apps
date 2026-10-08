@@ -25,6 +25,7 @@ import {
 } from './scene';
 import { PaletteVariation, rotationPalettes } from './palette';
 import { Signals } from './signals';
+import { BRIDGE_URL, PcBridge } from './bridge';
 import {
   button,
   buildParamsPanel,
@@ -353,8 +354,29 @@ function buildPresetPanel(): void {
   );
 }
 
+const bridge = new PcBridge();
+
 const signalsUi = (() => {
-  section('Sinais sintéticos', secSignals);
+  section('Sinais', secSignals);
+  // Real source (ROADMAP 1.6): the pc-bridge running on this PC, mixed over the synthetic
+  // signals below exactly as on the TV.
+  const src = group(secSignals, 'Fonte');
+  select(src, 'Fonte', [
+    { value: 'synth', label: 'Sintético' },
+    { value: 'pc', label: 'PC (pc-bridge)' },
+  ], 'synth', (v) => {
+    if (v === 'pc') {
+      bridge.start();
+      signals.mixer = bridge.mixer;
+    } else {
+      bridge.stop();
+      signals.mixer = null;
+    }
+  });
+  slider(src, { label: 'Reatividade', min: 0, max: 1, step: 0.05, value: bridge.mixer.reactivity, onInput: (v) => (bridge.mixer.reactivity = v) });
+  const status = el('div', 'live mono');
+  status.id = 'bridge-status';
+  src.appendChild(status);
   const manualHandles: Handle<number>[] = [];
   const setManualEnabled = (auto: boolean) => manualHandles.forEach((h) => h.setDisabled(auto));
   checkbox(secSignals, 'Automático (LFOs)', signals.auto, (v) => {
@@ -383,7 +405,7 @@ const signalsUi = (() => {
   button(r, 'Tap', () => signals.tap());
   const live = el('div', 'live mono');
   secSignals.appendChild(live);
-  return { live };
+  return { live, status };
 })();
 
 const varyUi = (() => {
@@ -614,6 +636,20 @@ function updateStats(): void {
   signalsUi.live.textContent =
     `bands ${fmt(b[0])} ${fmt(b[1])} ${fmt(b[2])} ${fmt(b[3])} · mood ${fmt(m[0])} ${fmt(m[1])} ${fmt(m[2])} · ` +
     `beat ${fmt(bt[0])} φ${fmt(bt[1])} ${bt[2]?.toFixed(0) ?? '0'}bpm`;
+  signalsUi.status.textContent = bridgeStatus();
+}
+
+function bridgeStatus(): string {
+  const mx = bridge.mixer;
+  switch (bridge.state) {
+    case 'off':
+      return 'sintético';
+    case 'connecting':
+    case 'closed':
+      return `à espera do pc-bridge em ${BRIDGE_URL}`;
+    case 'open':
+      return `pc · ${bridge.packetRate} pkt/s · peso ${mx.realWeight.toFixed(2)} · ` + (mx.realBpm > 0 ? `${mx.realBpm.toFixed(1)} bpm` : 'sem tempo');
+  }
 }
 
 function updatePaletteStatus(): void {
