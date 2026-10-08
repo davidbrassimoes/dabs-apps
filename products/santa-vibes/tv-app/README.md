@@ -172,7 +172,7 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
 ### Imagens reais (2.1), 2026-10-08
 
 ```
-am start -n dev.santavibes.tv/.MainActivity [--es images all|off|server,aic,met,nasa] [--ef imageHold 60]
+am start -n dev.santavibes.tv/.MainActivity [--es images all|off|server,met,nasa] [--ef imageHold 60]
     [--es imageServer http://192.168.1.200/santa-vibes/]
 ```
 
@@ -200,6 +200,10 @@ Medido na box com 3 imagens de teste servidas do servidor de casa, na `nebula`:
 | Render durante as trocas | 30,0 fps · p95 33,5–33,7 ms |
 | Offline (servidor inacessível) | continua a rodar pelas 4 imagens em cache |
 | Orientação | imagem vermelho em cima / azul em baixo aparece igual na TV |
+
+Acervos (2.2 e 2.4): **The Met** (pinturas em domínio público, temas que rodam: paisagem, mar, céu, flores…) e
+**NASA** (nebulosas, galáxias, Terra). Na box: +14 de cada na primeira atualização, upload 2,4–5,5 ms por
+imagem. A AIC ficou de fora (imagens atrás de um desafio Cloudflare, `docs/FONTES-IMAGEM.md`).
 
 O contador `alloc` da linha `stats` é do processo inteiro: sobe (~0,3 MB/s) nas janelas em que a
 thread de fundo descodifica, não no render.

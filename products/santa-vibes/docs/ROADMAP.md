@@ -57,9 +57,9 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 ## Fase 2 — Fontes de imagem e cenas híbridas
 
 - [x] **2.1 `ImageProvider`** (2026-10-08: pasta de casa por HTTP, cache LRU 300 MB, paleta por k-means, troca com fade, offline pela cache; ver `tv-app/README.md`) na tv-app: pasta local (na box e/ou partilha do PC; candidato: pasta servida por HTTP no servidor de casa, ver `NOTES.md` 2026-10-06), cache em disco LRU, prefetch em background, extração de paleta.
-- [ ] **2.2 Primeiro acervo open access** (proposta: Art Institute of Chicago, via IIIF) — com filtros (domínio público, tipo de obra, cores dominantes) e metadados de crédito.
+- [x] **2.2 Primeiro acervo open access** (2026-10-08: The Met; a AIC, proposta, tem as imagens atrás de um desafio Cloudflare — `FONTES-IMAGEM.md`) — com filtros (domínio público, tipo de obra, cores dominantes) e metadados de crédito.
 - [ ] **2.3 Cenas híbridas** — pelo menos 2 cenas novas que usam `uImage` e `uPalette` (ex.: pintura a "derreter" em campo de luz; partículas guiadas pela imagem).
-- [ ] **2.4 Mais fontes** (NASA, Met, …) conforme `FONTES-IMAGEM.md`.
+- [x] **2.4 Mais fontes** (2026-10-08: NASA Image Library, sem chave; outras fontes em `FONTES-IMAGEM.md` por verificar) conforme `FONTES-IMAGEM.md`.
 
 **Critérios de aceitação:** troca de imagem sem engasgo no render; funciona offline só com a cache.
 
