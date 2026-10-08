@@ -15,7 +15,7 @@ cd pc-bridge
 cargo build --release                       # target/release/pc-bridge.exe
 target/release/pc-bridge.exe --list         # dispositivos de saída (* = o por defeito)
 target/release/pc-bridge.exe                # captura a saída por defeito, espera pelo beacon da TV
-target/release/pc-bridge.exe --tv 192.168.1.27 [--device "Realtek"] [--lookahead 60] [--quiet]
+target/release/pc-bridge.exe --tv 192.168.1.27 [--device "Realtek"] [--lookahead -10] [--ws 47810|off] [--quiet]
 cargo run --release --example fake_tv       # finge ser a TV: beacon + mostra o que chega, 1 linha/s
 ```
 
@@ -77,7 +77,7 @@ bytes com magic `SIGN`, versão 1, fonte 1 (PC loopback). Falta a receção na t
 
 - Ícone na área de notificação, se fizer falta.
 - Confirmar o `--lookahead` de -10 ms com uma segunda medição na sala (1.5).
-- Ponte WebSocket para o authoring: 1.6.
+- (feito 2026-10-08) Feed WebSocket local para o authoring (`src/ws.rs`, `--ws`), sem dependência nova.
 
 ## Latência (`--lookahead`), 1.5
 

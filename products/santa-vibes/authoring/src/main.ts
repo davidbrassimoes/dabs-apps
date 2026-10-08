@@ -375,6 +375,7 @@ const signalsUi = (() => {
   });
   slider(src, { label: 'Reatividade', min: 0, max: 1, step: 0.05, value: bridge.mixer.reactivity, onInput: (v) => (bridge.mixer.reactivity = v) });
   const status = el('div', 'live mono');
+  status.id = 'bridge-status';
   src.appendChild(status);
   const manualHandles: Handle<number>[] = [];
   const setManualEnabled = (auto: boolean) => manualHandles.forEach((h) => h.setDisabled(auto));

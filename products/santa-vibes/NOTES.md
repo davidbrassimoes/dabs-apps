@@ -39,6 +39,16 @@
 
 ## Registo
 
+### 2026-10-08 — 1.6 sinais reais no authoring
+
+- `pc-bridge` serve os pacotes `SIGN` em `ws://127.0.0.1:47810` (WebSocket escrito à mão, RFC 6455,
+  sem dependência; só origens locais). O `pc-bridge-bg` reinstalado já o tem.
+- authoring: `sign.ts`, `mixer.ts` (port do `SignalMixer`, igual à TV a < 1e-4 em 240 frames de
+  `mixer-cases.json`, gerado pelo `MixerFixtureTest` Kotlin) e a fonte "PC (pc-bridge)".
+- Verificado sem a extensão do Chrome (não ligada): sonda Node (61 pkt/s, 0 inválidos, rock 164–171
+  BPM) e Chrome headless com `smoke.mjs --pc` (56–59 pkt/s, peso 0,78, BPM lido). Não visto por
+  DABS no browser.
+
 ### 2026-10-08 — afinação do tempo com música de DABS
 
 - Faixas (decisão 11; DABS deixou-me escolher na pasta `MUSIC` do servidor, só leitura; cópias só no
