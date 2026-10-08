@@ -207,3 +207,8 @@ imagem. A AIC ficou de fora (imagens atrás de um desafio Cloudflare, `docs/FONT
 
 O contador `alloc` da linha `stats` é do processo inteiro: sobe (~0,3 MB/s) nas janelas em que a
 thread de fundo descodifica, não no render.
+
+Cenas híbridas (2.3): `melt-painting` ("Pintura derretida", feedback, escala 0,35) e `light-mosaic`
+("Mosaico de luz", escala 0,5). Ambas `image: optional`: sem imagem usam um campo da paleta. Zonas
+muito escuras da imagem (céus noturnos) passam para cores da paleta, para a sala não ficar às escuras.
+Na box, com imagens da NASA e do Met: 30,0 fps, p95 ≤ 33,7 ms (a `melt-painting` a 0,4 ficava em 29,6).

@@ -1,0 +1,36 @@
+{
+  "format": 4,
+  "id": "light-mosaic",
+  "name": "Mosaico de luz",
+  "description": "A imagem atual vista através de uma grelha de luzes suaves que respiram: cada luz tem a cor da sua zona da imagem, puxada para a paleta. Sem imagem, as luzes seguem um campo de cor lento.",
+  "tags": ["geométrico", "imagem", "luz", "lento"],
+  "fps": 30,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "optional",
+  "defaultPalette": ["#10141f", "#253145", "#4f6d7a", "#c0d6df", "#f4e9cd"],
+  "params": [
+    { "id": "speed", "label": "Velocidade", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.1 },
+    { "id": "cells", "label": "Luzes por altura", "type": "float", "min": 4.0, "max": 40.0, "default": 14.0, "drift": 0.1 },
+    { "id": "size", "label": "Tamanho", "type": "float", "min": 0.1, "max": 0.6, "default": 0.34, "drift": 0.15 },
+    { "id": "soft", "label": "Suavidade", "type": "float", "min": 0.01, "max": 0.3, "default": 0.08, "drift": 0.1 },
+    { "id": "glow", "label": "Halo", "type": "float", "min": 0.0, "max": 1.0, "default": 0.5, "drift": 0.1 },
+    { "id": "tint", "label": "Puxar para a paleta", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.1 },
+    { "id": "pulse", "label": "Respirar (beat)", "type": "float", "min": 0.0, "max": 1.0, "default": 0.3, "drift": 0.0, "group": "Reatividade" },
+    { "id": "react", "label": "Reação à música", "type": "float", "min": 0.0, "max": 1.0, "default": 0.0, "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "vitral",
+      "name": "Vitral",
+      "params": { "cells": 9, "size": 0.46, "soft": 0.03, "glow": 0.3, "tint": 0.1 },
+      "palette": ["#0b0c1e", "#1d3b6b", "#2e8b57", "#e9c46a", "#f4a261"]
+    },
+    {
+      "id": "pirilampos",
+      "name": "Pirilampos",
+      "params": { "cells": 26, "size": 0.18, "soft": 0.12, "glow": 0.9, "tint": 0.5 },
+      "palette": ["#06080d", "#141e2b", "#2f4858", "#9bc53d", "#f7f4a3"]
+    }
+  ]
+}
