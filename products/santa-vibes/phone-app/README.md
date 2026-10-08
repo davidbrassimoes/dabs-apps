@@ -61,7 +61,8 @@ ou no próprio telemóvel; box com `--es source mic|phone` (o `pc-bridge-bg` tam
 
 O tempo errado de 181,5 BPM no primeiro segundo vinha do `signals-core` e está corrigido
 (2026-10-08, `signals-core/README.md`). A app instalada no Pixel 8 ainda é a anterior: reinstalar.
-O tempo pelo microfone continua por afinar.
+O tempo pelo microfone continua por afinar. Com o tracker novo (2026-10-08, app reinstalada): hip-hop leu
+109 uma vez e depois "sem tempo"; rock sem tempo. Já não dá tempos errados, mas pela sala continua fraco.
 
 ## Testado em 2026-10-06 (emulador Android 16, x86_64; sem telemóvel real)
 
