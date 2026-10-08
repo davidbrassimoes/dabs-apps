@@ -6,6 +6,10 @@
 
 ## Para a próxima sessão
 
+- 2026-10-08 (noite): **galeria de ecrãs** feita e no repo (`authoring/scripts/gallery`, `npm run gallery`;
+  https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L). DABS aceitou a proposta para cenas/presets e Fase 3
+  (decisão 16 em `projects/santa-vibes.md`): presets do utilizador na box com exportar. A seguir: 3.1
+  (protetor de ecrã), depois a maqueta da página de controlo ao gate antes do 3.2.
 - 2026-10-08: **fases 1 e 2 feitas** (o 1.5 confirmado à tarde, -10 ms; `pc-bridge/README.md`). Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
   Link do Apache feito por DABS (2026-10-08; a box lê `http://192.168.1.200/santa-vibes/`). À espera de DABS: ver na TV as cenas novas e as imagens.
   A `phone-app` foi reinstalada com o tracker novo. A seguir: a Fase 3. Por afinar: o tempo pelo microfone (fraco).
@@ -37,6 +41,15 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-08 — galeria de ecrãs
+
+- HTML único gerado do repo: embute `scenes/` e `shared/` e usa o `renderer.ts` do authoring. 17 cenas,
+  48 presets. Miniaturas: um `Renderer` por cena num só contexto WebGL, copiado para canvas 2D (o browser
+  limita os contextos a ~16).
+- Visto em Chrome headless (GPU): as 17 compilam e renderizam. Não visto num telemóvel. A `ink-bloom`
+  (feedback) começa negra e só ganha forma com o tempo.
+- O `UNPACK_FLIP_Y` não se aplica a `ImageBitmap`: as imagens do utilizador passam por um canvas.
 
 ### 2026-10-08 — 2.3 cenas híbridas
 
