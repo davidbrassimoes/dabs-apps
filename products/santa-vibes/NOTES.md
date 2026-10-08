@@ -9,11 +9,6 @@
 - 2026-10-08: **fases 1 e 2 feitas** (o 1.5 confirmado à tarde, -10 ms; `pc-bridge/README.md`). Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
   Link do Apache feito por DABS (2026-10-08; a box lê `http://192.168.1.200/santa-vibes/`). À espera de DABS: ver na TV as cenas novas e as imagens.
   A `phone-app` foi reinstalada com o tracker novo. A seguir: a Fase 3. Por afinar: o tempo pelo microfone (fraco).
-- 2026-10-07: 1.5 a meio. MIDI retirado (ADR 0003). `pc-bridge` com `--lookahead` -10 ms (uma medição).
-  **Falta:** a segunda medição com -10, para confirmar que o erro fica abaixo de ~15 ms, e uma com o
-  rock. Precisa da TV ligada e do Pixel 8 (em 2026-10-08 já não estava ligado ao PC).
-- 2026-10-08: tempo afinado com 8 faixas de DABS (registo abaixo). Falta: o microfone do telemóvel com
-  estas faixas e reinstalar a `phone-app` (ainda tem o tracker antigo).
 - 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
   DABS escolheu: **a predefinição é a reativa** (`look` por defeito `reactive`); a atual fica a
   um ▲ e mantém o metrónomo sintético (100 BPM sem música). O `default` de `react` nas cenas fica 0:
