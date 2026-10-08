@@ -6,8 +6,10 @@
 //!   0.1 s apart (reported one frame late, when the peak is confirmed).
 //! - Tempo: autocorrelation of the last 6 s of ODF, every 0.25 s, lags for 60..180 BPM,
 //!   score = prior(bpm) * (acf[lag] + 0.5 acf[2 lag]), prior a log-Gaussian (1 octave)
-//!   around 120 BPM; parabolic refinement; a new tempo must repeat 3 times to replace the
-//!   current one (2 when nothing is locked yet).
+//!   around 120 BPM; parabolic refinement; a maximum at either end of the range is skipped
+//!   (a slope, not a tempo); a new tempo must repeat 3 times to replace the current one (4
+//!   when nothing is locked yet); double or half the current tempo confirms it instead of
+//!   replacing it; 3 s of silence forget it. Tuned on 8 tracks, 2026-10-08 (`NOTES.md`).
 //! - Phase: comb over the last beats (weights 0.8^k) picks how many frames ago the last
 //!   beat was; a PLL (gain 0.35) pulls the free-running phase towards it.
 
@@ -19,6 +21,13 @@ const UPDATE_S: f32 = 0.25;
 const CONFIDENCE_MIN: f32 = 0.3;
 /// Onset threshold: mean + ONSET_K std of the last second of ODF.
 const ONSET_K: f32 = 3.0;
+/// Equal estimates needed before the first tempo is declared (one every UPDATE_S).
+const START_HITS: u32 = 4;
+/// Equal estimates needed to replace the current tempo.
+const CHANGE_HITS: u32 = 3;
+/// After this much continuous silence the tempo is dropped: what comes next is probably another
+/// song (a short gap between notes does not count).
+const SILENCE_FORGET_S: f32 = 3.0;
 
 pub struct Tempo {
     fps: f32,
@@ -35,6 +44,7 @@ pub struct Tempo {
     onset_window: usize,
     candidate: f32,
     candidate_hits: u32,
+    silent_frames: usize,
     /// Current tempo (0 = none) and its period in frames.
     pub bpm: f32,
     period: f32,
@@ -64,12 +74,30 @@ impl Tempo {
             onset_window: (fps.round() as usize).max(4),
             candidate: 0.0,
             candidate_hits: 0,
+            silent_frames: 0,
             bpm: 0.0,
             period: 0.0,
             confidence: 0.0,
             valid: false,
             phase: 0.0,
             phase_locked: false,
+        }
+    }
+
+    /// Call once per frame before [`Tempo::push`]: whether the input is silent.
+    pub fn note_silence(&mut self, silent: bool) {
+        if !silent {
+            self.silent_frames = 0;
+            return;
+        }
+        self.silent_frames += 1;
+        if self.silent_frames == (SILENCE_FORGET_S * self.fps) as usize {
+            self.count = 0; // the old song must not lock again from the history
+            self.bpm = 0.0;
+            self.valid = false;
+            self.confidence = 0.0;
+            self.phase_locked = false;
+            self.candidate_hits = 0;
         }
     }
 
@@ -166,6 +194,11 @@ impl Tempo {
                 best = lag;
             }
         }
+        // A maximum at either end of the lag range is a slope, not a tempo (the step from silence
+        // into music gave 181.5 BPM, the top of the range): skip this estimate.
+        if best == self.min_lag || best == self.max_lag {
+            return;
+        }
         // Parabolic refinement around the peak.
         let mut lag_f = best as f32;
         if best > self.min_lag && best < self.max_lag {
@@ -178,9 +211,18 @@ impl Tempo {
         self.confidence = self.acf[best] / acf0;
         let bpm = 60.0 * self.fps / lag_f;
         let close = |a: f32, b: f32| b > 0.0 && (a / b - 1.0).abs() < 0.04;
+        // Double or half the current tempo confirms it at the current level: music often supports
+        // both, and flipping between them makes the picture pulse twice as fast and back.
+        let same_level = if close(bpm, 2.0 * self.bpm) {
+            bpm / 2.0
+        } else if close(2.0 * bpm, self.bpm) {
+            bpm * 2.0
+        } else {
+            bpm
+        };
 
-        if self.bpm > 0.0 && close(bpm, self.bpm) {
-            self.bpm += 0.3 * (bpm - self.bpm);
+        if self.bpm > 0.0 && close(same_level, self.bpm) {
+            self.bpm += 0.3 * (same_level - self.bpm);
             self.candidate_hits = 0;
         } else {
             if close(bpm, self.candidate) {
@@ -189,7 +231,7 @@ impl Tempo {
                 self.candidate = bpm;
                 self.candidate_hits = 1;
             }
-            let needed = if self.bpm > 0.0 { 3 } else { 2 };
+            let needed = if self.bpm <= 0.0 { START_HITS } else { CHANGE_HITS };
             if self.candidate_hits >= needed {
                 self.bpm = self.candidate;
                 self.candidate_hits = 0;

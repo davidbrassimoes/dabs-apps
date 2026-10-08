@@ -132,6 +132,7 @@ impl Analyzer {
         self.mood_energy.update(loud, dt);
         self.mood_brightness.update(centroid, dt);
 
+        self.tempo.note_silence(silent);
         let raw_onset = self.tempo.push(if silent { 0.0 } else { f.flux });
         let s = &mut self.sig;
         s.low = v[0];
