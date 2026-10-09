@@ -45,6 +45,17 @@ cd native && cargo test --release     # o wrapper no PC (sem JNI)
 Na app: "Microfone" ou "Som do telemóvel"; a TV é encontrada pelo beacon (Wi-Fi, a app segura um
 `MulticastLock`) ou pelo IP escrito no campo.
 
+## Abrir controlo (2026-10-09)
+
+O botão no topo abre a página de controlo da TV no browser (`http://<TV>:8080/`). O IP escrito no campo
+manda; sem ele, a app espera até 3 s pelo beacon da TV (`ControlLink.kt`), que a TV só manda com a app
+Santa Vibes aberta. Sem TV, diz o que fazer. A app continua a não ser precisa para controlar: a página
+abre em qualquer browser pelo QR code.
+
+Testado no emulador: com o IP, abriu o Chrome na página da box (com a cena e os presets reais); sem IP
+nem TV, a mensagem ao fim de 3 s. A descoberta pelo beacon não se testa no emulador (rede NAT); usa o
+mesmo pacote que o `Sender`, testado no Pixel 8. Não testado no Pixel (estava bloqueado).
+
 ## Testado num telemóvel real, 2026-10-07 (Pixel 8, Android 17, Wi-Fi de casa)
 
 App instalada e conduzida por adb; loops reais (piano 123 BPM, rock ~102 BPM) pelas colunas do PC
