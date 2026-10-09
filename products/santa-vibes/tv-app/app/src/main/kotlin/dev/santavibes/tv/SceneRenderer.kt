@@ -68,26 +68,15 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     /** Scene to open first (intent extra "scene"); ignored when unknown. */
     var initialSceneId: String? = null
 
-    /**
-     * A change from the control page or the remote (3.2), applied on the GL thread at the next frame:
-     * scene (crossfading when it changes), its base values packed as [SceneSlot.values], the palette
-     * leading the rotation (null = the scene's own), palette rotation and the output grade.
-     */
-    class Control(
-        val sceneIndex: Int, val values: FloatArray, val palette: List<FloatArray>?, val paletteRotate: Boolean, val grade: Profile,
-        /** Bumped when the palettes must be rebuilt (lead palette or image sources changed). */
-        val paletteEpoch: Int,
-    )
-
-    private val pendingControl = AtomicReference<Control?>(null)
+    private val pendingControl = AtomicReference<SceneControl?>(null)
     /** Last control applied; re-applied on a new GL context. */
-    private var appliedControl: Control? = null
+    private var appliedControl: SceneControl? = null
     private var appliedGrade: Profile? = null
     private var appliedPaletteEpoch = -1
     private var paletteSlot: SceneSlot? = null
 
-    /** Hand a [Control] to the GL thread; only the newest one is applied. */
-    fun control(c: Control) {
+    /** Hand a [SceneControl] to the GL thread; only the newest one is applied. */
+    fun control(c: SceneControl) {
         pendingControl.set(c)
     }
 
@@ -102,9 +91,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var halfOk = false
     private var black = 0
     private var noise = 0
-    /** Every scene compiled once per GL context (0 = failed, see [programErrors]); no compile hitch on a switch. */
-    private var programs = IntArray(0)
-    private var programErrors = arrayOfNulls<String>(0)
+    /** Every scene compiled once per GL context; no compile hitch on a switch. */
+    private val programs = ProgramCache(lib)
     private var cur: SceneSlot? = null
     private var out: SceneSlot? = null // outgoing scene during a transition
     private var fadeS = 0.0
@@ -141,7 +129,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         output = OutputPass(lib.outputFrag, profile)
         appliedGrade = null
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
-        compileAll()
+        programs.compileAll(halfOk)
         bench?.let { b ->
             EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0) // measure GPU cost, not vsync
             benchmark = Benchmark(b, lib, this)
@@ -244,9 +232,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val entry = lib.scenes[index]
         val def = entry.def
         val scale = if (scaleOverride > 0) scaleOverride else def.renderScale ?: profile.renderScale
-        val program = programs.getOrElse(index) { 0 }
+        val program = programs.program(index)
         if (program == 0) {
-            lastError = "${def.id}: ${programErrors.getOrNull(index)}"
+            lastError = "${def.id}: ${programs.error(index)}"
             if (cur == null) sceneIndex = index // nothing else to show; keep the index so D-pad moves on
             return
         }
@@ -280,7 +268,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         )
     }
 
-    private fun applyControl(c: Control, fade: Double) {
+    private fun applyControl(c: SceneControl, fade: Double) {
         appliedControl = c
         if (c.sceneIndex != sceneIndex && c.sceneIndex in lib.scenes.indices) loadScene(c.sceneIndex, fade)
         if (c.grade !== appliedGrade) {
@@ -300,35 +288,6 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val imageLeads = st != null && st.usedBy(slot.def) && st.palette != null
         val lead = c.palette
         paletteVariation.setPalettes(slot.def.id, if (lead != null && !imageLeads) PaletteVariation.rotationPalettes(lead, base) else base, driftTime)
-    }
-
-    /**
-     * Compile every scene and draw each once into a 1x1 target, so drivers that finish
-     * compiling lazily (on first draw) do it here and not in the middle of a crossfade.
-     */
-    private fun compileAll() {
-        val t0 = System.nanoTime()
-        val n = lib.scenes.size
-        programs = IntArray(n)
-        programErrors = arrayOfNulls(n)
-        val warm = Gl.target(1, 1, halfOk)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, warm.fbo)
-        GLES30.glViewport(0, 0, 1, 1)
-        for (i in 0 until n) {
-            val def = lib.scenes[i].def
-            try {
-                programs[i] = Gl.sceneProgram(lib.compose(lib.scenes[i]))
-                GLES30.glUseProgram(programs[i])
-                GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
-            } catch (e: Gl.ShaderError) {
-                programErrors[i] = e.message
-                Log.e(SceneLibrary.TAG, "compile failed in ${def.id}:\n${e.message}")
-            }
-        }
-        GLES30.glFinish()
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
-        Gl.destroy(warm)
-        Log.i(SceneLibrary.TAG, "compiled $n scenes in %.0f ms".format(java.util.Locale.ROOT, (System.nanoTime() - t0) / 1e6))
     }
 
     /** Benchmark: re-create the current targets at [scaleOverride]. */

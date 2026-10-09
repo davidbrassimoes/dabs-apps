@@ -139,7 +139,7 @@ class Controller(
         }
         val base = profiles[s.profile] ?: profiles.getValue("tv")
         renderer.control(
-            SceneRenderer.Control(
+            SceneControl(
                 scenes.indexOf(def), Control.pack(def, s.values), s.palette?.map(SceneFormat::hexToRgb), s.paletteRotate,
                 Control.grade(base, s), paletteEpoch,
             ),

@@ -17,7 +17,7 @@ core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor e escritor JSON, e
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
 app/    Android: Player (tudo o que põe cenas no ecrã: biblioteca, renderer, sinais, imagens, ritmo de frames,
         overlay, logcat), Controller (o estado: comando e página, presets, rotação, ficheiros), ControlServer
-        (HTTP mínimo) e ControlRoutes (API), Overlay (texto e QR code), MainActivity (a app: extras do adb e comando), SceneRenderer (cenas, crossfade, passe de saída),
+        (HTTP mínimo) e ControlRoutes (API), Overlay (texto e QR code), SceneControl (o que passa para a thread GL), ProgramCache (cenas compiladas), MainActivity (a app: extras do adb e comando), SceneRenderer (cenas, crossfade, passe de saída),
         SceneSlot (uma cena: programa, FBOs, relógio), OutputPass, SignalHub (receção UDP e beacon),
         Benchmark (passo 0.5), SceneLibrary (assets),
         Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
