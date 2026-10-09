@@ -176,3 +176,16 @@ select { width: 100%; }
 button { cursor: pointer; }
 button:hover { border-color: var(--accent); }
 input[type="file"] { width: 100%; font-size: 11px; }
+
+/* Preset lab (src/lab.ts): fullscreen over the editor, 3×3 live variations. */
+.lab { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; padding: 16px; }
+.lab-head, .lab-foot { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.lab-head h2 { margin: 0 auto 0 0; font-size: 1rem; }
+.lab-ctl { display: flex; gap: 6px; align-items: center; color: var(--muted); }
+.lab-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; align-content: center; justify-self: center; width: min(100%, calc(((100vh - 150px) / 3 - 40px) * 16 / 9 * 3 + 32px)); }
+.lab-tile { display: grid; gap: 4px; border: 2px solid transparent; border-radius: 6px; padding: 2px; }
+.lab-tile.on { border-color: var(--accent); }
+.lab-tile canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; background: #000; cursor: pointer; }
+.lab-bar { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.lab-bar span { margin-right: auto; }
+.lab-foot input[type=text] { background: var(--panel-2); border: 1px solid var(--line); color: var(--text); padding: 6px 8px; border-radius: 4px; min-width: 16rem; }

@@ -2,7 +2,7 @@
 
 Página WebGL2 **só para desenvolvimento**: iterar cenas no PC com hot reload. Não vai para a box.
 
-- Lê `../scenes/*` e `../shared/*` diretamente do disco — nunca copia nem edita cópias.
+- Lê `../scenes/*` e `../shared/*` diretamente do disco — nunca copia nem edita cópias. A única escrita é a do laboratório de presets, no próprio `scene.json`.
 - Composição de shaders igual à que a `tv-app` terá de fazer (`src/compose.ts` é a implementação de referência de `docs/FORMATO-CENA.md`).
 - Painel de parâmetros gerado do `scene.json`; seletor de cena, de **preset** (`presets` do `scene.json`, formato 2) e de perfil; editor da paleta (`uPalette`); botão **Copiar como preset**, que põe na área de transferência (e na consola) o JSON dos valores e da paleta atuais, pronto a colar em `presets`; sinais sintéticos (LFOs ou sliders manuais, metrónomo com BPM e botão Tap).
 - `feedback` (ping-pong RGBA16F, fallback RGBA8), `renderScale`, limite de fps, passe de saída (`shared/glsl/output.frag`) com os valores do perfil ajustáveis em runtime.
@@ -63,6 +63,7 @@ dev-server.mjs     servidor sem dependências + esbuild em watch
 index.html         esqueleto da página (sem framework)
 style.css
 scripts/smoke.mjs  teste de fumo headless (DevTools Protocol, sem dependências)
+lib/scene-presets.mjs  escrita de um preset no scene.json (laboratório)
 scripts/gallery/   galeria de ecrãs: um HTML só com todas as cenas a correr (o artifact "Santa Vibes Ecrãs")
 test/              testes da composição; test/fixtures/compose-cases.json é o contrato partilhado com a tv-app
 src/
@@ -80,7 +81,20 @@ src/
   bridge.ts        WebSocket local do pc-bridge (1.6): sinais reais misturados como na TV
   ui.ts            widgets DOM e painel de parâmetros gerado do scene.json
   hot.ts           cliente SSE
+  mutate.ts        variações do laboratório de presets
+  lab.ts           laboratório de presets (9 quadros vivos)
 ```
+
+## Laboratório de presets
+
+Botão **Laboratório** na secção Cena (decisão 16). Abre por cima do editor nove quadros vivos da cena:
+o do meio é o ponto de partida (os valores e a paleta do editor), os outros oito são variações dele
+(`src/mutate.ts`: cada parâmetro anda até "Variação" do seu intervalo; com "rodar a paleta", o matiz
+roda em OKLab e a luminosidade fica). **Daqui** faz de um quadro o novo ponto de partida e dá outra
+ronda; **Usar** põe-no no editor; **Guardar no scene.json** acrescenta o quadro selecionado aos
+`presets` da cena pelo servidor (`POST /api/presets/<cena>`, `lib/scene-presets.mjs`): só os
+parâmetros diferentes do defeito, nunca o `react`, sem reformatar o resto do ficheiro, e o resultado
+tem de validar. Depois falta o commit. As cenas com imagem aparecem só com a paleta.
 
 ## Galeria de ecrãs
 
