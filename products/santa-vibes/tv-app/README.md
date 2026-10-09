@@ -178,6 +178,19 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
 - O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
   `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.
 
+### Cenas novas `recife` e `skyspace`, 2026-10-09
+
+Benchmark sem vsync (passe de saída sozinho: 9,4 ms):
+
+| Cena | 0.25 | 0.33 | 0.5 | Fica em |
+|---|---|---|---|---|
+| recife | 15,4 ms | 19,9 ms | 33,2 ms | 0.33, 30 fps |
+| skyspace | 10,6 ms | 11,5 ms | 14,0 ms | 0.5, 24 fps |
+
+Em modo normal: `recife` a 30,0 fps (p95 33,5 ms), `skyspace` a 24,0 fps; `alloc` 0 B/s depois dos
+downloads de imagens do arranque (2–2,8 MB/s enquanto descarregam). O `recife` tinha aliasing onde as
+riscas apertam: `fwidth` alarga o bordo aí, sem custo visível (cpu 1,39 ms).
+
 ### Página de controlo (3.2–3.4), 2026-10-09
 
 - API pelo PC: cena, preset do autor, valores (limitados ao intervalo), versão, brilho e temperatura

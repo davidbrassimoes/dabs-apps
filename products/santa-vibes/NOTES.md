@@ -6,6 +6,8 @@
 
 ## Para a próxima sessão
 
+- 2026-10-09 (tarde): laboratório de presets, skill `santa-vibes-scene`, cenas `recife` e `skyspace` (19 cenas).
+  Galeria atualizada. À espera de DABS: ver as duas cenas na TV. Falta só o projetor (3.5), a última parte.
 - 2026-10-09: **3.2–3.4 feitos** (página de controlo, presets do utilizador, estado guardado; decisão 18).
   OK na TV mostra o QR code. À espera de DABS: usar a página no telemóvel (só eu a testei, pelo PC).
   A seguir, fora da Fase 3: laboratório de presets e skill de cenas (decisão 16). O 3.5 espera pelo projetor.
@@ -48,6 +50,16 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-09 — laboratório de presets, skill de cenas, `recife` e `skyspace`
+
+- Decisão 19: contexto, lâmpadas, IA no PC e interação pelo telemóvel na prateleira.
+- Laboratório de presets no `authoring` (botão Laboratório): 9 variações vivas, gravar no `scene.json`
+  pelo servidor (a única escrita em `scenes/`). Testado no Chrome sem janela: gravou um diff limpo (revertido).
+- Skill `santa-vibes-scene` em `.claude/skills/`: como escrever, verificar e medir uma cena.
+- Cenas novas pela skill: `recife` (padrões de Turing; procedural porque o buffer de feedback é também
+  o que se vê) e `skyspace` (abertura de céu à Turrell). Números em `tv-app/README.md`. Não vistas por DABS.
+- Metaballs e auroras não deram cenas novas: `liquid-light` e `aurora` já o são.
 
 ### 2026-10-09 — 3.2 a 3.4: página de controlo
 

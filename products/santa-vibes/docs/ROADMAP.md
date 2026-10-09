@@ -79,6 +79,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 
 - [ ] Contexto: hora do dia (temperatura de cor circadiana), nascer/pôr do sol, meteorologia. Na prateleira (decisão 19).
 - [ ] Interação pelo telemóvel (touchpad que injeta forças, acelerómetro). Na prateleira (decisão 19).
-- [ ] Mais cenas e estéticas (auroras, reaction-diffusion, metaballs, campos tipo Turrell…).
+- [ ] Mais cenas e estéticas (auroras, reaction-diffusion, metaballs, campos tipo Turrell…). Em curso, com a skill `santa-vibes-scene`: `recife` (padrões de Turing) e `skyspace` (Turrell) em 2026-10-09; auroras, metaballs e o orbe de Turrell já existiam (`aurora`, `liquid-light`, `halo`).
+- [x] Laboratório de presets no `authoring` (decisão 16), 2026-10-09.
 - [ ] Imagens geradas por IA no PC. Na prateleira (decisão 19).
 - [ ] Luzes inteligentes da sala sincronizadas com a paleta. Na prateleira (decisão 19; DABS não tem lâmpadas).
