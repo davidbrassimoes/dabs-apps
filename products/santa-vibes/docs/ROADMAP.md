@@ -67,7 +67,7 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 
 ## Fase 3 — Produto na box
 
-- [x] **3.1 `DreamService`** — a app aparece como protetor de ecrã do sistema. Feito em 2026-10-08 (`SantaDream`, escolhido por adb; ver `tv-app/README.md`).
+- ~~**3.1 `DreamService`**~~ — retirado a 2026-10-09 (DABS, decisão 17): não serve o uso do `VISAO.md`. Fica o `Player`, que o 3.2 usa.
 - [ ] **3.2 `ControlServer` + `control-web`** — página no telemóvel por QR code; UI gerada dos esquemas; escolha de cena, parâmetros, fonte de sinal, fonte de imagem, perfil, reatividade, brilho/temperatura.
 - [ ] **3.3 Presets e playlists** — guardar/carregar; rotação automática com transições.
 - [ ] **3.4 Persistência** do estado na box.

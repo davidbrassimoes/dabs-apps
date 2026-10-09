@@ -16,14 +16,14 @@ import android.widget.TextView
 import dev.santavibes.core.ImageSources
 
 /**
- * Everything that puts scenes on screen, shared by the app (MainActivity) and the screensaver
- * (SantaDream): scene library, renderer, signal hub, image provider, GL view with vsync pacing
+ * Everything that puts scenes on screen, kept out of MainActivity so the control server (3.2)
+ * can drive the same object the remote does: scene library, renderer, signal hub, image provider, GL view with vsync pacing
  * by Choreographer at the scene's fps cap (RENDERMODE_WHEN_DIRTY), diagnostic overlay and the
  * logcat summary. The host only builds the Options, adds [view] and calls start/stop.
  */
 class Player(private val context: Context, private val o: Options) {
 
-    /** Host settings; MainActivity reads them from intent extras, the screensaver uses the defaults. */
+    /** Host settings; MainActivity reads them from intent extras. */
     data class Options(
         val sceneId: String? = null,
         val bench: Benchmark.Config? = null,

@@ -53,6 +53,9 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
       só se reinstalar travar DABS; nesse caso, ADR novo (mexe na fonte única e no offline).
     - Cenas novas: Claude escreve-as dentro do contrato (skill a criar); presets novos: um
       laboratório de presets no `authoring` (depois da Fase 3).
+17. **Sem protetor de ecrã** (2026-10-09, DABS): estava no `CLAUDE.md` do produto desde o início sem
+    razão escrita e o `VISAO.md` não o pede (o uso é abrir a app com a música a tocar). Na Google TV só se
+    ativava por adb. Sai o `SantaDream` e o passo 3.1; fica o `Player`, que a página de controlo usa.
 
 ## Por decidir
 
@@ -81,7 +84,7 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.5: afinação da latência, -10 ms (MIDI retirado, decisão 14) (2026-10-08)
 - [x] Fase 2: imagens reais (servidor, Met, NASA) e duas cenas híbridas (2026-10-08)
 - [x] Galeria de ecrãs gerada do repo (decisão 15) (2026-10-08)
-- [x] Fase 3, passo 3.1: protetor de ecrã (`SantaDream`) (2026-10-08)
+- [x] `Player`: render fora da `MainActivity`, base do 3.2 (2026-10-08); protetor de ecrã retirado (decisão 17)
 - [ ] Fase 3: 3.2 página de controlo (maqueta ao gate primeiro); 3.3 presets na box com exportar; 3.4 persistência
 - [ ] Depois da Fase 3: laboratório de presets no `authoring`; skill para escrever cenas novas
 

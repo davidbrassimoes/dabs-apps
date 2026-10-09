@@ -12,7 +12,7 @@ scenes/          cenas (fonte única): <id>/scene.frag + scene.json
 shared/glsl/     cabeçalho de uniforms, biblioteca GLSL, passe de saída
 shared/profiles/ perfis de saída (tv.json, projector.json)
 authoring/       ferramenta de autoria no browser (só desenvolvimento) — Fase 0
-tv-app/          app Android TV (Kotlin + GLES 3.0, DreamService) — Fase 0/3
+tv-app/          app Android TV (Kotlin + GLES 3.0) — Fase 0/3
 signals-core/    núcleo de DSP em Rust partilhado — Fase 1
 pc-bridge/       bridge Windows (WASAPI loopback → UDP) em Rust — Fase 1
 phone-app/       app Android emissora de sinais (mic / playback capture) — Fase 1
