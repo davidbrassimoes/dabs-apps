@@ -1,0 +1,42 @@
+{
+  "format": 4,
+  "id": "recife",
+  "name": "Recife",
+  "description": "Padrões de Turing: labirintos macios de dois tons que crescem e se dobram devagar, como coral ou pele de animal. O aspeto da reação-difusão, sem o custo.",
+  "tags": ["ambient", "orgânico", "turing", "lento"],
+  "fps": 30,
+  "renderScale": 0.33,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#0d1b2a", "#1b4d5c", "#3e8a7e", "#e9b872", "#fbe8c8"],
+  "params": [
+    { "id": "speed",    "label": "Velocidade",        "type": "float", "min": 0.0,  "max": 1.0, "default": 0.3,  "drift": 0.1 },
+    { "id": "scale",    "label": "Escala",            "type": "float", "min": 0.5,  "max": 4.0, "default": 2.4,  "drift": 0.2 },
+    { "id": "density",  "label": "Densidade",         "type": "float", "min": 1.0,  "max": 6.0, "default": 2.5,  "drift": 0.2 },
+    { "id": "warp",     "label": "Dobra",             "type": "float", "min": 0.0,  "max": 2.0, "default": 0.8,  "drift": 0.25 },
+    { "id": "softness", "label": "Suavidade",         "type": "float", "min": 0.02, "max": 0.6, "default": 0.18, "drift": 0.15 },
+    { "id": "spots",    "label": "Manchas ↔ riscas",  "type": "float", "min": 0.0,  "max": 1.0, "default": 0.6,  "drift": 0.2 },
+    { "id": "pulse",    "label": "Respirar (beat)",   "type": "float", "min": 0.0,  "max": 1.0, "default": 0.3,  "drift": 0.0, "group": "Reatividade" },
+    { "id": "react",    "label": "Reação à música",   "type": "float", "min": 0.0,  "max": 1.0, "default": 0.0,  "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "coral",
+      "name": "Coral",
+      "params": { "scale": 2.2, "density": 3, "spots": 0.85 },
+      "palette": ["#2a0f1c", "#7a2a3a", "#d4574e", "#f2a65a", "#fde3c0"]
+    },
+    {
+      "id": "zebra",
+      "name": "Zebra",
+      "params": { "density": 2, "softness": 0.1, "spots": 0.15, "warp": 1.2 },
+      "palette": ["#141414", "#3a3a3e", "#8a8a90", "#d8d6d0", "#f4f2ec"]
+    },
+    {
+      "id": "musgo",
+      "name": "Musgo",
+      "params": { "speed": 0.2, "scale": 1.2, "softness": 0.3 },
+      "palette": ["#0e1a0e", "#22401e", "#4e7a32", "#a8c060", "#eef0c8"]
+    }
+  ]
+}
