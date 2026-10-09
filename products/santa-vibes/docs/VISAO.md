@@ -10,7 +10,7 @@ Uma app que **produz imagem generativamente** para servir de ambiente e ilumina�
 
 | Eixo | Opções |
 |---|---|
-| **Reatividade** | nenhuma · áudio do PC (loopback) · telemóvel (microfone ou áudio do próprio telemóvel) · contexto (hora do dia, meteorologia) |
+| **Reatividade** | nenhuma · áudio do PC (loopback) · telemóvel (microfone ou áudio do próprio telemóvel) · (na prateleira) contexto: hora do dia, meteorologia |
 | **Fonte de imagem** | nenhuma (puramente sintetizado) · pasta local · acervos open access (museus, NASA) · outras fontes · (futuro) imagens geradas por IA no PC |
 | **Estética / cena** | várias cenas para escolher, com parâmetros ajustáveis, playlists e transições |
 | **Saída** | perfil TV · perfil Projetor (ajustável ao projetor concreto) |
@@ -34,6 +34,9 @@ Qualquer combinação destes eixos tem de funcionar.
 
 ## Ideias para mais tarde
 
+Na prateleira (DABS, 2026-10-09, decisão 19): não são essenciais e não se fazem sem DABS as pedir.
+
+- Contexto: hora do dia, nascer/pôr do sol e meteorologia a mudar a paleta ou a temperatura sozinhos.
 - Ecrã do telemóvel como touchpad que injeta forças no flow field ou "pinta" luz; acelerómetro para agitar a cena.
 - Imagens geradas por IA no PC (ex.: Stable Diffusion local), uma a cada poucos minutos, alimentando cenas híbridas.
 - Ligar a luz da sala (lâmpadas inteligentes) à paleta atual.

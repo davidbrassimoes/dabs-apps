@@ -77,8 +77,8 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 
 ## Fase 4 — Extras
 
-- [ ] Contexto: hora do dia (temperatura de cor circadiana), nascer/pôr do sol, meteorologia.
-- [ ] Interação pelo telemóvel (touchpad que injeta forças, acelerómetro).
+- [ ] Contexto: hora do dia (temperatura de cor circadiana), nascer/pôr do sol, meteorologia. Na prateleira (decisão 19).
+- [ ] Interação pelo telemóvel (touchpad que injeta forças, acelerómetro). Na prateleira (decisão 19).
 - [ ] Mais cenas e estéticas (auroras, reaction-diffusion, metaballs, campos tipo Turrell…).
-- [ ] Imagens geradas por IA no PC.
-- [ ] Luzes inteligentes da sala sincronizadas com a paleta.
+- [ ] Imagens geradas por IA no PC. Na prateleira (decisão 19).
+- [ ] Luzes inteligentes da sala sincronizadas com a paleta. Na prateleira (decisão 19; DABS não tem lâmpadas).
