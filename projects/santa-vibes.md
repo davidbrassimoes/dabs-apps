@@ -97,7 +97,8 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] `Player`: render fora da `MainActivity`, base do 3.2 (2026-10-08); protetor de ecrã retirado (decisão 17)
 - [x] Fase 3, passos 3.2–3.4: página de controlo, presets do utilizador, estado guardado (2026-10-09)
 - [ ] Fase 3, passo 3.5: perfil do projetor, quando houver projetor
-- [ ] Depois da Fase 3: laboratório de presets no `authoring`; skill para escrever cenas novas
+- [x] Laboratório de presets no `authoring` e skill `santa-vibes-scene`; cenas `recife` e `skyspace` (2026-10-09)
+- [x] Botão "Abrir controlo" na `phone-app`, testado no Pixel 8 (2026-10-09)
 
 ## Histórico
 
