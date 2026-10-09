@@ -1,0 +1,253 @@
+<title>Santa Vibes Ecrãs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=Figtree:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a dark room. One big TV with its remote up top, then every scene live in a grid by style,
+   then the other screens (built ones first, mock-ups of what is still to build last).
+   Single dark look on purpose: the visuals are the colour, the page is the room around them. */
+:root {
+  --bg: #0b0a10; --panel: #15131c; --panel2: #1e1b28; --line: #2c2838; --fg: #ece8f2; --mute: #9d97ad;
+  --led: #ff8a4c; --led-soft: #3a2116; --ok: #5fd0a8; --warn: #f2c35b;
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); padding-inline: 16px; padding-block: 32px 72px; }
+main { max-width: 1180px; margin: 0 auto; display: grid; gap: 64px; }
+section { display: grid; gap: 20px; min-width: 0; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font: 600 clamp(1.8rem, 4.4vw, 2.8rem)/1.05 var(--display); letter-spacing: -0.01em; }
+h2 { font: 600 1.35rem/1.2 var(--display); }
+h3 { font: 500 0.78rem var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--led); display: flex; gap: 8px; align-items: baseline; }
+h3 .count { color: var(--mute); }
+p { margin: 0; max-width: 66ch; color: var(--mute); }
+p b, p strong { color: var(--fg); font-weight: 500; }
+code { font: 0.86em var(--mono); color: var(--mute); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible + label, .thumb:focus-visible { outline: 2px solid var(--led); outline-offset: 2px; }
+.eyebrow { font: 500 0.75rem var(--mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--led); }
+.head { display: grid; gap: 14px; }
+.tally { display: flex; flex-wrap: wrap; gap: 8px 28px; font: 0.85rem var(--mono); color: var(--mute); }
+.tally b { font: 600 1.5rem var(--display); color: var(--fg); margin-right: 6px; font-variant-numeric: tabular-nums; }
+
+/* --- TV + remote */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+@media (max-width: 900px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+#tv-wrap { position: relative; border: 10px solid #000; border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 30px 80px -30px #000; background: #000; max-width: 100%; }
+#tv-wrap:fullscreen { border: 0; border-radius: 0; }
+#tv { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; max-width: 100%; }
+#overlay { position: absolute; left: 3%; top: 4%; margin: 0; padding: 8px 12px; background: #000000a0; color: #fff; font: clamp(8px, 1.15vw, 13px)/1.45 var(--mono); white-space: pre; max-width: 94%; overflow: hidden; }
+.under { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.under .t { display: grid; gap: 2px; min-width: 0; }
+#now-name { font: 600 1.15rem var(--display); }
+#now-pos { font: 0.8rem var(--mono); color: var(--mute); }
+#now-desc { font-size: 0.95rem; }
+
+.remote { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 16px; }
+.pad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 44px); gap: 6px; justify-content: center; }
+.key { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; font: 600 1rem var(--mono); }
+.key:hover { border-color: var(--mute); }
+.key:active { background: var(--led-soft); }
+#k-up { grid-column: 2; grid-row: 1; }
+#k-prev { grid-column: 1; grid-row: 2; }
+#k-ok { grid-column: 2; grid-row: 2; border-radius: 50%; background: var(--led-soft); color: var(--led); font-size: 0.8rem; }
+#k-next { grid-column: 3; grid-row: 2; }
+.legend { font: 0.75rem var(--mono); color: var(--mute); text-align: center; }
+.ctl { display: grid; gap: 6px; align-content: start; }
+.ctl > span { font: 500 0.7rem var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--mute); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--panel2); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; font-size: 0.85rem; color: var(--mute); }
+.chip.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip.file { position: relative; }
+.chip.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+#img-state { font: 0.75rem var(--mono); color: var(--mute); overflow-wrap: anywhere; }
+.note { font: 0.75rem var(--mono); color: var(--warn); }
+
+.params { display: grid; gap: 6px; }
+.prow { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) 3rem; gap: 10px; align-items: center; font-size: 0.82rem; color: var(--mute); }
+.prow .bar { height: 4px; background: var(--panel2); border-radius: 2px; overflow: hidden; }
+.prow .bar i { display: block; height: 100%; background: var(--led); }
+.prow em { font: normal 0.78rem var(--mono); color: var(--fg); text-align: right; font-variant-numeric: tabular-nums; }
+.detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+@media (max-width: 700px) { .detail { grid-template-columns: minmax(0, 1fr); } .prow { grid-template-columns: 7.5rem minmax(0, 1fr) 3rem; } }
+
+/* --- preset chips with palette */
+.presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.pchip { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px 4px 5px; font-size: 0.8rem; color: var(--mute); }
+.pchip.on { border-color: var(--led); color: var(--fg); }
+.sw { display: inline-flex; border-radius: 4px; overflow: hidden; }
+.sw i { width: 8px; height: 16px; display: block; }
+
+/* --- grid */
+#grid { display: grid; gap: 36px; }
+.group { display: grid; gap: 14px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
+.card { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.thumb { padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: #000; display: block; width: 100%; }
+.thumb canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; max-width: 100%; transition: transform 0.4s; }
+.thumb:hover canvas { transform: scale(1.03); }
+@media (prefers-reduced-motion: reduce) { .thumb canvas { transition: none; } }
+.meta { display: grid; gap: 8px; }
+.nm b { font-weight: 700; }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; }
+.badge { font: 0.68rem var(--mono); padding: 1px 7px; border-radius: 4px; background: var(--led-soft); color: var(--led); }
+.badge.dim { background: var(--panel2); color: var(--mute); }
+
+/* --- other screens */
+.row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; max-width: 100%; }
+figcaption { font: 0.78rem var(--mono); color: var(--mute); max-width: 300px; }
+.phone { width: 280px; max-width: 100%; border: 7px solid #000; border-radius: 28px; outline: 1px solid var(--line); background: #f3f1f6; color: #1d1b22; padding: 26px 16px 20px; display: grid; gap: 8px; font-family: Roboto, var(--body); }
+.phone .t1 { font-size: 1.3rem; margin-bottom: 4px; }
+.phone .abtn { background: #e2dfe8; border-radius: 4px; padding: 9px; text-align: center; font: 500 0.8rem Roboto, var(--body); text-transform: uppercase; letter-spacing: 0.03em; box-shadow: 0 1px 2px #0003; }
+.phone .field { border-bottom: 1px solid #8a8496; padding: 8px 2px; font-size: 0.82rem; color: #8a8496; }
+.phone pre { margin: 6px 0 0; font: 0.72rem/1.5 var(--mono); white-space: pre-wrap; }
+.term { width: 520px; max-width: 100%; background: #0c0c0c; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.term .tb { background: #1f1f1f; padding: 6px 10px; font: 0.75rem var(--mono); color: #bbb; }
+.term pre { margin: 0; padding: 12px; font: 0.78rem/1.5 var(--mono); color: #d8d8d8; overflow-x: auto; }
+.mock { width: 250px; max-width: 100%; border: 7px solid #000; border-radius: 28px; outline: 1px dashed var(--line); background: var(--panel); padding: 16px 14px; display: grid; gap: 12px; }
+.mock .ttl { font: 600 1rem var(--display); }
+.mock .gl { font: 500 0.65rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ok); }
+.mock .sl { height: 5px; border-radius: 3px; background: var(--panel2); position: relative; }
+.mock .sl i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--led); }
+.mock .lb { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--mute); }
+.mock .ths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mock .ths i { aspect-ratio: 1; border-radius: 8px; display: block; }
+.mtv { width: 400px; max-width: 100%; aspect-ratio: 16 / 9; border: 6px solid #000; border-radius: 8px; outline: 1px dashed var(--line); position: relative; overflow: hidden;
+  background: radial-gradient(60% 80% at 20% 90%, #35d0b8aa, transparent 60%), radial-gradient(50% 70% at 80% 20%, #7b5cffaa, transparent 60%), #0a0816; }
+.mtv .qr { position: absolute; right: 10px; bottom: 10px; background: #fff; color: #000; padding: 5px; border-radius: 5px; font: 500 8px var(--mono); display: grid; gap: 3px; justify-items: center; }
+.mtv .qr i { width: 42px; height: 42px; display: block; background: conic-gradient(#000 25%, #fff 0 50%, #000 0 75%, #fff 0) 0 0 / 10.5px 10.5px; }
+.mtv .big { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: #0008; font: 600 1.1rem var(--display); }
+.mtv .big span { display: block; font: 0.65rem var(--mono); color: #fffb; margin-top: 4px; }
+.status { font: 500 0.68rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 99px; justify-self: start; }
+.status.built { background: #163328; color: var(--ok); }
+.status.todo { background: #362c12; color: var(--warn); }
+.split { display: grid; gap: 10px; }
+</style>
+
+<main>
+  <header class="head">
+    <p class="eyebrow">Santa Vibes · 8 de outubro de 2026</p>
+    <h1>Todos os ecrãs</h1>
+    <p>As cenas a correr aqui são as da box: os mesmos <code>scene.frag</code> e <code>scene.json</code>, o mesmo passe de saída e o mesmo drift, pelo motor do editor de cenas. Muda de cena com as setas do teclado ou com o comando, troca de versão com ▲, e escolhe presets, imagem e perfil à direita.</p>
+    <div class="tally">
+      <span><b id="n-scenes">17</b>cenas</span>
+      <span><b id="n-presets">–</b>presets de autor</span>
+      <span><b>2</b>versões (atual, reativa)</span>
+      <span><b id="n-variants">–</b>combinações cena × preset × versão × imagem</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-tv">
+    <h2 id="h-tv" hidden>Na TV</h2>
+    <div class="stage">
+      <div>
+        <div id="tv-wrap"><canvas id="tv" width="1920" height="1080" aria-label="Pré-visualização da cena atual"></canvas><pre id="overlay" hidden></pre></div>
+        <div class="under">
+          <div class="t"><span id="now-name">–</span><p id="now-desc"></p></div>
+          <span id="now-pos">–</span>
+        </div>
+      </div>
+      <div class="remote" aria-label="Comando">
+        <div class="pad">
+          <button class="key" id="k-up" title="Versão atual / reativa (▲)">▲</button>
+          <button class="key" id="k-prev" title="Cena anterior (◀)">◀</button>
+          <button class="key" id="k-ok" title="Overlay de diagnóstico (Enter)">OK</button>
+          <button class="key" id="k-next" title="Cena seguinte (▶)">▶</button>
+        </div>
+        <div class="legend">◀ ▶ cena · ▲ versão · OK overlay</div>
+        <div class="ctl"><span>Versão</span><div class="seg"><button class="chip" data-look="0">Atual</button><button class="chip" data-look="1">Reativa</button></div></div>
+        <div class="ctl"><span>Som</span><div class="seg"><button class="chip" id="music" aria-pressed="true">Música simulada, 112 BPM</button></div></div>
+        <div class="ctl"><span>Imagem</span>
+          <div class="seg">
+            <button class="chip on" data-img="none">Nenhuma</button>
+            <button class="chip" data-img="example">Exemplo</button>
+            <span class="chip file" data-img="file"><input type="file" id="img-file" accept="image/*" aria-label="Escolher uma imagem tua">A tua…</span>
+          </div>
+          <div id="img-state">sem imagem</div>
+          <div class="note" id="img-note" hidden>Esta cena não usa imagens.</div>
+        </div>
+        <div class="ctl"><span>Perfil de saída</span><div class="seg"><button class="chip" data-profile="tv">TV</button><button class="chip" data-profile="projector">Projetor</button></div></div>
+        <button class="chip" id="fs">Ecrã inteiro</button>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="ctl"><span>Presets desta cena</span><div class="presets" id="now-presets"></div></div>
+      <div class="ctl"><span>Parâmetros agora (base + drift)</span><div class="params" id="now-params"></div></div>
+    </div>
+    <p>Sem PC nem telemóvel ligados, a box só tem sinais sintéticos. Aqui a "música simulada" faz de fonte real: um metrónomo a 112 BPM mais graves que sobem no tempo. Desligada, a versão reativa fica calma, como na box em silêncio. A paleta de uma imagem só entra nas cenas que aceitam imagem, também como na box.</p>
+  </section>
+
+  <section aria-labelledby="h-all">
+    <div class="split"><h2 id="h-all">As cenas, por estilo</h2>
+    <p>Todas vivas, em pequeno. Carrega numa para a ver na TV; os botões por baixo mudam de preset. O primeiro estilo de cada cena é a primeira tag do <code>scene.json</code>.</p></div>
+    <div id="grid"></div>
+  </section>
+
+  <section aria-labelledby="h-built">
+    <div class="split"><h2 id="h-built">Os outros ecrãs que existem</h2>
+    <p>Fora da TV há pouca interface, de propósito. Estes são os ecrãs que já estão no código, reproduzidos a partir dele.</p></div>
+    <div class="row">
+      <figure>
+        <div class="phone">
+          <div class="t1">Enviar sinais para a TV</div>
+          <div class="abtn">Microfone (som da sala)</div>
+          <div class="abtn">Som do telemóvel</div>
+          <div class="abtn">Parar</div>
+          <div class="field">IP da TV (opcional; normalmente encontra-a sozinho)</div>
+          <pre>A enviar: microfone · 48000 Hz, 1 canal(is)
+TV: 192.168.1.27
+pacotes enviados: 18342
+energia 0.41 · graves 0.37 · 112.4 bpm</pre>
+        </div>
+        <figcaption><span class="status built">feito</span> phone-app (1.4). Os números são de exemplo.</figcaption>
+      </figure>
+      <figure>
+        <div class="term"><div class="tb">pc-bridge.exe</div><pre>santa-vibes pc-bridge · loopback: Altifalantes (Realtek)
+TV 192.168.1.27:47800 (beacon) · lookahead -10 ms
+ws://127.0.0.1:47810 para o editor de cenas
+60.0 pkt/s · energia 0.52 · graves 0.61 · 139.2 bpm</pre></div>
+        <figcaption><span class="status built">feito</span> pc-bridge com consola (1.3). No dia a dia corre o pc-bridge-bg, sem janela nenhuma. Texto aproximado.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-todo">
+    <div class="split"><h2 id="h-todo">Por construir: Fase 3</h2>
+    <p>Maquetas da página de 5 de outubro, para lembrar o que a Fase 3 acrescenta. São intenção, não UI final.</p></div>
+    <div class="row">
+      <figure><div class="mtv"><div class="qr"><i></i>192.168.1.27:8080</div></div><figcaption><span class="status todo">3.2</span> OK mostra o QR code da página de controlo.</figcaption></figure>
+      <figure><div class="mtv"><div class="big"><div>Santa Vibes<span>Definições › Ecrã › Protetor de ecrã</span></div></div></div><figcaption><span class="status todo">3.1</span> Protetor de ecrã do sistema (DreamService).</figcaption></figure>
+    </div>
+    <div class="row">
+      <figure><div class="mock">
+        <div class="ttl">Cenas</div>
+        <div class="seg"><span class="chip on">Todas</span><span class="chip">ambient</span><span class="chip">glitch</span></div>
+        <div class="ths"><i style="background:radial-gradient(circle at 30% 70%,#c0587e,#1f1a4d)"></i><i style="background:linear-gradient(160deg,#f2cc8f,#7a3b8f)"></i><i style="background:conic-gradient(#35d0b8,#7b5cff,#ff7a45,#35d0b8)"></i><i style="background:radial-gradient(circle,#fff3,#0a2a4a 70%)"></i><i style="background:linear-gradient(90deg,#0e2a3a,#d8a050)"></i><i style="background:#3e4452"></i></div>
+        <div class="chip" style="text-align:center">Ciclo automático: 10 min</div>
+      </div><figcaption><span class="status todo">3.2</span> Escolher cena no telemóvel.</figcaption></figure>
+      <figure><div class="mock">
+        <div class="ttl">Nebulosa</div>
+        <div class="gl">Movimento</div>
+        <div class="lb"><span>Velocidade</span><span>0.25</span></div><div class="sl"><i style="width:25%"></i></div>
+        <div class="lb"><span>Distorção</span><span>3.0</span></div><div class="sl"><i style="width:50%"></i></div>
+        <div class="gl">Reatividade</div>
+        <div class="lb"><span>Reação à música</span><span>1.0</span></div><div class="sl"><i style="width:100%"></i></div>
+        <div class="seg"><span class="chip on">Guardar como preset</span></div>
+      </div><figcaption><span class="status todo">3.2 · 3.3</span> Parâmetros gerados do scene.json; guardar um preset meu.</figcaption></figure>
+      <figure><div class="mock">
+        <div class="ttl">Fontes</div>
+        <div class="gl">Sinal</div>
+        <div class="seg"><span class="chip on">PC</span><span class="chip">Telemóvel</span><span class="chip">Nenhum</span></div>
+        <div class="gl">Imagem</div>
+        <div class="seg"><span class="chip on">Pasta</span><span class="chip">Met</span><span class="chip">NASA</span><span class="chip">Nenhuma</span></div>
+        <div class="gl">Perfil</div>
+        <div class="seg"><span class="chip on">TV</span><span class="chip">Projetor</span></div>
+      </div><figcaption><span class="status todo">3.2</span> Fonte de sinal, de imagem e perfil.</figcaption></figure>
+    </div>
+  </section>
+</main>
+<script>/*__DATA__*/</script>
+<script>/*__JS__*/</script>

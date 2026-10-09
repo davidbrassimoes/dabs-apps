@@ -42,6 +42,17 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
     Feito (PR #4). 2026-10-07, DABS: **a predefinição é a reativa**; a atual continua a um ▲.
 14. **Sem MIDI clock** (2026-10-07, DABS): estava na visão sem razão escrita e não serve o uso real
     (música do PC). Sai do produto; o 1.5 fica só a afinação da latência. ADR 0003 do produto.
+15. **Galeria de ecrãs** (2026-10-08, DABS): um artifact com todos os ecrãs, as cenas a correr ao
+    vivo. Gerado do repo por `authoring/scripts/gallery` (`npm run gallery`), para não divergir.
+16. **Cenas, presets e a Fase 3** (2026-10-08, DABS aceitou a proposta):
+    - **Cena** = código (`scene.frag` + `scene.json`); **preset de autor** = valores e paleta no
+      `scene.json`, no repo; **preset do utilizador** = cena + valores + imagem + versão, guardado na box (3.3).
+    - Os presets do utilizador vivem **na box** (3.3/3.4), offline, e a página de controlo tem
+      **exportar** (JSON pronto a entrar em `presets` de um `scene.json`); passar ao repo é um commit.
+    - A box continua a ler cenas e presets de autor do APK. Ler de fora do APK (servidor de casa)
+      só se reinstalar travar DABS; nesse caso, ADR novo (mexe na fonte única e no offline).
+    - Cenas novas: Claude escreve-as dentro do contrato (skill a criar); presets novos: um
+      laboratório de presets no `authoring` (depois da Fase 3).
 
 ## Por decidir
 
@@ -67,7 +78,11 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 1, passo 1.4: `phone-app`, testada num Pixel 8 (2026-10-07)
 - [x] Decisões de 2026-10-07 aplicadas (formato 4, predefinições, CI, arranque do `pc-bridge`)
 - [x] Merge para `main` (decisão 10): PR #1, 2026-10-07
-- [ ] Fase 1, passo 1.5: MIDI clock e afinação da latência
+- [x] Fase 1, passo 1.5: afinação da latência, -10 ms (MIDI retirado, decisão 14) (2026-10-08)
+- [x] Fase 2: imagens reais (servidor, Met, NASA) e duas cenas híbridas (2026-10-08)
+- [x] Galeria de ecrãs gerada do repo (decisão 15) (2026-10-08)
+- [ ] Fase 3: 3.1 protetor de ecrã; 3.2 página de controlo (maqueta ao gate primeiro); 3.3 presets na box com exportar; 3.4 persistência
+- [ ] Depois da Fase 3: laboratório de presets no `authoring`; skill para escrever cenas novas
 
 ## Histórico
 
