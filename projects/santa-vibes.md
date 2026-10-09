@@ -1,7 +1,7 @@
 # santa-vibes
 
 **Dono:** DABS
-**Estado:** em construção (fases 0 a 2 feitas; a seguir a Fase 3; ver `products/santa-vibes/docs/ROADMAP.md`)
+**Estado:** em construção (fases 0 a 2 feitas; Fase 3 feita menos o 3.5, que espera pelo projetor; ver `products/santa-vibes/docs/ROADMAP.md`)
 **Destino:** pessoal; sideload na Google TV Streamer. Se mudar, ver ADR-001 (5).
 **Pasta:** `products/santa-vibes/`
 
@@ -56,6 +56,11 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 17. **Sem protetor de ecrã** (2026-10-09, DABS): estava no `CLAUDE.md` do produto desde o início sem
     razão escrita e o `VISAO.md` não o pede (o uso é abrir a app com a música a tocar). Na Google TV só se
     ativava por adb. Sai o `SantaDream` e o passo 3.1; fica o `Player`, que a página de controlo usa.
+18. **Página de controlo** (2026-10-09, DABS aprovou a maqueta
+    https://claude.ai/artifact/X7ZmWWsTXniPr4y9R6P5ZN com as recomendações): um preset do utilizador guarda
+    cena, valores, paleta, versão e imagens (sinal e perfil não); exportar = copiar o JSON; a rotação
+    automática roda pelos presets do utilizador se houver pelo menos dois, senão pelas cenas (10 min por
+    defeito); sem login, é a rede de casa. Feito (3.2–3.4).
 
 ## Por decidir
 
@@ -85,7 +90,8 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
 - [x] Fase 2: imagens reais (servidor, Met, NASA) e duas cenas híbridas (2026-10-08)
 - [x] Galeria de ecrãs gerada do repo (decisão 15) (2026-10-08)
 - [x] `Player`: render fora da `MainActivity`, base do 3.2 (2026-10-08); protetor de ecrã retirado (decisão 17)
-- [ ] Fase 3: 3.2 página de controlo (maqueta ao gate primeiro); 3.3 presets na box com exportar; 3.4 persistência
+- [x] Fase 3, passos 3.2–3.4: página de controlo, presets do utilizador, estado guardado (2026-10-09)
+- [ ] Fase 3, passo 3.5: perfil do projetor, quando houver projetor
 - [ ] Depois da Fase 3: laboratório de presets no `authoring`; skill para escrever cenas novas
 
 ## Histórico

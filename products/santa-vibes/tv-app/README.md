@@ -10,12 +10,14 @@ Regras: ver `CLAUDE.md` (zero alocações por frame, sem WebView, dependências 
 ## Estrutura
 
 ```
-core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição de shaders, Synth,
+core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor e escritor JSON, estado da página de controlo
+        (Control), presets do utilizador (UserPresets), codificador de QR code (QrCode), composição de shaders, Synth,
         drift de parâmetros (Drift), variação de paleta (PaletteVariation), pacotes de sinais
         (SignPacket) e mixer de reatividade (SignalMixer, SequenceGate).
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
 app/    Android: Player (tudo o que põe cenas no ecrã: biblioteca, renderer, sinais, imagens, ritmo de frames,
-        overlay, logcat), MainActivity (a app: extras do adb e comando), SceneRenderer (cenas, crossfade, passe de saída),
+        overlay, logcat), Controller (o estado: comando e página, presets, rotação, ficheiros), ControlServer
+        (HTTP mínimo) e ControlRoutes (API), Overlay (texto e QR code), MainActivity (a app: extras do adb e comando), SceneRenderer (cenas, crossfade, passe de saída),
         SceneSlot (uma cena: programa, FBOs, relógio), OutputPass, SignalHub (receção UDP e beacon),
         Benchmark (passo 0.5), SceneLibrary (assets),
         Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
@@ -36,6 +38,12 @@ adb -s 192.168.1.27:5555 logcat -s SantaVibes   # cena, GL, e de 10 em 10 s: fps
 ```
 
 No comando: **◀ ▶** trocam de cena (mesma ordem da autoria: por estilo, depois id); **OK** mostra/esconde o overlay de diagnóstico. A app também aparece no launcher da TV.
+
+**Página de controlo (3.2–3.4).** OK mostra o overlay e, no canto, o QR code de
+`http://192.168.1.27:8080/`. O comando e a página mudam o mesmo estado, que a box guarda em
+`files/control-state.json` (e os presets do utilizador em `files/user-presets.json`); ao abrir,
+a app volta como estava. Os extras do adb valem só para essa execução. Para recomeçar do zero:
+`adb -s 192.168.1.27:5555 shell run-as dev.santavibes.tv rm files/control-state.json`.
 
 **Zero alocações por frame**: a linha `stats` do logcat inclui `alloc=… B/s` (bytes alocados por todo o processo, contador do ART). Com o overlay escondido deve ficar em 0 (com um bloco TLAB de 3–32 KB de vez em quando, do log da UI); com o overlay visível sobe para ~55 KB/s (o texto refeito 2× por segundo, na thread de UI), por isso mede-se sempre com ele escondido.
 
@@ -169,6 +177,19 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
   a 100 BPM sintéticos.
 - O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
   `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.
+
+### Página de controlo (3.2–3.4), 2026-10-09
+
+- API pelo PC: cena, preset do autor, valores (limitados ao intervalo), versão, brilho e temperatura
+  aplicados na TV (captura: paleta "Fumo", distorção 5,5, brilho 0,6). Corpo inválido dá 400, caminho
+  desconhecido 404. Guardar, aplicar, exportar e apagar presets. Depois de `force-stop` e arranque, o
+  estado e os presets voltaram iguais.
+- Página a 390 px (emulação no Chrome): sem scroll horizontal; tocar numa cena muda a TV; um slider
+  chega à box em < 0,6 s; guardar e exportar um preset.
+- QR code: a captura da TV descodifica com o `jsQR` para `http://192.168.1.27:8080/` (versão 2).
+- `liquid-light` a 30,0 fps (p95 33,6 ms) com e sem a página. `alloc` sem a página: 3 KB/s de vez em
+  quando, como antes; com a página a pedir o estado de 3 em 3 s: 4–11 KB/s (thread HTTP, fora do
+  render). Um primeiro corte montava o texto do overlay escondido 2× por segundo (42 KB/s): corrigido.
 
 ### `Player` (antes do 3.2), 2026-10-08
 

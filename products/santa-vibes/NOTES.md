@@ -6,6 +6,9 @@
 
 ## Para a próxima sessão
 
+- 2026-10-09: **3.2–3.4 feitos** (página de controlo, presets do utilizador, estado guardado; decisão 18).
+  OK na TV mostra o QR code. À espera de DABS: usar a página no telemóvel (só eu a testei, pelo PC).
+  A seguir, fora da Fase 3: laboratório de presets e skill de cenas (decisão 16). O 3.5 espera pelo projetor.
 - 2026-10-08 (noite): **galeria de ecrãs** feita e no repo (`authoring/scripts/gallery`, `npm run gallery`;
   https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L). DABS aceitou a proposta para cenas/presets e Fase 3
   (decisão 16 em `projects/santa-vibes.md`): presets do utilizador na box com exportar. A seguir: 3.1
@@ -36,6 +39,7 @@
 | Som que o PC toca (loopback, `pc-bridge`) | Calcular os sinais para a TV | Só em memória, ~6 s de função de onsets e 40 ms de PCM | Processo do `pc-bridge` |
 | Som da sala (microfone) ou das apps (playback capture), `phone-app` | Igual | Igual | Processo da `phone-app`, só com o serviço ligado e a notificação visível |
 | `deviceId` da TV (número aleatório) | Distinguir TVs no beacon | Enquanto a app estiver instalada | Preferências da tv-app |
+| Estado da página de controlo e presets do utilizador (nomes escritos por DABS) | Voltar a abrir a TV como estava; aplicar presets | Até DABS os apagar na página (o estado é reescrito a cada mudança) | `files/control-state.json` e `files/user-presets.json` da tv-app; não saem da box |
 | Imagens da pasta de DABS no servidor (`/mnt/drive2/santa-vibes/imagens`) | Mostrar na TV e tirar a paleta | Na cache da box até sair da pasta ou pela LRU (300 MB) | Servidor de casa e `files/images` da tv-app; não saem da rede de casa |
 
 ## Encontrado e não resolvido
@@ -44,6 +48,17 @@
   `adb shell input keyevent KEYCODE_WAKEUP` acorda-a (anotado em `docs/REPO.md`).
 
 ## Registo
+
+### 2026-10-09 — 3.2 a 3.4: página de controlo
+
+- `ControlServer` (HTTP à mão, sem dependência), `ControlRoutes`, `Controller` (comando e página no mesmo
+  estado), `Overlay` com QR code. Core: `Control`, `UserPresets`, `JsonOut`, `QrCode`, com testes.
+- Os presets do autor passam a aplicar valores na box (antes só as paletas entravam na rotação).
+- QR code: casos de referência gerados uma vez com o pacote npm `qrcode@1.5.4`, só em byte mode
+  (`tv-app/core/src/test/fixtures/qr-cases.json`); o pacote não entra no repo. As 32 máscaras forçadas
+  batiam à primeira; a escolha automática exigiu ler a penalização como o pacote a lê.
+- O curl do Git Bash manda acentos mal codificados: para testar a API com acentos, corpo num ficheiro UTF-8.
+- Medições em `tv-app/README.md`. Testado pelo PC e no Chrome emulado a 390 px; não num telemóvel real.
 
 ### 2026-10-08 — galeria de ecrãs
 
