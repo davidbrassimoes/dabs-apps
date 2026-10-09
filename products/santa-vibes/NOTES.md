@@ -6,8 +6,8 @@
 
 ## Para a próxima sessão
 
-- 2026-10-09: botão "Abrir controlo" na `phone-app` (pedido de DABS). Falta instalar no Pixel 8 e ver a descoberta
-  pelo beacon no telemóvel real: `adb install -r phone-app/app/build/outputs/apk/debug/app-debug.apk`.
+- 2026-10-09: botão "Abrir controlo" na `phone-app` (pedido de DABS), instalado e testado no Pixel 8: encontra a TV
+  pelo beacon e abre a página no browser.
 - 2026-10-09 (tarde): laboratório de presets, skill `santa-vibes-scene`, cenas `recife` e `skyspace` (19 cenas).
   Galeria atualizada. À espera de DABS: ver as duas cenas na TV. Falta só o projetor (3.5), a última parte.
 - 2026-10-09: **3.2–3.4 feitos** (página de controlo, presets do utilizador, estado guardado; decisão 18).
