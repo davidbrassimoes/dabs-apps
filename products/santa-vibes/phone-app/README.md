@@ -54,7 +54,8 @@ abre em qualquer browser pelo QR code.
 
 Testado no emulador: com o IP, abriu o Chrome na página da box (com a cena e os presets reais); sem IP
 nem TV, a mensagem ao fim de 3 s. A descoberta pelo beacon não se testa no emulador (rede NAT); usa o
-mesmo pacote que o `Sender`, testado no Pixel 8. Não testado no Pixel (estava bloqueado).
+mesmo pacote que o `Sender`. No Pixel 8 (2026-10-09), sem IP escrito e com a app aberta na TV: encontrou a TV
+pelo beacon e abriu `http://192.168.1.27:8080/` no browser por defeito (Firefox), com a cena da TV.
 
 ## Testado num telemóvel real, 2026-10-07 (Pixel 8, Android 17, Wi-Fi de casa)
 
