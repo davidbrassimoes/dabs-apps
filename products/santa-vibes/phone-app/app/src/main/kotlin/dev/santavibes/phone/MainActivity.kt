@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,7 +19,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 /**
- * The whole UI: two ways to send, stop, an optional TV address, and the state. Built in
+ * The whole UI: open the TV's control page, two ways to send, stop, an optional TV address,
+ * and the state. Built in
  * code (no layouts, no AndroidX). Microphone = the sound in the room; "som do telemóvel" =
  * what other apps play (Android asks for consent each session; some apps block capture).
  */
@@ -27,6 +29,8 @@ class MainActivity : Activity() {
     private lateinit var tv: EditText
     private val ui = Handler(Looper.getMainLooper())
     private var pendingKind = 0
+    /** True while "Abrir controlo" looks for the TV. */
+    @Volatile private var searching = false
 
     private val tick = object : Runnable {
         override fun run() {
@@ -40,7 +44,8 @@ class MainActivity : Activity() {
         val pad = (16 * resources.displayMetrics.density).toInt()
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, pad * 2, pad, pad) }
         fun button(label: String, onClick: () -> Unit) = Button(this).apply { text = label; setOnClickListener { onClick() } }
-        root.addView(TextView(this).apply { text = "Enviar sinais para a TV"; textSize = 22f; gravity = Gravity.START })
+        root.addView(button("Abrir controlo") { openControl() })
+        root.addView(TextView(this).apply { text = "Enviar sinais para a TV"; textSize = 22f; gravity = Gravity.START; setPadding(0, pad, 0, 0) })
         root.addView(button("Microfone (som da sala)") { begin(SignalsNative.KIND_MIC) })
         root.addView(button("Som do telemóvel") { begin(SignalsNative.KIND_PLAYBACK) })
         root.addView(button("Parar") { CaptureService.stop(this) })
@@ -70,6 +75,22 @@ class MainActivity : Activity() {
     override fun onPause() {
         ui.removeCallbacks(tick)
         super.onPause()
+    }
+
+/** The control page in the browser; finding the TV can take a few seconds, so off the UI thread. */
+    private fun openControl() {
+        Status.error = null
+        searching = true
+        status.text = statusText()
+        val typed = tv.text.toString()
+        Thread {
+            val url = ControlLink.find(this, typed)
+            ui.post {
+                searching = false
+                if (url == null) Status.error = "Não encontrei a TV. Abre a app Santa Vibes na TV e confirma que o telemóvel está no Wi-Fi de casa."
+                else startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            }
+        }.start()
     }
 
     private fun begin(kind: Int) {
@@ -127,6 +148,7 @@ class MainActivity : Activity() {
     private fun statusText(): String {
         val s = Status
         val sb = StringBuilder()
+        if (searching) sb.append("À procura da TV para abrir o controlo…\n")
         if (!s.active) sb.append("Parado.\n") else {
             sb.append(if (s.kind == SignalsNative.KIND_PLAYBACK) "A enviar: som do telemóvel" else "A enviar: microfone")
             sb.append(" · ").append(s.sampleRate).append(" Hz, ").append(s.channels).append(" canal(is)\n")
