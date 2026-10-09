@@ -61,6 +61,11 @@ Em 2026-10-07 DABS aceitou as recomendações para as perguntas em aberto:
     cena, valores, paleta, versão e imagens (sinal e perfil não); exportar = copiar o JSON; a rotação
     automática roda pelos presets do utilizador se houver pelo menos dois, senão pelas cenas (10 min por
     defeito); sem login, é a rede de casa. Feito (3.2–3.4).
+19. **Fase 4: o que fica na prateleira** (2026-10-09, DABS): contexto (hora do dia, pôr do sol,
+    meteorologia), lâmpadas inteligentes (não tem), imagens por IA no PC (a GPU é uma RX 7600S de 8 GB) e a
+    interação pelo telemóvel ficam nas ideias: não são essenciais e só se fazem se DABS as pedir. Seguem o
+    laboratório de presets, a skill de cenas e as cenas novas (decisão 16); o projetor (3.5 e outros hosts)
+    é a última parte.
 
 ## Por decidir
 

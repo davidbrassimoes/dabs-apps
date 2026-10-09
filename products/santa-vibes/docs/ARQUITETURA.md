@@ -49,7 +49,7 @@ Fontes:
 - **PC** — `pc-bridge`, captura por loopback WASAPI.
 - **Telemóvel (microfone)** — som da sala; precisa de AGC e de filtrar a voz/picos curtos.
 - **Telemóvel (playback capture)** — `AudioPlaybackCapture` do Android 10+; consentimento por sessão; algumas apps bloqueiam.
-- **Contexto** — hora do dia, nascer/pôr do sol, meteorologia; não substitui o áudio, **modula** paleta e temperatura.
+- **Contexto** (na prateleira, decisão 19) — hora do dia, nascer/pôr do sol, meteorologia; não substitui o áudio, **modula** paleta e temperatura.
 
 **Escolha da fonte** na TV: manual (página de controlo) ou automática por prioridade configurável (ex.: PC → telemóvel → nenhuma), com timeout de silêncio/ausência de pacotes.
 

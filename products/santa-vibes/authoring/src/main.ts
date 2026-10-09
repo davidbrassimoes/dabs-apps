@@ -26,6 +26,7 @@ import {
 import { PaletteVariation, rotationPalettes } from './palette';
 import { Signals } from './signals';
 import { BRIDGE_URL, PcBridge } from './bridge';
+import { openLab } from './lab';
 import {
   button,
   buildParamsPanel,
@@ -286,6 +287,28 @@ interface SceneEntry {
   style: string;
 }
 
+/** Preset lab (decision 16): nine variations of the current values; see src/lab.ts. */
+async function openPresetLab(): Promise<void> {
+  if (!scene) return;
+  openLab({
+    scene,
+    composed: await composeScene(sceneId, scene),
+    outputFrag: await fetchText('/shared/glsl/output.frag'),
+    profile,
+    values,
+    palette,
+    use: (v, p) => {
+      values = v;
+      palette = p;
+      presetId = '';
+      renderer.setParamValues(values);
+      pushPalette();
+      for (const [pid, x] of values) paramsPanel?.set(pid, x);
+      buildPresetPanel();
+    },
+  });
+}
+
 async function refreshSceneList(): Promise<void> {
   const entries = await fetchJson<SceneEntry[]>('/api/scenes');
   sceneIds = entries.map((e) => e.id);
@@ -317,6 +340,7 @@ const sceneUi = (() => {
   secScene.appendChild(presets);
   const r2 = row(secScene);
   button(r2, 'Copiar como preset', () => void copyAsPreset());
+  button(r2, 'Laboratório', () => void openPresetLab());
   const copied = el('span', 'muted');
   r2.appendChild(copied);
   return { select: sel, meta, presets, copied };

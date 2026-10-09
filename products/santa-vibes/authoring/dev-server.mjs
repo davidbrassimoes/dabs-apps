@@ -13,6 +13,7 @@
 //   /shared/...       read-only view of <repo>/shared
 //   /api/scenes       JSON [{id, name, style}] for folders in scenes/ with a scene.json
 //   /api/profiles     JSON list of profile ids (shared/profiles/*.json)
+//   POST /api/presets/<scene>  preset lab: append a preset (JSON body) to scenes/<scene>/scene.json
 //   /events           Server-Sent Events: {type:"change", path} | {type:"bundle", errors}
 
 import http from 'node:http';
@@ -21,6 +22,8 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
+import { insertPreset } from './lib/scene-presets.mjs';
+import { validateScene } from './src/scene.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -176,6 +179,26 @@ async function listProfiles() {
   return files.filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
 }
 
+// Preset lab (decision 16): the only write to scenes/. Appends one preset to the scene's own
+// scene.json (no copy), keeping the file's formatting; the result must still validate.
+async function savePreset(req, res, sceneId) {
+  if (!/^[a-z0-9-]+$/.test(sceneId)) return send(res, 400, 'bad scene id');
+  let body = '';
+  for await (const chunk of req) body += chunk;
+  try {
+    const preset = JSON.parse(body);
+    const file = path.join(SCENES_DIR, sceneId, 'scene.json');
+    const out = insertPreset(await fsp.readFile(file, 'utf8'), preset);
+    const problems = validateScene(JSON.parse(out), sceneId);
+    if (problems.length) return send(res, 400, problems.join('\n'));
+    await fsp.writeFile(file, out);
+    console.log(`[lab] preset ${preset.id} added to scenes/${sceneId}/scene.json`);
+    return sendJson(res, { ok: true, id: preset.id });
+  } catch (e) {
+    return send(res, 400, String(e.message ?? e));
+  }
+}
+
 // ---------------------------------------------------------------- server
 
 const server = http.createServer(async (req, res) => {
@@ -191,6 +214,7 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/api/scenes') return sendJson(res, await listScenes());
   if (p === '/api/profiles') return sendJson(res, await listProfiles());
+  if (req.method === 'POST' && p.startsWith('/api/presets/')) return savePreset(req, res, p.slice('/api/presets/'.length));
 
   if (p === '/events') {
     res.writeHead(200, {

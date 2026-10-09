@@ -1,0 +1,42 @@
+{
+  "format": 4,
+  "id": "skyspace",
+  "name": "Skyspace",
+  "description": "Uma abertura de céu numa parede iluminada, à maneira dos skyspaces de James Turrell. O céu atravessa a paleta em minutos e a parede responde com a outra ponta. Só luz.",
+  "tags": ["ambient", "minimal", "luz", "turrell", "lento"],
+  "fps": 24,
+  "renderScale": 0.5,
+  "feedback": false,
+  "image": "none",
+  "defaultPalette": ["#1a1230", "#3c2a6e", "#6e64c8", "#f0a080", "#ffe6c4"],
+  "params": [
+    { "id": "speed",    "label": "Mudança de cor",    "type": "float", "min": 0.0, "max": 1.0, "default": 0.3,  "drift": 0.1 },
+    { "id": "size",     "label": "Tamanho",           "type": "float", "min": 0.2, "max": 1.0, "default": 0.55, "drift": 0.1 },
+    { "id": "shape",    "label": "Quadrado ↔ largo",  "type": "float", "min": 0.0, "max": 1.0, "default": 0.35, "drift": 0.1 },
+    { "id": "round",    "label": "Cantos",            "type": "float", "min": 0.0, "max": 1.0, "default": 0.25, "drift": 0.1 },
+    { "id": "softness", "label": "Bordo",             "type": "float", "min": 0.0, "max": 1.0, "default": 0.08,  "drift": 0.15 },
+    { "id": "glow",     "label": "Luz na parede",     "type": "float", "min": 0.0, "max": 1.0, "default": 0.6,  "drift": 0.1 },
+    { "id": "pulse",    "label": "Respirar (beat)",   "type": "float", "min": 0.0, "max": 1.0, "default": 0.3,  "drift": 0.0, "group": "Reatividade" },
+    { "id": "react",    "label": "Reação à música",   "type": "float", "min": 0.0, "max": 1.0, "default": 0.0,  "drift": 0.0, "group": "Reatividade" }
+  ],
+  "presets": [
+    {
+      "id": "meio-dia",
+      "name": "Meio-dia",
+      "params": { "size": 0.6, "round": 0.1 },
+      "palette": ["#0e1a3a", "#1e3a8a", "#3e78d8", "#9ac4f8", "#eef6ff"]
+    },
+    {
+      "id": "roden",
+      "name": "Roden",
+      "params": { "shape": 0, "round": 1, "size": 0.5, "glow": 0.8 },
+      "palette": ["#2a0a14", "#6e1a2e", "#c8405a", "#f49a7a", "#ffe2c8"]
+    },
+    {
+      "id": "ganzfeld",
+      "name": "Ganzfeld",
+      "params": { "size": 0.95, "shape": 1, "softness": 1, "glow": 0.3 },
+      "palette": ["#141430", "#2e2e6e", "#7a4ab0", "#e070a8", "#ffd0e0"]
+    }
+  ]
+}
