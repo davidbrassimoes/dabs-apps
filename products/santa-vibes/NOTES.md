@@ -10,6 +10,9 @@
   https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L). DABS aceitou a proposta para cenas/presets e Fase 3
   (decisão 16 em `projects/santa-vibes.md`): presets do utilizador na box com exportar. A seguir: 3.1
   (protetor de ecrã), depois a maqueta da página de controlo ao gate antes do 3.2.
+- 2026-10-09: **protetor de ecrã retirado** (decisão 17). Fica o `Player` (render fora da `MainActivity`).
+- 2026-10-08 (noite): **maqueta do 3.2/3.3 no gate**, à espera de DABS: https://claude.ai/artifact/X7ZmWWsTXniPr4y9R6P5ZN
+  (quatro separadores; 4 perguntas com recomendação: o que guarda um preset, exportar, rotação, sem login).
 - 2026-10-08: **fases 1 e 2 feitas** (o 1.5 confirmado à tarde, -10 ms; `pc-bridge/README.md`). Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
   Link do Apache feito por DABS (2026-10-08; a box lê `http://192.168.1.200/santa-vibes/`). À espera de DABS: ver na TV as cenas novas e as imagens.
   A `phone-app` foi reinstalada com o tracker novo. A seguir: a Fase 3. Por afinar: o tempo pelo microfone (fraco).

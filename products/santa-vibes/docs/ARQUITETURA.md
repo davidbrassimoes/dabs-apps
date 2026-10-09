@@ -24,7 +24,7 @@
 │                                                         ecrã                    │
 │                                                                                 │
 │  ControlServer (HTTP mínimo) ◄──── control-web (telemóvel, por QR code)         │
-│  DreamService (protetor de ecrã) + Activity (ecrã inteiro)                      │
+│  Activity (ecrã inteiro) + Player (render, sinais, imagens, overlay)            │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 

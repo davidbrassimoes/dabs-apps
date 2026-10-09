@@ -1,6 +1,6 @@
 # tv-app — app Android TV (Fase 0.4–0.6 e Fase 3)
 
-Kotlin + OpenGL ES 3.0 nativo. Renderer de cenas, receção de sinais, fontes de imagem, servidor de controlo e `DreamService`.
+Kotlin + OpenGL ES 3.0 nativo. Renderer de cenas, receção de sinais, fontes de imagem, e servidor de controlo.
 
 Regras: ver `CLAUDE.md` (zero alocações por frame, sem WebView, dependências justificadas).
 
@@ -14,7 +14,8 @@ core/   Kotlin/JVM puro (sem Android): modelo de cena, leitor JSON, composição
         drift de parâmetros (Drift), variação de paleta (PaletteVariation), pacotes de sinais
         (SignPacket) e mixer de reatividade (SignalMixer, SequenceGate).
         Testes JUnit contra as fixtures da autoria (authoring/test/fixtures).
-app/    Android: MainActivity (ecrã inteiro, comando, overlay), SceneRenderer (cenas, crossfade, passe de saída),
+app/    Android: Player (tudo o que põe cenas no ecrã: biblioteca, renderer, sinais, imagens, ritmo de frames,
+        overlay, logcat), MainActivity (a app: extras do adb e comando), SceneRenderer (cenas, crossfade, passe de saída),
         SceneSlot (uma cena: programa, FBOs, relógio), OutputPass, SignalHub (receção UDP e beacon),
         Benchmark (passo 0.5), SceneLibrary (assets),
         Gl (helpers GLES 3.0), FrameStats (tempos sem alocações).
@@ -168,6 +169,12 @@ am start -n dev.santavibes.tv/.MainActivity [--es look current|reactive]   # def
   a 100 BPM sintéticos.
 - O que muda em cada cena: comentário `Reactive variant` no `scene.frag`; o `groove()` está em
   `shared/glsl/lib/react.glsl`. Medições em `NOTES.md`.
+
+### `Player` (antes do 3.2), 2026-10-08
+
+O render passou da `MainActivity` para o `Player`. Na box, igual a antes: `halo` a 24,1 fps, `alloc=0`.
+Um protetor de ecrã (`DreamService`) chegou a ser feito e medido (`veils` a 30 fps) e saiu a 2026-10-09
+(decisão 17 em `projects/santa-vibes.md`).
 
 ### Imagens reais (2.1), 2026-10-08
 

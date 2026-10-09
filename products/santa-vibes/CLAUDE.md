@@ -2,7 +2,7 @@
 
 > Nome de protótipo (antes: "Penumbra"). Slug `santa-vibes` / `santavibes`. Se mudar: este ficheiro, o README, os cabeçalhos em `shared/glsl/` e os identificadores.
 
-Visuais generativos para criar ambiente e luz numa sala, numa **Google TV Streamer** (Android TV) ligada a uma TV ou a um projetor; também protetor de ecrã. Imagem sintetizada (shaders) ou híbrida (imagens reais como textura/paleta), reativa a sinais externos (áudio do PC, telemóvel, hora) ou não.
+Visuais generativos para criar ambiente e luz numa sala, numa **Google TV Streamer** (Android TV) ligada a uma TV ou a um projetor. Imagem sintetizada (shaders) ou híbrida (imagens reais como textura/paleta), reativa a sinais externos (áudio do PC, telemóvel, hora) ou não.
 
 Ler por esta ordem, só o que a tarefa pede:
 1. `docs/VISAO.md`, `docs/ARQUITETURA.md`, `docs/ROADMAP.md`
