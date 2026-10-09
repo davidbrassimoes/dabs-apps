@@ -102,15 +102,24 @@ Passe final (`shared/glsl/output.frag`) independente da cena: brilho máximo, co
 
 `ControlServer` dentro da `tv-app` (HTTP mínimo, sem framework pesado) serve a página `control-web` (HTML/JS/CSS estáticos, sem framework, poucos KB). A UI de parâmetros é **gerada a partir do `scene.json`**. QR code no ecrã com o endereço.
 
-API (rascunho, a fixar na Fase 3):
+API (fixada no 3.2, 2026-10-09). Tudo em JSON; sem login (decisão 18: a rede de casa). Porta 8080.
 
 | Método | Caminho | Descrição |
 |---|---|---|
-| GET | `/` | página de controlo |
-| GET | `/api/scenes` | lista de cenas com os respetivos esquemas |
-| GET | `/api/state` | estado atual (cena, valores, fonte de sinal, fonte de imagem, perfil, reatividade) |
-| PATCH | `/api/state` | alteração parcial do estado |
-| GET | `/api/sources` | fontes de sinal visíveis e o seu estado |
+| GET | `/`, `/app.js`, `/style.css` | página de controlo (`control-web/`, copiada para os assets do APK) |
+| GET | `/api/scenes` | os `scene.json` tal como estão, pela ordem da box |
+| GET | `/api/state` | estado (cena, preset, valores, paleta, versão, sinal, reatividade, imagens, perfil, brilho, temperatura, paleta a rodar, rotação), `profileDefaults` e `live` (sinal, BPM, imagem, fps) |
+| PATCH | `/api/state` | alteração parcial com as mesmas chaves (`scene`, `preset`, `values`, `look`, `source`, `reactivity`, `images`, `profile`, `brightness`, `temperature`, `paletteRotate`, `rotation`, `rotationMin`); o que for inválido é ignorado ou limitado ao intervalo |
+| POST | `/api/step` | `{"delta": 1 | -1}`: cena seguinte ou anterior |
+| GET / POST | `/api/presets` | presets do utilizador; POST `{"name"}` guarda o estado atual |
+| DELETE | `/api/presets/<id>` | apaga |
+| POST | `/api/presets/<id>/apply` | põe na TV |
+| GET | `/api/presets/<id>/export` | JSON pronto para os `presets` do `scene.json`, com `scene` |
+
+O comando e a página passam pelo mesmo `Controller` (tv-app): o estado é um só, guardado em
+`files/control-state.json` a cada alteração (3.4), e os presets em `files/user-presets.json`. Os
+extras do adb (`--es scene`, `--es look`, …) valem só para essa execução. O modelo e as regras de
+validação estão em `core/Control.kt` e `core/UserPresets.kt`, com testes.
 
 ## Renderer (tv-app)
 

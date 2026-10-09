@@ -35,10 +35,11 @@ dependencies {
     implementation(project(":core"))
 }
 
-/** Copies scenes/ and shared/ (the single source of truth) into generated assets. */
+/** Copies scenes/, shared/ (the single source of truth) and the control page (control-web/) into generated assets. */
 abstract class CopySceneAssets : DefaultTask() {
     @get:InputDirectory abstract val scenes: DirectoryProperty
     @get:InputDirectory abstract val shared: DirectoryProperty
+    @get:InputDirectory abstract val controlWeb: DirectoryProperty
     @get:OutputDirectory abstract val output: DirectoryProperty
     @get:Inject abstract val fs: FileSystemOperations
 
@@ -47,6 +48,7 @@ abstract class CopySceneAssets : DefaultTask() {
         fs.sync {
             from(scenes) { into("scenes") }
             from(shared) { into("shared") }
+            from(controlWeb) { into("control-web"); exclude("README.md") }
             into(output)
         }
     }
@@ -56,6 +58,7 @@ val copySceneAssets = tasks.register<CopySceneAssets>("copySceneAssets") {
     val repo = rootDir.parentFile
     scenes.set(File(repo, "scenes"))
     shared.set(File(repo, "shared"))
+    controlWeb.set(File(repo, "control-web"))
 }
 
 androidComponents {

@@ -10,6 +10,7 @@ import dev.santavibes.core.SceneFormat
 import dev.santavibes.core.SignalMixer
 import dev.santavibes.core.Synth
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -67,7 +68,19 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     /** Scene to open first (intent extra "scene"); ignored when unknown. */
     var initialSceneId: String? = null
 
-    /** Ask the GL thread to move `delta` scenes forward/back (D-pad). */
+    private val pendingControl = AtomicReference<SceneControl?>(null)
+    /** Last control applied; re-applied on a new GL context. */
+    private var appliedControl: SceneControl? = null
+    private var appliedGrade: Profile? = null
+    private var appliedPaletteEpoch = -1
+    private var paletteSlot: SceneSlot? = null
+
+    /** Hand a [SceneControl] to the GL thread; only the newest one is applied. */
+    fun control(c: SceneControl) {
+        pendingControl.set(c)
+    }
+
+    /** Ask the GL thread to move `delta` scenes forward/back (benchmark and tests; the app goes through [control]). */
     fun step(delta: Int) {
         pendingStep.addAndGet(delta)
     }
@@ -78,9 +91,8 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
     private var halfOk = false
     private var black = 0
     private var noise = 0
-    /** Every scene compiled once per GL context (0 = failed, see [programErrors]); no compile hitch on a switch. */
-    private var programs = IntArray(0)
-    private var programErrors = arrayOfNulls<String>(0)
+    /** Every scene compiled once per GL context; no compile hitch on a switch. */
+    private val programs = ProgramCache(lib)
     private var cur: SceneSlot? = null
     private var out: SceneSlot? = null // outgoing scene during a transition
     private var fadeS = 0.0
@@ -115,8 +127,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         images?.onSurfaceCreated()
         noise = Gl.noiseTexture()
         output = OutputPass(lib.outputFrag, profile)
+        appliedGrade = null
         Log.i(SceneLibrary.TAG, "GL: ${GLES30.glGetString(GLES30.GL_RENDERER)} · ${GLES30.glGetString(GLES30.GL_VERSION)} · RGBA16F targets: $halfOk")
-        compileAll()
+        programs.compileAll(halfOk)
         bench?.let { b ->
             EGL14.eglSwapInterval(EGL14.eglGetCurrentDisplay(), 0) // measure GPU cost, not vsync
             benchmark = Benchmark(b, lib, this)
@@ -125,6 +138,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val first = if (sceneIndex in lib.scenes.indices) sceneIndex else if (wanted >= 0) wanted else 0
         sceneIndex = -1
         if (lib.scenes.isNotEmpty()) loadScene(first, 0.0)
+        appliedControl?.let { applyControl(it, 0.0) }
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -143,6 +157,7 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
             val n = lib.scenes.size
             loadScene(((sceneIndex + step) % n + n) % n, if (bench == null) transitionS else 0.0)
         }
+        pendingControl.getAndSet(null)?.let { applyControl(it, transitionS) }
         val dt = if (lastFrameNs == 0L) 0.0 else minOf((now - lastFrameNs) / 1e9, 0.25)
         val intervalMs = if (lastFrameNs == 0L) 0f else ((now - lastFrameNs) / 1e6).toFloat()
         lastFrameNs = now
@@ -217,9 +232,9 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         val entry = lib.scenes[index]
         val def = entry.def
         val scale = if (scaleOverride > 0) scaleOverride else def.renderScale ?: profile.renderScale
-        val program = programs.getOrElse(index) { 0 }
+        val program = programs.program(index)
         if (program == 0) {
-            lastError = "${def.id}: ${programErrors.getOrNull(index)}"
+            lastError = "${def.id}: ${programs.error(index)}"
             if (cur == null) sceneIndex = index // nothing else to show; keep the index so D-pad moves on
             return
         }
@@ -253,33 +268,26 @@ class SceneRenderer(private val lib: SceneLibrary, private val profile: Profile)
         )
     }
 
-    /**
-     * Compile every scene and draw each once into a 1x1 target, so drivers that finish
-     * compiling lazily (on first draw) do it here and not in the middle of a crossfade.
-     */
-    private fun compileAll() {
-        val t0 = System.nanoTime()
-        val n = lib.scenes.size
-        programs = IntArray(n)
-        programErrors = arrayOfNulls(n)
-        val warm = Gl.target(1, 1, halfOk)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, warm.fbo)
-        GLES30.glViewport(0, 0, 1, 1)
-        for (i in 0 until n) {
-            val def = lib.scenes[i].def
-            try {
-                programs[i] = Gl.sceneProgram(lib.compose(lib.scenes[i]))
-                GLES30.glUseProgram(programs[i])
-                GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
-            } catch (e: Gl.ShaderError) {
-                programErrors[i] = e.message
-                Log.e(SceneLibrary.TAG, "compile failed in ${def.id}:\n${e.message}")
-            }
+    private fun applyControl(c: SceneControl, fade: Double) {
+        appliedControl = c
+        if (c.sceneIndex != sceneIndex && c.sceneIndex in lib.scenes.indices) loadScene(c.sceneIndex, fade)
+        if (c.grade !== appliedGrade) {
+            output?.setProfile(c.grade)
+            appliedGrade = c.grade
         }
-        GLES30.glFinish()
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
-        Gl.destroy(warm)
-        Log.i(SceneLibrary.TAG, "compiled $n scenes in %.0f ms".format(java.util.Locale.ROOT, (System.nanoTime() - t0) / 1e6))
+        paletteVariation.rotate = c.paletteRotate
+        val slot = cur ?: return
+        if (slot.index != c.sceneIndex) return
+        if (c.values.size == slot.values.size) System.arraycopy(c.values, 0, slot.values, 0, c.values.size)
+        // Only new palettes or a new scene restart the rotation, not a slider.
+        if (c.paletteEpoch == appliedPaletteEpoch && slot === paletteSlot) return
+        appliedPaletteEpoch = c.paletteEpoch
+        paletteSlot = slot
+        val st = images
+        val base = st?.palettesFor(slot.def) ?: PaletteVariation.scenePalettes(slot.def)
+        val imageLeads = st != null && st.usedBy(slot.def) && st.palette != null
+        val lead = c.palette
+        paletteVariation.setPalettes(slot.def.id, if (lead != null && !imageLeads) PaletteVariation.rotationPalettes(lead, base) else base, driftTime)
     }
 
     /** Benchmark: re-create the current targets at [scaleOverride]. */

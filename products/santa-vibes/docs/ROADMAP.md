@@ -68,9 +68,9 @@ Legenda: `[ ]` por fazer · `[~]` em curso · `[x]` feito. Atualizar este fichei
 ## Fase 3 — Produto na box
 
 - ~~**3.1 `DreamService`**~~ — retirado a 2026-10-09 (DABS, decisão 17): não serve o uso do `VISAO.md`. Fica o `Player`, que o 3.2 usa.
-- [ ] **3.2 `ControlServer` + `control-web`** — página no telemóvel por QR code; UI gerada dos esquemas; escolha de cena, parâmetros, fonte de sinal, fonte de imagem, perfil, reatividade, brilho/temperatura.
-- [ ] **3.3 Presets e playlists** — guardar/carregar; rotação automática com transições.
-- [ ] **3.4 Persistência** do estado na box.
+- [x] **3.2 `ControlServer` + `control-web`** — página no telemóvel por QR code; UI gerada dos esquemas; escolha de cena, parâmetros, fonte de sinal, fonte de imagem, perfil, reatividade, brilho/temperatura. Feito em 2026-10-09 (maqueta aprovada; decisão 18).
+- [x] **3.3 Presets e playlists** — guardar/carregar; rotação automática com transições. Feito em 2026-10-09: presets do utilizador na box, exportar em JSON, rotação pelos presets (ou pelas cenas com menos de dois).
+- [x] **3.4 Persistência** do estado na box. Feito em 2026-10-09 (`control-state.json` e `user-presets.json` em `files/`).
 - [ ] **3.5 Perfil Projetor** afinado no projetor real (quando existir).
 
 ---

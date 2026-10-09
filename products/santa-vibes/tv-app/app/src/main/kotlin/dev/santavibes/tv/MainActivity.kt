@@ -18,7 +18,7 @@ import android.view.WindowManager
  *   am start -n dev.santavibes.tv/.MainActivity --ez bench true [--es scales 0.25,0.33,0.4,0.5] [--es scenes aurora,nebula]
  * renders continuously without vsync and logs "bench" lines (see Benchmark).
  *
- * Host settings (step 0.6) until the control page exists (phase 3), all optional:
+ * Since 3.2 the control page sets these and the box keeps them (3.4). Extras below win for one run:
  *   --ef transition 4     crossfade between scenes in seconds (0 = cut)
  *   --ef drift 1          drift amount (0 = off, 1 = as authored)
  *   --ef driftSpeed 1     drift time rate (1 = real time)
@@ -78,12 +78,12 @@ class MainActivity : Activity() {
             drift = f("drift"),
             driftSpeed = f("driftSpeed"),
             source = i.getStringExtra("source"),
-            reactivity = f("reactivity") ?: Player.DEFAULT_REACTIVITY,
-            reactive = i.getStringExtra("look") != "current",
+            reactivity = f("reactivity"),
+            reactive = i.getStringExtra("look")?.let { it != "current" },
             images = i.getStringExtra("images"),
             imageServer = i.getStringExtra("imageServer") ?: Player.DEFAULT_IMAGE_SERVER,
             imageHoldS = f("imageHold"),
-            rotate = i.getBooleanExtra("rotate", true),
+            rotate = if (i.hasExtra("rotate")) i.getBooleanExtra("rotate", true) else null,
             holdS = f("hold"),
             fadeS = f("fade"),
             hueDeg = f("hue"),
