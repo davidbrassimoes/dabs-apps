@@ -6,33 +6,24 @@
 
 ## Para a próxima sessão
 
-- 2026-10-09: botão "Abrir controlo" na `phone-app` (pedido de DABS), instalado e testado no Pixel 8: encontra a TV
-  pelo beacon e abre a página no browser.
-- 2026-10-09 (tarde): laboratório de presets, skill `santa-vibes-scene`, cenas `recife` e `skyspace` (19 cenas).
-  Galeria atualizada. À espera de DABS: ver as duas cenas na TV. Falta só o projetor (3.5), a última parte.
-- 2026-10-09: **3.2–3.4 feitos** (página de controlo, presets do utilizador, estado guardado; decisão 18).
-  OK na TV mostra o QR code. À espera de DABS: usar a página no telemóvel (só eu a testei, pelo PC).
-  A seguir, fora da Fase 3: laboratório de presets e skill de cenas (decisão 16). O 3.5 espera pelo projetor.
-- 2026-10-08 (noite): **galeria de ecrãs** feita e no repo (`authoring/scripts/gallery`, `npm run gallery`;
-  https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L). DABS aceitou a proposta para cenas/presets e Fase 3
-  (decisão 16 em `projects/santa-vibes.md`): presets do utilizador na box com exportar. A seguir: 3.1
-  (protetor de ecrã), depois a maqueta da página de controlo ao gate antes do 3.2.
-- 2026-10-09: **protetor de ecrã retirado** (decisão 17). Fica o `Player` (render fora da `MainActivity`).
-- 2026-10-08 (noite): **maqueta do 3.2/3.3 no gate**, aprovada por DABS a 2026-10-09: https://claude.ai/artifact/X7ZmWWsTXniPr4y9R6P5ZN
-  (quatro separadores; 4 perguntas com recomendação: o que guarda um preset, exportar, rotação, sem login).
-- 2026-10-08: **fases 1 e 2 feitas** (o 1.5 confirmado à tarde, -10 ms; `pc-bridge/README.md`). Provas: https://claude.ai/artifact/5N8oiPNiDede3oQMGhzJ1w.
-  Link do Apache feito por DABS (2026-10-08; a box lê `http://192.168.1.200/santa-vibes/`). À espera de DABS: ver na TV as cenas novas e as imagens.
-  A `phone-app` foi reinstalada com o tracker novo. A seguir: a Fase 3. Por afinar: o tempo pelo microfone (fraco).
-- 2026-10-07: versão reativa das cenas feita (decisão 13), alternável na box com ▲ ou `--es look`.
-  DABS escolheu: **a predefinição é a reativa** (`look` por defeito `reactive`); a atual fica a
-  um ▲ e mantém o metrónomo sintético (100 BPM sem música). O `default` de `react` nas cenas fica 0:
-  a autoria abre na imagem de sempre e a tv-app força o valor.
-- 2026-10-07: decisões aplicadas e 1.4 testado num Pixel 8. Falta: a música de referência para afinar
-  (tempo pelo microfone fraco; falso 181,5 BPM no primeiro segundo em todas as fontes). Depois: 1.5.
-- O `pc-bridge-bg` corre agora sempre no PC de DABS: uma bridge de consola não escuta o beacon
-  enquanto ele correr (`--tv` ou `--autostart off`). Ao testar a TV com outra fonte, usar
-  `--es source mic|phone` (em `auto` o PC ganha).
-- Verificar o estado: `scripts/check santa-vibes` da raiz (inclui agora Rust). Na box: `tv-app/README.md`.
+Estado a 2026-10-09 (fim da sessão): tudo em `main`, sem PRs abertos. Fases 0 a 3 feitas menos o 3.5.
+
+- **Falta só o projetor**, a última parte (DABS, decisão 19): afinar `shared/profiles/projector.json` no
+  projetor real (3.5) e decidir os outros hosts (`ARQUITETURA.md`, "Outros hosts"). Nada a fazer até ele existir.
+- **Visto por DABS na TV** (2026-10-09): `recife`, `skyspace`, `melt-painting` e `light-mosaic`, "por enquanto
+  estão boas". A página de controlo no telemóvel também está boa por agora.
+- **Abertos, sem bloquear:** mais cenas quando DABS pedir (skill `santa-vibes-scene`); tempo pelo microfone fraco
+  (só importa se DABS usar o microfone); nome definitivo (só antes de publicar).
+- **Na prateleira** (decisão 19): contexto (hora do dia, meteorologia), lâmpadas, IA no PC, telemóvel como touchpad.
+- Peças desta sessão: galeria de ecrãs gerada do repo (`npm run gallery`, publicar em
+  https://claude.ai/artifact/4BWzrYabkCxiG5hrytY62L quando entra ou muda uma cena); página de controlo, presets do
+  utilizador e estado guardado (decisão 18); laboratório de presets; skill de cenas; botão "Abrir controlo" na
+  `phone-app`. O protetor de ecrã foi feito e retirado (decisão 17).
+- A box ficou no estado por defeito (`aurora`, sem presets do utilizador). O protetor de ecrã da box é o da Google.
+- O `pc-bridge-bg` corre sempre no PC de DABS: uma bridge de consola não escuta o beacon enquanto ele correr
+  (`--tv` ou `--autostart off`). Ao testar a TV com outra fonte, usar `--es source mic|phone` (em `auto` o PC ganha).
+- Verificar o estado: `scripts/check santa-vibes` da raiz. Na box: `tv-app/README.md`. A API da página de
+  controlo testa-se pelo PC (`curl http://192.168.1.27:8080/api/state`); acentos em corpos JSON só de ficheiro UTF-8.
 
 ## Dados pessoais
 
@@ -60,7 +51,7 @@
   pelo servidor (a única escrita em `scenes/`). Testado no Chrome sem janela: gravou um diff limpo (revertido).
 - Skill `santa-vibes-scene` em `.claude/skills/`: como escrever, verificar e medir uma cena.
 - Cenas novas pela skill: `recife` (padrões de Turing; procedural porque o buffer de feedback é também
-  o que se vê) e `skyspace` (abertura de céu à Turrell). Números em `tv-app/README.md`. Não vistas por DABS.
+  o que se vê) e `skyspace` (abertura de céu à Turrell). Números em `tv-app/README.md`. Vistas por DABS na TV a 2026-10-09: boas por agora.
 - Metaballs e auroras não deram cenas novas: `liquid-light` e `aurora` já o são.
 
 ### 2026-10-09 — 3.2 a 3.4: página de controlo
