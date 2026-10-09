@@ -1,18 +1,13 @@
 package dev.santavibes.tv
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.Typeface
 import android.opengl.GLSurfaceView
 import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Choreographer
-import android.view.Gravity
-import android.view.View
 import android.widget.FrameLayout
-import android.widget.TextView
 import dev.santavibes.core.ImageSources
 
 /**
@@ -23,7 +18,10 @@ import dev.santavibes.core.ImageSources
  */
 class Player(private val context: Context, private val o: Options) {
 
-    /** Host settings; MainActivity reads them from intent extras. */
+    /**
+     * Host settings from MainActivity's intent extras. Null = not given: the saved state (3.4)
+     * decides. Given ones win for this run only.
+     */
     data class Options(
         val sceneId: String? = null,
         val bench: Benchmark.Config? = null,
@@ -32,12 +30,12 @@ class Player(private val context: Context, private val o: Options) {
         val drift: Double? = null,
         val driftSpeed: Double? = null,
         val source: String? = null,
-        val reactivity: Double = DEFAULT_REACTIVITY,
-        val reactive: Boolean = true, // reactive look by default (DABS, 2026-10-07)
-        val images: String? = null, // null = all sources
+        val reactivity: Double? = null,
+        val reactive: Boolean? = null,
+        val images: String? = null, // "off" = no image provider at all
         val imageServer: String = DEFAULT_IMAGE_SERVER,
         val imageHoldS: Double? = null,
-        val rotate: Boolean = true,
+        val rotate: Boolean? = null,
         val holdS: Double? = null,
         val fadeS: Double? = null,
         val hueDeg: Double? = null,
@@ -51,32 +49,45 @@ class Player(private val context: Context, private val o: Options) {
     private val ui = Handler(Looper.getMainLooper())
     private var running = false
 
+    /** The control page and the remote both go through it (3.2–3.4); null while benchmarking. */
+    private val controller: Controller?
+    private val server: ControlServer?
+
     private val glView: GLSurfaceView
-    private val overlay: TextView
+    private val overlay = Overlay(context)
     /** The view to show fullscreen. */
     val view: FrameLayout
 
     init {
-        renderer.initialSceneId = o.sceneId
         renderer.bench = o.bench
         o.transitionS?.let { renderer.transitionS = it }
         o.fadeEvery?.let { renderer.fadeEvery = it }
         o.drift?.let { renderer.driftAmount = it }
         o.driftSpeed?.let { renderer.driftSpeed = it }
-        hub.mode = SignalHub.parseMode(o.source)
-        renderer.mixer.reactivity = o.reactivity
-        renderer.react = if (o.reactive) 1f else 0f
-        ImageSources.parseSelection(o.images)?.let { sel ->
-            val p = ImageProvider(java.io.File(context.filesDir, "images"), sel, ImageFetchers(o.imageServer))
+        if (o.images != "off") {
+            val p = ImageProvider(java.io.File(context.filesDir, "images"), ImageSources.ALL.toSet(), ImageFetchers(o.imageServer))
             imageProvider = p
             renderer.images = ImageStage(p).apply { o.imageHoldS?.let { holdS = it } }
         }
-        if (!benchMode) renderer.hub = hub
         renderer.paletteVariation.apply {
-            rotate = o.rotate
+            rotate = true // box default (DABS, 2026-10-07); the saved state decides from here on
             o.holdS?.let { holdS = it }
             o.fadeS?.let { fadeS = it }
             o.hueDeg?.let { hueDeg = it }
+        }
+        if (benchMode) {
+            renderer.initialSceneId = o.sceneId
+            controller = null
+            server = null
+        } else {
+            renderer.hub = hub
+            val c = Controller(library, renderer, hub, imageProvider, context.filesDir)
+            c.override(overrides())
+            c.applyAll()
+            renderer.initialSceneId = c.sceneId()
+            controller = c
+            val routes = ControlRoutes(context.assets, library, c, ::live)
+            server = ControlServer(ControlServer.PORT, routes::handle)
         }
 
         glView = GLSurfaceView(context).apply {
@@ -86,21 +97,19 @@ class Player(private val context: Context, private val o: Options) {
             setRenderer(renderer)
             renderMode = if (benchMode) GLSurfaceView.RENDERMODE_CONTINUOUSLY else GLSurfaceView.RENDERMODE_WHEN_DIRTY
         }
-        overlay = TextView(context).apply {
-            typeface = Typeface.MONOSPACE
-            textSize = 14f
-            setTextColor(Color.WHITE)
-            setBackgroundColor(0x99000000.toInt())
-            setPadding(24, 16, 24, 16)
-            visibility = View.GONE
-        }
-        view = FrameLayout(context).apply {
-            addView(glView)
-            addView(this@Player.overlay, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.START).apply {
-                setMargins(32, 32, 32, 32)
-            })
-        }
+        view = FrameLayout(context).apply { addView(glView) }
+        overlay.addTo(view)
         Log.i(SceneLibrary.TAG, "${library.scenes.size} scenes: ${library.scenes.joinToString { it.def.id }}")
+    }
+
+    /** Intent extras as a control patch (only the ones given). */
+    private fun overrides(): Map<String, Any?> = buildMap {
+        o.sceneId?.let { put("scene", it) }
+        o.reactive?.let { put("look", if (it) "reactive" else "current") }
+        o.source?.let { put("source", it) }
+        o.reactivity?.let { put("reactivity", it) }
+        o.images?.let { sel -> ImageSources.parseSelection(sel)?.let { put("images", it.toList()) } }
+        o.rotate?.let { put("paletteRotate", it) }
     }
 
     fun start() {
@@ -111,6 +120,7 @@ class Player(private val context: Context, private val o: Options) {
             Choreographer.getInstance().postFrameCallback(frameCallback)
             hub.start()
             imageProvider?.start()
+            server?.start()
         }
         ui.post(tick)
     }
@@ -118,25 +128,37 @@ class Player(private val context: Context, private val o: Options) {
     fun stop() {
         running = false
         ui.removeCallbacks(tick)
+        server?.stop()
         hub.stop()
         imageProvider?.stop()
         glView.onPause()
     }
 
-    // ---- remote actions
+    // ---- remote actions (the same path as the control page)
 
-    fun step(delta: Int) = renderer.step(delta)
+    fun step(delta: Int) {
+        controller?.step(delta) ?: renderer.step(delta)
+        if (overlay.visible) overlay.update(overlayText())
+    }
 
     fun toggleLook() {
-        renderer.react = 1f - renderer.react
+        controller?.toggleLook() ?: run { renderer.react = 1f - renderer.react }
         Log.i(SceneLibrary.TAG, "look=${lookName()}")
-        if (overlay.visibility == View.VISIBLE) overlay.text = overlayText()
+        if (overlay.visible) overlay.update(overlayText())
     }
 
-    fun toggleOverlay() {
-        overlay.visibility = if (overlay.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-        overlay.text = overlayText()
-    }
+    fun toggleOverlay() = overlay.toggle(overlayText(), ControlServer.url())
+
+    /** Live status for the control page (HTTP thread; reads volatile fields only). */
+    private fun live(): Map<String, Any?> = linkedMapOf(
+        "source" to SignalHub.kindName(renderer.signalSource),
+        "packetsPerS" to packetRate.toDouble(),
+        "bpm" to renderer.mixer.realBpm,
+        "weight" to renderer.signalWeight,
+        "image" to renderer.images?.shown?.credit(),
+        "imagesCached" to (imageProvider?.cached ?: 0),
+        "fps" to renderer.stats.fps.toDouble(),
+    )
 
     // ---- frame pacing
     private var nextDueNs = 0L
@@ -195,7 +217,8 @@ class Player(private val context: Context, private val o: Options) {
                     ),
                 )
             }
-            if (overlay.visibility == View.VISIBLE) overlay.text = overlayText()
+            if (overlay.visible) overlay.update(overlayText())
+            controller?.tick(System.currentTimeMillis())
             ui.postDelayed(this, 500)
         }
     }
@@ -245,7 +268,6 @@ class Player(private val context: Context, private val o: Options) {
     private fun allocatedBytes(): Long = Debug.getRuntimeStat("art.gc.bytes-allocated")?.toLongOrNull() ?: 0L
 
     companion object {
-        const val DEFAULT_REACTIVITY = 0.7
         /** The home server's image folder (NOTES.md, 2.1); DABS fills it. */
         const val DEFAULT_IMAGE_SERVER = "http://192.168.1.200/santa-vibes/"
     }

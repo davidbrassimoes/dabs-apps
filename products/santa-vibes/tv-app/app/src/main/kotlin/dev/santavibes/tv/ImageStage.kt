@@ -111,8 +111,11 @@ class ImageStage(private val provider: ImageProvider) {
         return true
     }
 
-    /** Whether `def` gets the image (its `image` field is not `none`). */
-    fun usedBy(def: SceneDef) = def.image != "none"
+    /** False when the control page turns every image source off (3.2): scenes fall back to their palettes. */
+    @Volatile var enabled = true
+
+    /** Whether `def` gets the image (images on and its `image` field is not `none`). */
+    fun usedBy(def: SceneDef) = enabled && def.image != "none"
 
     fun infoFor(def: SceneDef): FloatArray = if (usedBy(def)) info else NO_IMAGE
 

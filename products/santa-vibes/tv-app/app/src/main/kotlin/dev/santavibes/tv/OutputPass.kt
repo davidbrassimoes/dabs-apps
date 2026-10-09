@@ -9,7 +9,7 @@ import dev.santavibes.core.Profile
  * dither, from the scene targets to the surface. Create on the GL thread once per
  * context; [draw] allocates nothing.
  */
-internal class OutputPass(fragSrc: String, private val profile: Profile) {
+internal class OutputPass(fragSrc: String, private var profile: Profile) {
     private val program = Gl.program(fragSrc)
     private fun u(n: String) = GLES30.glGetUniformLocation(program, n)
     private val uScene = u("uScene")
@@ -25,6 +25,12 @@ internal class OutputPass(fragSrc: String, private val profile: Profile) {
     private val uDither = u("uDither")
     private val grade = OutputGrade().apply { compute(profile) }
     private var frameCount = 0
+
+    /** A new grade (control page: profile, brightness, temperature). Not per frame. */
+    fun setProfile(p: Profile) {
+        profile = p
+        grade.compute(p)
+    }
 
     /** `scene` over `prev` by `mix` (1 = only `scene`; pass `black` as `prev` outside transitions). */
     fun draw(scene: Int, prev: Int, mix: Float, noise: Int, width: Int, height: Int) {
