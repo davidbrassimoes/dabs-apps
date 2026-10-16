@@ -8,8 +8,8 @@
 ## Onde está
 
 *Sótão — studio cards*: baralho de ideias para o estúdio, SvelteKit em Cloudflare Workers +
-Turso, instalável e offline. A fase 1 está construída e testada, nunca publicada. O aspeto G passou o gate 2;
-a seguir é implementá-lo, depois o primeiro deploy (gate 3).
+D1, instalável e offline. Publicada (gate 3, 2026-10-06) em https://sotao.escarpa-audio.workers.dev,
+com o aspeto G (gate 2) implementado. Falta DABS usá-la no telemóvel; ver Próximos passos.
 
 ## Decisões do projeto
 
@@ -36,7 +36,7 @@ a seguir é implementá-lo, depois o primeiro deploy (gate 3).
 - [x] Aspeto G implementado e verificado em capturas, 390 e 1280 px, dois temas (2026-10-06)
 - [x] Turso trocado por D1 (decisão 8); base D1 `sotao` criada na conta, WEUR (2026-10-06)
 - [x] Primeiro deploy (gate 3), 2026-10-06: https://sotao.escarpa-audio.workers.dev
-- [ ] DABS entra no telemóvel, instala a PWA e usa uma noite; importar uma carta confirma o `batch` no D1 remoto
+- [ ] DABS entra no telemóvel, instala a PWA e usa uma noite (telemóvel real, teclado, offline). A importação já foi confirmada no D1 remoto: 188 cartas a 2026-10-06 e 13 a 2026-10-07
 
 ## Histórico
 

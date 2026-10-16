@@ -17,7 +17,7 @@ Lê este ficheiro. Não leias mais nada até saberes qual é o trabalho.
 | `handbook/decisions/` | ADRs, numerados e datados | Quando algo parece arbitrário |
 | `handbook/knowledge/` | Aprendizagens entre produtos, uma por ficheiro; `README.md` é o índice | Antes de resolver algo que já resolvemos |
 | `templates/` | Brief, spec, notas, estado de projeto, checklist de release, registo de obrigações | Começar qualquer um deles |
-| `products/<nome>/` | Um produto, código incluído. Tem o seu `CLAUDE.md`, `SPEC.md`, `NOTES.md` e o seu build | Só o produto em que estás |
+| `products/<nome>/` | Um produto, código incluído. Tem o seu `CLAUDE.md`, `NOTES.md` e o seu build; o spec está em `gota/docs/SPEC.md`, `sotao/docs/IMPLEMENTATION.md` e `santa-vibes/docs/` (`ARQUITETURA.md`, `ROADMAP.md`) | Só o produto em que estás |
 | `projects/<nome>.md` | Estado de cada produto: decisões, por decidir, próximos passos | Retomar um produto |
 | `scripts/check` | Corre a verificação de cada produto e imprime só as falhas | Antes de dizer que acabaste |
 

@@ -1,7 +1,8 @@
 # As ações de CI são o único ecossistema da raiz. Cada produto acrescenta o seu
 # (gradle, npm, cargo, nuget) com `directory` apontado à sua pasta, e lista em `ignore`
 # qualquer dependência que mude de termos de licença numa versão futura
-# (handbook/obrigacoes.md).
+# (`templates/obrigacoes.md`; passa a `handbook/obrigacoes.md` quando um produto
+# tiver destino fora do pessoal).
 version: 2
 updates:
   - package-ecosystem: github-actions
