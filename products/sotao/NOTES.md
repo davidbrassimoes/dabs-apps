@@ -62,11 +62,10 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 
 ## Encontrado e não resolvido
 
-- 2026-10-06: **nunca testado contra um D1 remoto.** Só o D1 local do `vite dev` (miniflare) e um
-  D1 simulado sobre libSQL nos testes. No primeiro deploy: migrar e semear no primeiro pedido,
-  e confirmar que o `defer_foreign_keys` do lote de migrações é aceite pelo D1 real.
-- 2026-10-06: **a atomicidade do `db.batch` no D1 remoto** (importação) está só provada em
-  libSQL e no D1 local; o D1 documenta o lote como atómico, mas não foi exercitado em produção.
+- 2026-10-16: **a reversão do `db.batch` no D1 remoto quando um lote falha** nunca foi exercitada.
+  O D1 documenta o lote como atómico; o lote bom está provado em produção (migração no primeiro
+  pedido, `foreign_keys = 1`, importações de 188 e 13 cartas). Resolvido: "nunca testado contra
+  um D1 remoto" (2026-10-06).
 - 2026-10-06: **limites do D1**: 100 parâmetros por consulta (a semente de material e `loadJoins`
   já vão em blocos); uma consulta nova com listas longas tem de fazer o mesmo.
 - 2026-09-26: **o material não tem export.** As cartas fazem round-trip por `/api/export.yaml`;
@@ -75,6 +74,21 @@ o token aparece. Texto >= 4,5:1, gráficos >= 3:1. Valores em `src/routes/layout
 - `docs/mockups/` usa nomes genéricos de material (da passagem pela Escarpa). Só servem para layout.
 
 ## Registo
+
+### 2026-10-16 — factos desatualizados corrigidos
+
+- `projects/sotao.md`: "Onde está" e o próximo passo diziam "nunca publicada" e "importar confirma o `batch`";
+  já está publicada e a importação já correu em produção (188 + 13 cartas). Corrigido.
+- "Encontrado e não resolvido": tirado "nunca testado contra um D1 remoto" (resolvido no deploy); a
+  atomicidade do `batch` ficou só como a reversão num lote que falha, que ninguém exercitou.
+- Raiz: a tabela do `CLAUDE.md` e o `.github/dependabot.yml` apontavam para ficheiros que não existem
+  (`SPEC.md` na raiz de cada produto; `handbook/obrigacoes.md`). Agora apontam para os reais.
+  `handbook/obrigacoes.md` não se cria: o template só o manda copiar quando um produto sair do pessoal.
+- **Para DABS (gates, não toquei):** `products/README.md` exige `BRIEF.md`, `SPEC.md` aprovado e `RELEASE.md`
+  por produto. Nenhum dos três produtos tem BRIEF nem RELEASE; só gota tem spec (`docs/SPEC.md`), o Sótão tem
+  `docs/IMPLEMENTATION.md` e o santa-vibes `docs/ARQUITETURA.md`/`ROADMAP.md`. O Sótão passou o gate 3 sem
+  `RELEASE.md`. Perguntas: (1) aceitar os documentos atuais como spec e reescrever a regra em
+  `products/README.md` (ADR), ou pedir os ficheiros? (2) fazer um `RELEASE.md` retroativo para o Sótão?
 
 ### 2026-10-06 — 188 cartas experimentais e curadoria das de arranque
 

@@ -8,10 +8,10 @@
 ## Onde está
 
 Visuais generativos para Android TV (Kotlin + OpenGL ES), com ferramenta de autoria no
-browser, bridge de áudio no PC e núcleo de sinais em Rust previstos. É um monorepo dentro do
+browser, bridge de áudio no PC e núcleo de sinais em Rust. É um monorepo dentro do
 monorepo: cada componente tem o seu README com build, execução e teste. Documentação e ADRs
-próprios em `products/santa-vibes/docs/`; mantêm-se. Último trabalho: passo 0.6 na tv-app (drift,
-variação de paleta, crossfade), medido na box, 2026-10-06. Notas em `products/santa-vibes/NOTES.md`.
+próprios em `products/santa-vibes/docs/`; mantêm-se. Último trabalho (2026-10-09): fases 0 a 3 feitas menos o 3.5; falta só o projetor
+(decisão 19). Notas da sessão e peças novas (página de controlo, presets, skill de cenas) em `products/santa-vibes/NOTES.md`.
 
 ## Decisões do projeto
 

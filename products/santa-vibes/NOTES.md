@@ -305,3 +305,10 @@ Estado a 2026-10-09 (fim da sessão): tudo em `main`, sem PRs abertos. Fases 0 a
 - Sem alocações por frame com drift, rotação e matiz ligados (mesmo padrão que com tudo desligado).
 - Arrumação: `CLAUDE.md` de 86 para 35 linhas; mapa, comandos, convenções e ambiente passaram
   para `docs/REPO.md` (decisão 2 do projeto). Este ficheiro criado.
+
+### 2026-10-16 — factos desatualizados corrigidos
+
+- `projects/santa-vibes.md`: "Último trabalho" passou a 2026-10-09; "previstos" (bridge e signals-core) corrigido.
+- `docs/ROADMAP.md` 1.2: o arranque automático está feito (decisão 8, 2026-10-07). **O ícone na área de
+  notificação não está feito** (README do `pc-bridge`: "se fizer falta"); fica como opcional por fazer.
+- Para DABS: ver a pergunta sobre BRIEF/SPEC/RELEASE na entrada de 2026-10-16 de `products/sotao/NOTES.md`.
