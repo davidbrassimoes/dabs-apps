@@ -44,6 +44,17 @@ Estado a 2026-10-09 (fim da sessão): tudo em `main`, sem PRs abertos. Fases 0 a
 
 ## Registo
 
+
+### 2026-10-16 — `--autostart on` já não prende o script
+
+- Causa: `Command::spawn` do `pc-bridge-bg` herdava o stdout do chamador e, no Windows, também
+  todos os handles herdáveis (anular o stdio não chega). O leitor só recebia EOF quando a bridge saía.
+- Correção em `pc-bridge/src/autostart.rs` (`spawn_detached`): stdio para NUL, `DETACHED_PROCESS` +
+  `CREATE_NEW_PROCESS_GROUP`, e a flag de herança dos handles padrão do próprio processo limpa durante o
+  `spawn` (FFI direto ao kernel32, sem dependência nova).
+- Teste `tests/autostart_detach.rs`: um "script" com stdout em pipe arranca um filho de 6 s; o EOF tem
+  de chegar em menos de 4 s. Falha (6,1 s) sem a correção, passa com ela. Não testado: o registo no
+  `Run` e o arranque real do `pc-bridge-bg` no PC de DABS (mexeria na instalação dele).
 ### 2026-10-09 — laboratório de presets, skill de cenas, `recife` e `skyspace`
 
 - Decisão 19: contexto, lâmpadas, IA no PC e interação pelo telemóvel na prateleira.
@@ -162,8 +173,8 @@ Estado a 2026-10-09 (fim da sessão): tudo em `main`, sem PRs abertos. Fases 0 a
 - **Não medido:** a fonte do telemóvel (continua com 60 ms). O valor vale para esta sala e estas
   colunas; o projetor vai pedir uma medição própria.
 - A segunda medição não se fez: a TV entrou em standby a meio, às ~23h, e não a voltei a ligar.
-- `pc-bridge --autostart on` chamado de um script fica à espera, porque o processo de fundo herda
-  os handles do pai. Está anotado no README e não foi corrigido.
+- `pc-bridge --autostart on` chamado de um script ficava à espera, porque o processo de fundo herdava
+  os handles do pai. Corrigido a 2026-10-16 (ramo `fix/pc-bridge-autostart-detach`): ver o Registo.
 
 ### 2026-10-07 — versão reativa das cenas (decisão 13)
 
