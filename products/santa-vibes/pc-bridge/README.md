@@ -38,8 +38,8 @@ target/release/pc-bridge.exe --autostart off   # pára-o e tira o registo
 Depois de recompilar, correr `--autostart on` outra vez instala a versão nova. Com o de fundo a correr,
 uma bridge de consola não consegue escutar o beacon (porto ocupado): usar `--tv` ou desligar o de fundo.
 A firewall pode pedir autorização para o `pc-bridge-bg.exe` na primeira vez (é outro caminho).
-Um script que leia o output do `--autostart on` fica à espera: o processo de fundo herda os handles
-(Windows). Correr num terminal, ou com o output para um ficheiro.
+O processo de fundo arranca desligado do chamador (sem consola, stdio para NUL): um script que leia o
+output do `--autostart on` recebe o fim do output e o código de saída logo.
 Ligado no PC de DABS em 2026-10-07.
 
 ## Comportamento
