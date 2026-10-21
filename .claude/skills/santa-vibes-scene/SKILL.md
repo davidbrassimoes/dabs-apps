@@ -1,6 +1,7 @@
 ---
 name: santa-vibes-scene
 description: Write a new scene for Santa Vibes (scenes/<id>/scene.frag + scene.json) from an idea, a mood or a reference (an artist, a material, "chuva num vidro", "Turrell"), check it in the authoring and measure it on the Google TV box, then add it to the screens gallery. Use whenever DABS asks for a new scene, a new look, "mais cenas", a variation of an existing scene that needs new code, or a scene in the style of something — even when he does not say "skill" or "shader". Not for presets of an existing scene (that is the preset lab in the authoring).
+model: opus
 ---
 
 # Santa Vibes — writing a scene

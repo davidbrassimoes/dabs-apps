@@ -1,6 +1,7 @@
 ---
 name: rundown
 description: Faz o levantamento do trabalho aberto no workspace (o "Por fazer" do CLAUDE.md, o NOTES.md de cada produto, projects/*.md, ADRs recentes, histórico git), assinala onde o estado commitado divergiu da realidade e produz um ponto de situação. Usar quando alguém pergunta onde estão as coisas, o que vem a seguir, ou invoca /rundown.
+model: sonnet
 ---
 
 # Ponto de situação do workspace

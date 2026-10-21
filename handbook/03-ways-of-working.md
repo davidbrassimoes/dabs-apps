@@ -49,18 +49,31 @@ que torna o gate do spec digno de existir.
 
 | Agente | Faz | Não faz | Modelo |
 |---|---|---|---|
-| `researcher` | Dossier com fontes e grau de confiança antes de um spec: mercado, requisitos de lojas, licenças, prior art | Decidir | o da sessão |
-| `architect` | Brief → `SPEC.md` em fatias verticais; revê trabalho feito contra o spec | Escrever código de produto | o da sessão |
+| `researcher` | Dossier com fontes e grau de confiança antes de um spec: mercado, requisitos de lojas, licenças, prior art | Decidir | `opus` |
+| `architect` | Brief → `SPEC.md` em fatias verticais; revê trabalho feito contra o spec | Escrever código de produto | `best` |
 | `dev` | Implementa uma fatia aprovada, com testes, e deixa `scripts/check` verde | Decidir âmbito ou stack | `sonnet` |
-| `reviewer` | Revê uma fatia contra o spec, a barra e as regras duras; relata, não corrige | Mudar código | o da sessão |
-| `copy` | Texto público na voz do manifesto, honesto, com marcadores onde falta decisão | Decidir estrutura | o da sessão |
-| `design` | Tokens, componentes, acessibilidade, revisão visual | Escrever texto público | o da sessão |
+| `reviewer` | Revê uma fatia contra o spec, a barra e as regras duras; relata, não corrige | Mudar código | `best` |
+| `copy` | Texto público na voz do manifesto, honesto, com marcadores onde falta decisão | Decidir estrutura | `opus` |
+| `design` | Tokens, componentes, acessibilidade, revisão visual | Escrever texto público | `best` |
 
-**Escalões de modelo.** Os agentes de julgamento (spec, revisão, pesquisa, texto) herdam o
-modelo da sessão e devem poder chegar ao melhor disponível. O `dev` corre em `sonnet`: dentro
-de um spec aprovado o trabalho é volumoso e bem delimitado, e pôr o escalão de topo aí gasta
-o limite semanal onde menos rende. **A sessão que conduz fica modesta**: corre git e
-despacha; deixa os agentes subir quando o trabalho pede.
+**Escalões de modelo.** Todos os agentes e skills fixam `model:`; nenhum herda. Herdar fazia
+o resultado depender do modelo com que a sessão abria, e uma sessão em Fable gastava Fable
+em tudo o que herdava (o limite semanal esgotou assim em 2026-10). Os escalões:
+
+- `best` (Fable onde a conta o tem, senão Opus): planeamento, design e o quality gate —
+  `architect`, `reviewer`, `design`. Pouco volume, decisões que se propagam.
+- `opus`: julgamento com volume — `researcher` (lê muitas páginas), `copy`.
+- `sonnet`: implementação dentro de um spec aprovado (`dev`) e skills de leitura, git e docs.
+- `haiku`: só skills mecânicas sem risco (correr uma ferramenta e reportar).
+
+**Ressalvas do `best`.** Só cai para Opus quando a conta não tem Fable; com o limite do
+Fable esgotado, o agente dá erro. Nesse caso chama-o com o modelo `opus` na invocação. A
+documentação do Claude Code não lista `best` no frontmatter de agentes (testado e funciona,
+2026-10-21); se deixar de funcionar, troca-se por `fable`.
+
+**A sessão que conduz** abre em `opus` por defeito, `sonnet` para arrumação e git, Fable só
+numa sessão em que se pensa diretamente com ele. **Sinais de que isto está errado:** voltar
+a bater no limite do Fable com sessões em Opus → desce primeiro o `reviewer` para `opus`.
 
 **Escrevem-se quando são precisos.** Um agente definido antes do primeiro trabalho real
 está normalmente errado. Os cinco aqui são o mínimo que dois workspaces provaram; o `design`

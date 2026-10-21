@@ -1,6 +1,7 @@
 ---
 name: sotao-cards
 description: Write inspiration cards for the Sótão app (studio cards) as an import-ready YAML file (import v1, author claude), from a card count plus optional ideas or themes from David. Use this whenever David asks for cards, prompts, studio ideas, "twenty more sources", constraints, treatments, or anything to feed the app's /import screen — even when he does not say "skill", "YAML" or "import". Also use it when he is only kicking ideas around and wants them turned into cards.
+model: opus
 ---
 
 # Sótão — card generation
