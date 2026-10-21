@@ -10,7 +10,7 @@ nenhuma, e dois produtos podem usar stacks diferentes sem se pisarem.
 | `CLAUDE.md` | Até 40 linhas: o que é, stack, comandos, regras duras **deste** produto, o que ler primeiro. Tem prioridade sobre o da raiz. |
 | `BRIEF.md` | De `templates/brief.md` |
 | `SPEC.md` | De `templates/spec.md`. Com "Estado: aprovado" antes de haver código. |
-| `NOTES.md` | De `templates/notes.md`. A página que a próxima sessão lê. |
+| `NOTES.md` | De `templates/notes.md`. A página que a próxima sessão lê: `## Próxima sessão` no topo (≤ 40 linhas, reescrito em cada sessão), registo abaixo, arquivo em `NOTES-archive-*.md` acima de ~300 linhas. |
 | `scripts/check` | Executável (bash). Corre tudo o que verifica o produto e **imprime só falhas**. Sai com 0 quando passa. |
 | `.gitignore` | As pastas de build da toolchain deste produto |
 | `RELEASE.md` | De `templates/release-checklist.md`, quando houver uma release |

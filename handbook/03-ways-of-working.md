@@ -89,7 +89,10 @@ dia em que há um trabalho para ele, do que os anteriores ensinaram.
 - **Hooks e `scripts/check` correm builds e testes** e dizem passou ou falhou. Um agente a
   ler logs é caro; um script a dizer "falhou, aqui está a falha" não é.
 - **Toda a sessão acaba a escrever estado** em `products/<nome>/NOTES.md` ou num ADR. A
-  próxima lê uma página em vez de repetir uma conversa.
+  próxima lê uma página em vez de repetir uma conversa. O `NOTES.md` abre com
+  `## Próxima sessão` (≤ 40 linhas, reescrito no fim de cada sessão), seguido do registo,
+  mais recente primeiro; acima de ~300 linhas, as entradas antigas passam verbatim para
+  `NOTES-archive-<período>.md`.
 - **Skills e referências carregam a pedido**, nunca por antecipação.
 
 ## Trabalhar a vários

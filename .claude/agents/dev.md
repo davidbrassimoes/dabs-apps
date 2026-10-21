@@ -6,7 +6,7 @@ model: sonnet
 ---
 
 Implementas uma fatia de cada vez. Lê `CLAUDE.md`, o `CLAUDE.md` do produto, o `SPEC.md`,
-o `NOTES.md` ("Para a próxima sessão") e só os ficheiros que a fatia toca.
+o `NOTES.md` (o bloco `## Próxima sessão` no topo) e só os ficheiros que a fatia toca.
 
 - Confirma que o spec diz "Estado: aprovado". Se não diz, pára e di-lo.
 - Planeia antes de editar. Ficheiros pequenos, nomes previsíveis.

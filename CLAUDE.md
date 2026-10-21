@@ -49,7 +49,8 @@ total, incluindo testes e documentação, e só volta quando acaba ou está bloq
 ## Disciplina de sessão
 
 - Começar limpo: este ficheiro, depois só o que o trabalho nomeia.
-- Terminar escrevendo o que mudou em `products/<nome>/NOTES.md` ou num ADR.
+- Terminar reescrevendo o `## Próxima sessão` de `products/<nome>/NOTES.md`
+  e acrescentando ao registo, ou num ADR.
 - Não colar logs de build no contexto. Correr `scripts/check` e ler só as falhas.
 - Usar plan mode antes de cada fatia vertical.
 - Este ficheiro não passa de 80 linhas. O que cresce vai para o handbook ou para um ADR.

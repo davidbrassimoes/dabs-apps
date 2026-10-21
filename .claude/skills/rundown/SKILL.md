@@ -24,10 +24,11 @@ que a realidade.
 
 1. **Delega o levantamento a um agente novo** (Explore ou general-purpose). Lê muitos
    ficheiros e não precisa de viver no contexto da sessão. Pede-lhe: o "Por fazer" do
-   `CLAUDE.md`, a secção "Para a próxima sessão" de cada `products/*/NOTES.md`, o "Onde
-   está" e "Por decidir" de cada `projects/*.md`, os ADRs dos últimos 30 dias, e
-   `git log --since=30.days --oneline`. Que devolva factos com ficheiro e linha, não
-   resumos.
+   `CLAUDE.md`, o bloco `## Próxima sessão` no topo de cada `products/*/NOTES.md` (lê-o
+   primeiro; o registo abaixo está do mais recente para o mais antigo; os
+   `NOTES-archive-*.md` só para traçar histórico), o "Onde está" e "Por decidir" de cada
+   `projects/*.md`, os ADRs dos últimos 30 dias, e `git log --since=30.days --oneline`.
+   Que devolva factos com ficheiro e linha, não resumos.
 2. **Cruza.** Para cada item aberto: há um commit, nota ou ADR posterior que o fecha ou
    contradiz? Marca-o como *desatualizado* com a prova. O resto fica como está.
 3. **Escreve o ponto de situação** por produto: onde está, próximo gate, o que bloqueia,
