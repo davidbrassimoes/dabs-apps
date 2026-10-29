@@ -38,9 +38,10 @@ Padrão do `ci.yml` do dabs-apps e do ps2-ports, desde 2026-10-29 (nasceu no
    resultado em `outputs`. O job de cada produto tem `needs: handbook` e
    `if: !cancelled() && needs.handbook.outputs.<produto> == 'true'`.
 2. O push para main de um merge de PR não corre: a PR já correu. Os commits diretos em
-   main continuam a correr. dabs-apps, ps2-ports e webdabs reconhecem o merge pela
-   mensagem (`Merge pull request ...`). O digital-obelisk só faz squash e reconhece-o por
-   o autor do commit ser o GitHub (`noreply@github.com`).
+   main continuam a correr. O merge reconhece-se por o commit ser do GitHub
+   (`github.event.head_commit.committer.email == 'noreply@github.com'`), o que serve para
+   merge commit e para squash. Até 2026-10-29 dabs-apps, ps2-ports e webdabs usavam a
+   mensagem (`Merge pull request ...`), que falhava com squash.
 3. Com `workflow_dispatch`, `scripts/changed.sh` não tem commit de base e corre tudo.
 4. Um repo sem `changed.sh` por produto (o webdabs) filtra no `on:` com `paths`: ignora
    `**/*.md` e volta a incluir à mão os `.md` que algum teste lê.
@@ -50,9 +51,8 @@ Padrão do `ci.yml` do dabs-apps e do ps2-ports, desde 2026-10-29 (nasceu no
 - Um merge testado na PR contra um main antigo não volta a ser testado depois do merge.
   Se isto partir main, o mais barato é correr `gh workflow run ci.yml` à mão. O passo
   seguinte é voltar a correr os merges só quando main avançou desde a última corrida da PR.
-- Em dabs-apps, ps2-ports e webdabs, um merge por squash ou rebase não começa por
-  `Merge pull request` e volta a correr. Passar estes repos para a condição do
-  digital-obelisk (autor do commit é o GitHub) resolve os dois casos.
+- Um commit feito no editor web do GitHub também fica com o GitHub como autor e salta a
+  CI de push. Se isso esconder uma avaria, correr `gh workflow run ci.yml` à mão.
 - Runner próprio (o obelisk-server para Linux, o portátil para Windows) ainda não decidido.
 
 ## Fontes
