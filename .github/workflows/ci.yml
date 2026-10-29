@@ -8,7 +8,8 @@
 # Minutos (handbook/knowledge/ci-minutos-github.md): cada job que arranca paga pelo menos um
 # minuto, em Windows dois. Por isso o job `handbook` decide com scripts/changed.sh que
 # produtos mudaram, e o job de um produto que não mudou nem arranca (`if` no job, não nos
-# passos). O push para main de um merge de PR não corre: a PR já correu.
+# passos). O push para main de um merge de PR não corre: a PR já correu. Reconhece-se por o
+# commit ser do GitHub (noreply@github.com), em merge ou squash; um commit direto é teu.
 #
 # Para adicionar um produto: copiar o job de exemplo, a sua linha em `outputs` e o seu passo
 # `changed.sh` no job `handbook`; trocar o nome, os caminhos e a instalação da toolchain.
@@ -32,7 +33,7 @@ permissions:
 jobs:
   handbook:
     name: Handbook e raiz (CLAUDE.md curto, scripts executáveis)
-    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'Merge pull request ') }}
+    if: ${{ github.event_name != 'push' || github.event.head_commit.committer.email != 'noreply@github.com' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
