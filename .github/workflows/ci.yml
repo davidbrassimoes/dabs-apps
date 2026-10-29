@@ -140,7 +140,7 @@ jobs:
 
   # WinForms, DPAPI e o PDF só correm em Windows (ADR-002).
   mapa-km:
-    name: products/mapa-km (.NET 10, WinForms, build, format e testes)
+    name: products/mapa-km (.NET 10, WinForms, build, format, testes e exe)
     runs-on: windows-latest
     timeout-minutes: 20
     defaults:
@@ -159,3 +159,12 @@ jobs:
           global-json-file: products/mapa-km/global.json
       - if: steps.changed.outputs.changed == 'true'
         run: scripts/check mapa-km
+      - if: steps.changed.outputs.changed == 'true'
+        run: products/mapa-km/scripts/publish
+      - if: steps.changed.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mapa-km-win-x64
+          path: products/mapa-km/dist/
+          if-no-files-found: error
+          retention-days: 30
