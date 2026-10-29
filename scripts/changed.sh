@@ -28,24 +28,31 @@ if [ "$#" -eq 0 ]; then
   exit 2
 fi
 
-if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]; then
-  branch="${GITHUB_BASE_REF:-}"
-  base=""
-  if [ -n "$branch" ] && git fetch --quiet origin "$branch" 2>/dev/null; then
-    base="$(git merge-base FETCH_HEAD HEAD 2>/dev/null || true)"
-  fi
-else
-  base="${GITHUB_EVENT_BEFORE:-}"
-  case "$base" in
-    0000000000000000000000000000000000000000 | "") base="" ;;
+# A base vem do payload do evento, que a CI dá sempre. Até 2026-10-29 vinha de um
+# `git fetch` (falha sem credenciais, com `persist-credentials: false`) e de
+# GITHUB_EVENT_BEFORE (o GitHub não define essa variável): corria sempre tudo.
+# Numa PR, HEAD é o merge da PR na base, por isso a diferença para base.sha é a da PR.
+base=""
+event="${GITHUB_EVENT_PATH:-}"
+if [ -n "$event" ] && [ -f "$event" ]; then
+  case "${GITHUB_EVENT_NAME:-}" in
+    pull_request) base="$(jq -r '.pull_request.base.sha // empty' "$event")" ;;
+    push) base="$(jq -r '.before // empty' "$event")" ;;
   esac
 fi
+case "$base" in
+  0000000000000000000000000000000000000000) base="" ;;
+esac
 
 if [ -z "$base" ]; then
+  case "${GITHUB_EVENT_NAME:-}" in
+    pull_request | push) echo "::warning::changed.sh sem commit de base num ${GITHUB_EVENT_NAME}: corre tudo." ;;
+  esac
   say true "Sem commit de base para comparar: corre tudo."
 fi
 
 if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+  echo "::warning::changed.sh: o commit de base $base não está neste clone (fetch-depth: 0?): corre tudo."
   say true "O commit de base $base não está neste clone: corre tudo."
 fi
 

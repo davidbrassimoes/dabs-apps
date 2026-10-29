@@ -57,4 +57,4 @@ usa, passa a dependência registada no `SPEC.md`.
 
 | Ficheiro | Tópico | Ler quando |
 |---|---|---|
-| | | |
+| `ci-minutos-github.md` | Minutos do GitHub Actions em repos privados e o padrão de CI que os poupa (serve também ps2-ports, webdabs e digital-obelisk) | Ao mexer num `ci.yml` |
