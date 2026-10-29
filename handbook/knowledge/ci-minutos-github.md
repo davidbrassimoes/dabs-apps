@@ -17,12 +17,17 @@
 - **medido (outubro 2026):** no webdabs, 38 dos 42 commits em main foram diretos, quase
   todos de documentação, e cada um corria os 7 jobs pesados (Postgres, Playwright,
   Lighthouse, imagens Docker).
-
 - **medido (2026-10-29):** num valor YAML sem aspas, ` #` abre um comentário, também
   dentro de `${{ }}`. Uma condição com `'Merge pull request #'` ficou cortada e o GitHub
   rejeitou o ficheiro ("workflow file issue", corrida sem jobs). Um parser YAML local não
   avisa. O mesmo erro de YAML, com `: ` num `name:`, tinha o CI do ps2-ports parado desde o
   slice 0.
+- **medido (2026-10-29):** o `scripts/changed.sh` nunca filtrou nada na CI do dabs-apps e
+  do ps2-ports. Numa PR fazia `git fetch` da base, que falha sem credenciais
+  (`persist-credentials: false`); num push lia `GITHUB_EVENT_BEFORE`, que o GitHub não
+  define. Em ambos dizia "Sem commit de base: corre tudo" e cada corrida construía todos os
+  produtos. Agora lê a base do payload do evento (`$GITHUB_EVENT_PATH`, com `jq`) e, quando
+  não a encontra, deixa um `::warning::` visível na corrida.
 
 ## O que decidimos e porquê
 
