@@ -17,7 +17,8 @@ esse tipo de produto, e escreve-se aqui.
 |---|---|---|
 | App Android | Kotlin, Jetpack Compose, Material 3, Hilt, Room; Gradle com version catalog; JDK 17 de alvo | ADR-001 (de `gota`) |
 | App Android TV | Kotlin + OpenGL ES sobre `GLSurfaceView`, sem Compose no render | `products/santa-vibes/docs/decisoes/` |
-| Desktop Windows, servidor Ubuntu | por decidir | |
+| Desktop Windows | por decidir; proposta em ADR-002 (.NET 10 + WinForms, PDFsharp, MailKit, DPAPI) para `mapa-km`. Passa a defeito com o segundo produto que a escolha | ADR-002 (proposto) |
+| Servidor Ubuntu | por decidir | |
 
 ## Quando desviar
 
