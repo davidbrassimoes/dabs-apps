@@ -21,4 +21,4 @@ fundadoras: quem aprova cada gate, língua, stack inicial, forma de trabalhar a 
 | ADR | Título | Estado | Data |
 |---|---|---|---|
 | 001 | Decisões fundadoras do workspace | aceite | 2026-10-05 |
-| 002 | Stack para desktop Windows: .NET 10 + WinForms, PDFsharp, MailKit, DPAPI | proposto | 2026-10-29 |
+| 002 | Stack para desktop Windows: .NET 10 + WinForms, PDFsharp, MailKit, DPAPI | aceite | 2026-10-29 |
