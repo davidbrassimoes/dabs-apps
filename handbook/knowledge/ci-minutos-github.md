@@ -45,6 +45,10 @@ Padrão do `ci.yml` do dabs-apps e do ps2-ports, desde 2026-10-29 (nasceu no
 3. Com `workflow_dispatch`, `scripts/changed.sh` não tem commit de base e corre tudo.
 4. Um repo sem `changed.sh` por produto (o webdabs) filtra no `on:` com `paths`: ignora
    `**/*.md` e volta a incluir à mão os `.md` que algum teste lê.
+5. No webdabs, onde a maioria dos commits vai direta para main e uma corrida completa custa
+   ~51 minutos (medido, 2026-10-29), o push para main corre só o `pnpm check`. Os jobs
+   pesados correm nas PRs, à mão e numa diária que só segue com código novo desde a última
+   corrida completa (`webdabs/.github/scripts/nightly-gate.sh`).
 
 ## Perguntas abertas
 
