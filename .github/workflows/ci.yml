@@ -1,5 +1,4 @@
-# CI do workspace. Só verifica: não publica, não assina, não usa segredos. A exceção é o
-# mapa-km, que guarda o exe como artefacto da run para ser instalado à mão (SPEC, fatia 10).
+# CI do workspace. Só verifica: não publica, não assina, não usa segredos.
 #
 # Um job por produto, porque cada produto tem a sua toolchain e nenhuma deve correr por
 # causa de uma alteração à outra. Ações fixadas por SHA completo, versão em comentário
@@ -40,7 +39,6 @@ jobs:
       gota: ${{ steps.gota.outputs.changed }}
       santa-vibes: ${{ steps.santa-vibes.outputs.changed }}
       sotao: ${{ steps.sotao.outputs.changed }}
-      mapa-km: ${{ steps.mapa-km.outputs.changed }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,8 +51,6 @@ jobs:
         run: scripts/changed.sh products/santa-vibes .github scripts
       - id: sotao
         run: scripts/changed.sh products/sotao .claude/skills/sotao-cards .github scripts
-      - id: mapa-km
-        run: scripts/changed.sh products/mapa-km .github scripts
       - name: CLAUDE.md da raiz até 80 linhas
         run: |
           n="$(wc -l < CLAUDE.md)"
@@ -149,29 +145,3 @@ jobs:
       - run: npm ci --no-audit --no-fund
         working-directory: products/sotao
       - run: scripts/check sotao
-
-  mapa-km:
-    name: products/mapa-km (.NET 10, WinForms, build, format, testes e exe)
-    needs: handbook
-    if: ${{ !cancelled() && needs.handbook.outputs.mapa-km == 'true' }}
-    runs-on: windows-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: products/mapa-km/global.json
-      - run: scripts/check mapa-km
-      - run: products/mapa-km/scripts/publish
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: mapa-km-win-x64
-          path: products/mapa-km/dist/
-          if-no-files-found: error
-          retention-days: 30

@@ -21,4 +21,5 @@ fundadoras: quem aprova cada gate, língua, stack inicial, forma de trabalhar a 
 | ADR | Título | Estado | Data |
 |---|---|---|---|
 | 001 | Decisões fundadoras do workspace | aceite | 2026-10-05 |
-| 002 | Stack para desktop Windows: .NET 10 + WinForms, PDFsharp, MailKit, DPAPI | aceite | 2026-10-29 |
+| 002 | Retirado (2026-11-08): saiu do repo com o produto a que se aplicava | retirado | 2026-11-08 |
+| 003 | O repo é público | aceite | 2026-11-08 |
