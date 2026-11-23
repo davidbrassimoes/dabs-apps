@@ -81,11 +81,11 @@ Do not build these, and do not leave half-implementations of them:
 | Language | TypeScript, `strict: true` | |
 | Styling | Tailwind CSS 4 | Theme tokens as CSS custom properties, see §12. |
 | ORM | Drizzle | Schema in `src/lib/server/db/schema.ts`. Use `drizzle-kit` migrations, checked into the repo. |
-| Database | libSQL / SQLite | Local file in dev (`file:./local.db`), Turso in production. Same driver, same schema, no adapter layer. |
+| Database | SQLite (libSQL locally) | Local file in dev (`file:./local.db`), Cloudflare D1 in production (decision 8; first written as Turso). |
 | Validation | Zod | One schema module shared by the API and the YAML importer. |
 | YAML | `yaml` (eemeli) | Use `parseDocument` so you can report line numbers on errors. |
 | Tests | Vitest | See §14 for what must be covered. |
-| Hosting | Vercel + Turso | Cloudflare Pages or Fly.io are acceptable substitutes; if you switch, say so and keep the driver the same. |
+| Hosting | Cloudflare Workers + D1 | `wrangler.jsonc`, `projects/sotao.md` decision 8. First written as Vercel + Turso. |
 
 Do not add a state-management library, a component library, or a UI kit. The screens are
 simple and the mockups are hand-built markup.
