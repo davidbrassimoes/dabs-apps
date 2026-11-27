@@ -29,6 +29,7 @@ com o aspeto G (gate 2) implementado. Falta DABS usá-la no telemóvel; ver Pró
 
 | # | Pergunta | Quem decide | Bloqueia |
 |---|---|---|---|
+| 1 | `products/README.md` exige `BRIEF.md`, `SPEC.md` aprovado e `RELEASE.md` por produto; o Sótão não tem nenhum (tem `docs/IMPLEMENTATION.md`) e passou o gate 3 sem `RELEASE.md`. (a) Aceitar o `docs/IMPLEMENTATION.md` como spec e reescrever a regra em `products/README.md` (ADR), ou pedir os ficheiros? (b) Fazer um `RELEASE.md` retroativo? Origem: `products/sotao/NOTES.md`, registo de 2026-10-06 | DABS | Nada no código; só a conformidade com `products/README.md` |
 
 ## Próximos passos
 
